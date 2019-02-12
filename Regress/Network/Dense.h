@@ -19,13 +19,17 @@ class Dense : public Layer<T>
 	// neuronN { i1, i2, i3, ..., iN }
 
 	Matrix<T> weights;
+	Matrix<T> output;
 	//Matrix<T> deltas;
 
 	Activation activation;
 
 
 public:
+
 	Dense(int neurons, int inputNodes, int outputNodes, bool bias, Layer<T>* input, Activation activation);
+
+	void feedForward(Matrix<T>& input);
 };
 
 template<class T>
@@ -35,6 +39,7 @@ inline Dense<T>::Dense(int neurons, int inputNodes, int outputNodes, bool bias, 
 	outputNodes{	outputNodes					},
 	bias{			bias						},
 	weights(		neurons, inputNodes + bias	),
+	output{										},
 	activation{		activation					}
 {
 	// TODO: Randomize weight init values
@@ -43,5 +48,15 @@ inline Dense<T>::Dense(int neurons, int inputNodes, int outputNodes, bool bias, 
 		input->outputs.emplace_back(static_cast<Layer<T>*>(this));
 		this->inputs.emplace_back(input);
 	}
+}
+
+template<class T>
+inline void Dense<T>::feedForward(Matrix<T>& input)
+{
+	// TODO: Make sure we're not reallocating space for outut each time
+	output = input * weights;
+	
+	for (Layer<T>*& outs : this->outputs)
+		outs->feedForward(output);
 }
 

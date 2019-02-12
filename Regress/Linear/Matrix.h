@@ -9,6 +9,7 @@ class Matrix
 	std::vector<T> vals;
 
 public:
+	Matrix() = default;
 	Matrix(int nrows, int ncolumns);
 
 	int rows()		const { return nrows; }
