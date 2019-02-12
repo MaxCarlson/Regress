@@ -18,15 +18,21 @@
     <ClCompile Include="Main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Network\Activation.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Linear\Matrix.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Linear\Dense.h">
+    <ClInclude Include="Linear\Model.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Linear\Model.h">
+    <ClInclude Include="Network\Dense.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\Activation.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

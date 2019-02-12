@@ -84,6 +84,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>C:\Users\C-60\Desktop\cppPrograms\Regress\Regress;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -108,6 +109,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>C:\Users\C-60\Desktop\cppPrograms\Regress\Regress;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -116,9 +118,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="Network\Activation.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Linear\Dense.h" />
+    <ClInclude Include="Network\Activation.h" />
+    <ClInclude Include="Network\Dense.h" />
     <ClInclude Include="Linear\Matrix.h" />
     <ClInclude Include="Linear\Model.h" />
   </ItemGroup>

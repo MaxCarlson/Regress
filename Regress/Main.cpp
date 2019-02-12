@@ -1,4 +1,5 @@
 #include "Linear\Matrix.h"
+#include "Network\Dense.h"
 
 int main()
 {
@@ -16,6 +17,8 @@ int main()
 	m2(1, 1) = 1;
 
 	auto m3 = m1 * m2;
+
+	Dense<float> d1(3, 3, 3, false, nullptr, Relu);
 
 	return 0;
 }

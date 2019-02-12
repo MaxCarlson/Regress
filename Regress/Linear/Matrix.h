@@ -1,3 +1,4 @@
+#pragma once
 #include <vector>
 
 template<class T>
@@ -16,9 +17,9 @@ public:
 	T& operator()(int row, int col);
 	const T& operator()(int row, int col) const;
 
-	Matrix<T> operator+(const Matrix& m2);
-	Matrix<T> operator-(const Matrix& m2);
-	Matrix<T> operator*(const Matrix& m2);
+	Matrix operator+(const Matrix& m2);
+	Matrix operator-(const Matrix& m2);
+	Matrix operator*(const Matrix& m2);
 };
 
 template<class T>
