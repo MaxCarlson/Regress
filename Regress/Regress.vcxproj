@@ -118,7 +118,9 @@
     <ClCompile Include="Main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Linear\Dense.h" />
     <ClInclude Include="Linear\Matrix.h" />
+    <ClInclude Include="Linear\Model.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

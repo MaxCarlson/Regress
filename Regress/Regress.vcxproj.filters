@@ -23,5 +23,11 @@
     <ClInclude Include="Linear\Matrix.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Linear\Dense.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Linear\Model.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
