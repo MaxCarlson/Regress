@@ -20,6 +20,9 @@ public:
 	Matrix operator+(const Matrix& m2);
 	Matrix operator-(const Matrix& m2);
 	Matrix operator*(const Matrix& m2);
+
+	template<class Func>
+	void unaryExpr(Func&& func);
 };
 
 template<class T>
@@ -73,4 +76,13 @@ inline Matrix<T> Matrix<T>::operator*(const Matrix & m2)
 		}
 	
 	return m;
+}
+
+template<class T>
+template<class Func>
+inline void Matrix<T>::unaryExpr(Func && func)
+{
+	// TODO: Add OpenMp
+	for (auto& e : vals)
+		func(e);
 }

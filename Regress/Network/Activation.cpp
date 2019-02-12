@@ -1,9 +1,14 @@
 #include "Activation.h"
 #include "Linear\Matrix.h"
+#include <algorithm>
 
 template<class T>
 void reluFunc(Matrix<T>& m)
 {
+	m.unaryExpr([](T& i)
+	{
+		i = std::max<T>(0, i);
+	});
 
 }
 

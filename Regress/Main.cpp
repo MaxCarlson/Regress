@@ -18,7 +18,10 @@ int main()
 
 	auto m3 = m1 * m2;
 
-	Dense<float> d1(3, 3, 3, false, nullptr, Relu);
+	Dense<float> d1(2, 3, 3, false, nullptr, Relu);
+	Dense<float> d2(3, 3, 3, false, &d1,	 Relu);
+
+
 
 	return 0;
 }

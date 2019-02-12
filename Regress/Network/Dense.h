@@ -1,9 +1,10 @@
 #pragma once
-#include "Linear\Matrix.h"
+#include "Layer.h"
 #include "Activation.h"
+#include "Linear\Matrix.h"
 
 template<class T>
-class Dense
+class Dense : public Layer<T>
 {
 	int neurons;
 	int inputNodes;
@@ -20,31 +21,27 @@ class Dense
 	Matrix<T> weights;
 	//Matrix<T> deltas;
 
-	Dense* input;
-	Dense* output; 
-
 	Activation activation;
 
 
 public:
-	Dense(int neurons, int inputNodes, int outputNodes, bool bias, Dense* input, Activation activation);
+	Dense(int neurons, int inputNodes, int outputNodes, bool bias, Layer<T>* input, Activation activation);
 };
 
 template<class T>
-inline Dense<T>::Dense(int neurons, int inputNodes, int outputNodes, bool bias, Dense* input, Activation activation) :
+inline Dense<T>::Dense(int neurons, int inputNodes, int outputNodes, bool bias, Layer<T>* input, Activation activation) : Layer<T>(),
 	neurons{		neurons						},
 	inputNodes{		inputNodes					},
 	outputNodes{	outputNodes					},
 	bias{			bias						},
 	weights(		neurons, inputNodes + bias	),
-	input{			input						},
-	output{			nullptr						},
 	activation{		activation					}
 {
 	// TODO: Randomize weight init values
 	if (input)
 	{
-		input->output = this;
+		input->outputs.emplace_back(static_cast<Layer<T>*>(this));
+		this->inputs.emplace_back(input);
 	}
 }
 
