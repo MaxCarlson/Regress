@@ -12,6 +12,8 @@ public:
 	Matrix() = default;
 	Matrix(int nrows, int ncolumns);
 
+	void resize(int nrows, int ncolumns);
+
 	int rows()		const { return nrows; }
 	int columns()	const { return ncolumns; }
 
@@ -32,6 +34,12 @@ inline Matrix<T>::Matrix(int nrows, int ncolumns) :
 	ncolumns{	ncolumns		},
 	vals(		nrows * ncolumns)
 {
+}
+
+template<class T>
+inline void Matrix<T>::resize(int nrows, int ncolumns)
+{
+	vals.resize(nrows * ncolumns);
 }
 
 template<class T>
@@ -66,11 +74,14 @@ template<class T>
 inline Matrix<T> Matrix<T>::operator*(const Matrix & m2)
 {
 	Matrix<T> m{ nrows, m2.ncolumns };
+
+	if (ncolumns != m2.nrows)
+		throw std::runtime_error("Matrix1 columns != Matrix2 rows!");
 	
 	for (int i = 0; i < nrows; ++i)
 		for (int j = 0; j < m2.ncolumns; ++j)
 		{
-			int sum = 0;
+			T sum = 0;
 			for (int k = 0; k < ncolumns; ++k)
 				sum += this->operator()(i, k) * m2(k, j);
 			m(i, j) = sum;

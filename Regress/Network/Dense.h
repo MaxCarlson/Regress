@@ -1,7 +1,6 @@
 #pragma once
 #include "Layer.h"
 #include "Activation.h"
-#include "Linear\Matrix.h"
 
 template<class T>
 class Dense : public Layer<T>
@@ -42,6 +41,8 @@ public:
 	void feedForward(Matrix<T>& input);
 };
 
+#include <random>
+
 template<class T>
 inline Dense<T>::Dense(int neurons, int inputNodes, bool bias, Layer<T>* input, Activation activation) : Layer<T>(),
 	neurons{		neurons						},
@@ -57,13 +58,22 @@ inline Dense<T>::Dense(int neurons, int inputNodes, bool bias, Layer<T>* input, 
 		input->outputs.emplace_back(static_cast<Layer<T>*>(this));
 		this->inputs.emplace_back(input);
 	}
+
+	weights.unaryExpr([](T& v)
+	{
+		static auto dis = std::uniform_real_distribution<T>();
+		static auto re = std::default_random_engine{};
+		v = dis(re);
+	});
 }
 
 template<class T>
 inline void Dense<T>::feedForward(Matrix<T>& input)
 {
-	// TODO: Make sure we're not reallocating space for outut each time
+	// TODO: Make sure we're not reallocating space for output each time
 	output = input * weights;
+
+	activationFunction(activation, output);
 	
 	for (Layer<T>*& outs : this->outputs)
 		outs->feedForward(output);
