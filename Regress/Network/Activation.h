@@ -2,6 +2,7 @@
 
 enum Activation
 {
+	None,
 	Relu,
 	SoftMax,
 	Sigmoid

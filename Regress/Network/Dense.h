@@ -1,6 +1,5 @@
 #pragma once
 #include "Layer.h"
-#include "Activation.h"
 
 template<class T>
 class Dense : public Layer<T>
@@ -29,10 +28,8 @@ class Dense : public Layer<T>
 
 	Matrix<T> weights;
 	Matrix<T> output;
-	//Matrix<T> deltas;
-
-	Activation activation;
-
+	Matrix<T> deltas;
+	Matrix<T> actPrime;
 
 public:
 
@@ -44,13 +41,14 @@ public:
 #include <random>
 
 template<class T>
-inline Dense<T>::Dense(int neurons, int inputNodes, bool bias, Layer<T>* input, Activation activation) : Layer<T>(),
+inline Dense<T>::Dense(int neurons, int inputNodes, bool bias, Layer<T>* input, Activation activation) : Layer<T>(activation),
 	neurons{		neurons						},
 	inputNodes{		inputNodes					},
 	bias{			bias						},
 	weights(		inputNodes + bias, neurons	),
-	output{										},
-	activation{		activation					}
+	output{},
+	deltas{},
+	actPrime{}
 {
 	// TODO: Randomize weight init values
 	if (input)
@@ -61,6 +59,7 @@ inline Dense<T>::Dense(int neurons, int inputNodes, bool bias, Layer<T>* input, 
 
 	weights.unaryExpr([](T& v)
 	{
+		// TODO: Optimize
 		static auto dis = std::uniform_real_distribution<T>();
 		static auto re = std::default_random_engine{};
 		v = dis(re);
@@ -73,7 +72,7 @@ inline void Dense<T>::feedForward(Matrix<T>& input)
 	// TODO: Make sure we're not reallocating space for output each time
 	output = input * weights;
 
-	activationFunction(activation, output);
+	activationFunction(this->activation, output);
 	
 	for (Layer<T>*& outs : this->outputs)
 		outs->feedForward(output);

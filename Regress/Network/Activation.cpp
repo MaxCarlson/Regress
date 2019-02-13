@@ -17,6 +17,8 @@ void activationFunction(Activation act, Matrix<T>& m)
 {
 	switch (act)
 	{
+	case None:
+		break;
 	case Relu:
 		reluFunc(m);
 		break;

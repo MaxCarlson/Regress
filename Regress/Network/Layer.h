@@ -1,4 +1,5 @@
 #pragma once
+#include "Activation.h"
 #include "Linear\Matrix.h"
 #include <vector>
 
@@ -10,11 +11,14 @@ template<class T>
 class Layer
 {
 protected:
+	
+	Activation			activation;
 	std::vector<Layer*> inputs;
 	std::vector<Layer*> outputs;
 
 public:
-	Layer() = default;
+	Layer();
+	Layer(Activation activation);
 
 	virtual void feedForward(Matrix<T>& input) {};
 
@@ -22,4 +26,18 @@ public:
 	friend Input<T>;
 };
 
+template<class T>
+inline Layer<T>::Layer() :
+	activation{ Activation::None },
+	inputs{},
+	outputs{}
+{
+}
 
+template<class T>
+inline Layer<T>::Layer(Activation activation) : 
+	activation{ activation },
+	inputs{},
+	outputs{}
+{
+}
