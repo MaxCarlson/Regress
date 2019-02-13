@@ -18,9 +18,9 @@ int main()
 
 	auto m3 = m1 * m2;
 
-	Dense<float> d1(2, 3, 3, false, nullptr, Relu);
-	Dense<float> d2(3, 3, 3, false, &d1,	 Relu);
-	Dense<float> d3(3, 3, 3, false, &d2,	 Relu);
+	Dense<float> d1(2, 3, false, nullptr, Relu);
+	Dense<float> d2(3, 3, false, &d1,	  Relu);
+	Dense<float> d3(3, 3, false, &d2,	  Relu);
 
 	Matrix<float> input(1, 2);
 	d1.feedForward(input);

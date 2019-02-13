@@ -7,16 +7,26 @@ template<class T>
 class Dense : public Layer<T>
 {
 	int neurons;
-	int inputNodes;
-	int outputNodes;
+	int inputNodes; // Number of features
 	bool bias;
 
-	// Weights are stored like so
-	// where iN is the weight for input node N
-	// neuron1 { i1, i2, i3, ..., iN }
-	// neuron2 { i1, i2, i3, ..., iN }
-	// neuron..{ i1, i2, i3, ..., iN }
-	// neuronN { i1, i2, i3, ..., iN }
+	// Input to a layer looks like so:
+	// Where sn is the sample and in the row are it's features
+	//
+	// s1 { f1, f2, ..., fn }
+	// s2 { f1, f2, ..., fn }
+	// ...
+	// sn { f1, f2, ..., fn }
+	//
+
+	// Weights are stored like so:
+	// Where Nn is the neuron and it's weights
+	// for inputs 1-n are all in a column
+	//    N1,  N2,  N3,  N4, ...,  Nn 
+	// { wi1, wi1, wi1, wi1, ..., wi1 }
+	// { wi2, wi2, wi2, wi2, ..., wi2 }
+	// { ..., ..., ..., ..., ..., ... }
+	// { win, win, win, win, ..., win }
 
 	Matrix<T> weights;
 	Matrix<T> output;
@@ -27,18 +37,17 @@ class Dense : public Layer<T>
 
 public:
 
-	Dense(int neurons, int inputNodes, int outputNodes, bool bias, Layer<T>* input, Activation activation);
+	Dense(int neurons, int inputNodes, bool bias, Layer<T>* input, Activation activation);
 
 	void feedForward(Matrix<T>& input);
 };
 
 template<class T>
-inline Dense<T>::Dense(int neurons, int inputNodes, int outputNodes, bool bias, Layer<T>* input, Activation activation) : Layer<T>(),
+inline Dense<T>::Dense(int neurons, int inputNodes, bool bias, Layer<T>* input, Activation activation) : Layer<T>(),
 	neurons{		neurons						},
 	inputNodes{		inputNodes					},
-	outputNodes{	outputNodes					},
 	bias{			bias						},
-	weights(		neurons, inputNodes + bias	),
+	weights(		inputNodes + bias, neurons	),
 	output{										},
 	activation{		activation					}
 {

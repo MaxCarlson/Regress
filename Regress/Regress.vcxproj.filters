@@ -38,5 +38,8 @@
     <ClInclude Include="Network\Layer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Network\InputLayer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
