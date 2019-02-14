@@ -15,7 +15,7 @@ class Input : public Layer<T>
 public:
 	Input(Matrix<T>& input);
 	void feedForward();
-
+	int numNodes() const { return input.columns(); }
 };
 
 template<class T>

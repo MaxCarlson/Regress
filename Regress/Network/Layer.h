@@ -5,6 +5,7 @@
 
 template<class> class Dense;
 template<class> class Input;
+template<class> class Output;
 
 
 template<class T>
@@ -20,10 +21,12 @@ public:
 	Layer();
 	Layer(Activation activation);
 
-	virtual void feedForward(Matrix<T>& input) {};
+	virtual void feedForward(Matrix<T>& input) {}
+	virtual int numNodes() const { return 0; }
 
 	friend Dense<T>;
 	friend Input<T>;
+	friend Output<T>;
 };
 
 template<class T>

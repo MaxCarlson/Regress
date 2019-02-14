@@ -26,8 +26,8 @@ int main()
 	input(0, 1) = 3;
 
 	Input<float> in(input);
-	Dense<float> d1(3, 3, false, &in, Relu);
-	Dense<float> d2(3, 3, false, &d1, Relu);
+	Dense<float> d1(3, false, &in, Relu);
+	Dense<float> d2(3, false, &d1, Relu);
 
 	d1.feedForward(input);
 

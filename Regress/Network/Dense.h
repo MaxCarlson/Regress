@@ -5,7 +5,6 @@ template<class T>
 class Dense : public Layer<T>
 {
 	int neurons;
-	int inputNodes; // Number of features
 	bool bias;
 
 	// Input to a layer looks like so:
@@ -33,19 +32,21 @@ class Dense : public Layer<T>
 
 public:
 
-	Dense(int neurons, int inputNodes, bool bias, Layer<T>* input, Activation activation);
+	// TODO: If bias is true, we need to add a dimension of 1's to the input layer
+
+	Dense(int neurons, bool bias, Layer<T>* input, Activation activation);
 
 	void feedForward(Matrix<T>& input);
+	int numNodes() const { return neurons; }
 };
 
 #include <random>
 
 template<class T>
-inline Dense<T>::Dense(int neurons, int inputNodes, bool bias, Layer<T>* input, Activation activation) : Layer<T>(activation),
+inline Dense<T>::Dense(int neurons, bool bias, Layer<T>* input, Activation activation) : Layer<T>(activation),
 	neurons{		neurons						},
-	inputNodes{		inputNodes					},
 	bias{			bias						},
-	weights(		inputNodes + bias, neurons	),
+	weights{},
 	output{},
 	deltas{},
 	actPrime{}
@@ -55,7 +56,10 @@ inline Dense<T>::Dense(int neurons, int inputNodes, bool bias, Layer<T>* input, 
 	{
 		input->outputs.emplace_back(static_cast<Layer<T>*>(this));
 		this->inputs.emplace_back(input);
+		weights.resize(input->numNodes() + bias, neurons);
 	}
+	else
+		throw std::runtime_error("Dense layer needs an input!");
 
 	weights.unaryExpr([](T& v)
 	{
@@ -77,4 +81,6 @@ inline void Dense<T>::feedForward(Matrix<T>& input)
 	for (Layer<T>*& outs : this->outputs)
 		outs->feedForward(output);
 }
+
+
 

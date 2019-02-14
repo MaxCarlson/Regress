@@ -37,8 +37,10 @@ inline Matrix<T>::Matrix(int nrows, int ncolumns) :
 }
 
 template<class T>
-inline void Matrix<T>::resize(int nrows, int ncolumns)
+inline void Matrix<T>::resize(int rows, int columns)
 {
+	nrows		= rows;
+	ncolumns	= columns;
 	vals.resize(nrows * ncolumns);
 }
 
