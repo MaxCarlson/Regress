@@ -23,6 +23,7 @@ public:
 
 	virtual void feedForward(Matrix<T>& input) {}
 	virtual int numNodes() const { return 0; }
+	virtual Matrix<T>* getOutput() { return nullptr; }
 
 	friend Dense<T>;
 	friend Input<T>;

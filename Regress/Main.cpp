@@ -40,12 +40,12 @@ int main()
 	Dense<float>  d1(3, false, &in, Activation::Relu);
 	Dense<float>  d2(3, false, &d1, Activation::SoftMax);
 
-	Model<float> mod(in, &d2, 0.1, Error::Squared);
+	Model<float> mod(in, &d2, 0.1, ErrorFunction::Squared);
 	
-	mod.feedForward();
+	//Matrix<float> m1(label.rows(), label.columns());
 
-	Matrix<float> m1(label.rows(), label.columns());
-	squaredError(m1, label, input);
+	mod.train(input, label);
+
 
 	return 0;
 }

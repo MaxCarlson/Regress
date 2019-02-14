@@ -1,7 +1,7 @@
 #pragma once
 #include "Linear\Matrix.h"
 
-enum Error
+enum ErrorFunction
 {
 	Squared,
 	BinaryCrossEntropy,
@@ -22,7 +22,7 @@ double squaredError(Matrix<T>& merror, const Matrix<T>& target, const Matrix<T>&
 }
 
 template<class T>
-double calculateError(Matrix<T>& merror, const Matrix<T>& target, const Matrix<T>& output, Error error)
+double calculateError(Matrix<T>& merror, const Matrix<T>& target, const Matrix<T>& output, ErrorFunction error)
 {
 	switch (error)
 	{

@@ -38,6 +38,7 @@ public:
 
 	void feedForward(Matrix<T>& input);
 	int numNodes() const { return neurons; }
+	Matrix<T>* getOutput() { return &output; }
 };
 
 #include <random>
