@@ -2,6 +2,7 @@
 #include "Network\Model.h"
 #include "Network\Dense.h"
 #include "Network\InputLayer.h"
+#include "Linear\MatrixOp.h"
 
 int main()
 {
@@ -25,15 +26,26 @@ int main()
 	Matrix<float> input(1, 3);
 	input(0, 0) = 2;
 	input(0, 1) = 3;
+	input(0, 2) = 4;
+
+	Matrix<float> label(1, 3);
+	label(0, 0) = 0;
+	label(0, 1) = 5;
+	label(0, 2) = 3;
+
+	auto f = input - label;
+	f = input + label;
 
 	Input<float>  in(&input);
 	Dense<float>  d1(3, false, &in, Activation::Relu);
 	Dense<float>  d2(3, false, &d1, Activation::SoftMax);
 
 	Model<float> mod(in, &d2, 0.1, Error::Squared);
+	
 	mod.feedForward();
 
-	squaredError(input, input, input);
+	Matrix<float> m1(label.rows(), label.columns());
+	squaredError(m1, label, input);
 
 	return 0;
 }

@@ -18,12 +18,25 @@ public:
 	int columns()	const { return ncolumns; }
 	size_t sum() const;
 
+	Matrix<T>& operator=(const Matrix<T>& other);
+
 	T& operator()(int row, int col);
 	const T& operator()(int row, int col) const;
 
 	Matrix operator+(const Matrix& m2) const;
 	Matrix operator-(const Matrix& m2) const;
 	Matrix operator*(const Matrix& m2) const;
+
+	template<class Num>
+	Matrix& operator*=(const Num& num);
+	Matrix& operator*=(const Matrix& m2);
+
+
+	template<class Num>
+	Matrix operator*(const Num& num) const;
+
+	template<class Num>
+	friend Matrix operator*(const Num& num, const Matrix<T>& matrix);
 
 	template<class Func>
 	void unaryExpr(Func&& func);
@@ -56,6 +69,16 @@ inline size_t Matrix<T>::sum() const
 }
 
 template<class T>
+inline Matrix<T>& Matrix<T>::operator=(const Matrix<T>& other)
+{
+	nrows		= other.nrows;
+	ncolumns	= other.ncolumns;
+	vals.resize(other.vals.size());
+	std::copy(std::begin(other.vals), std::end(other.vals), std::begin(vals));
+	return *this;
+}
+
+template<class T>
 inline T & Matrix<T>::operator()(int row, int col) 
 {
 	return vals[row * ncolumns + col];
@@ -75,6 +98,10 @@ inline Matrix<T> Matrix<T>::operator+(const Matrix & m2) const
 		|| nrows != m2.nrows)
 		throw std::runtime_error("Matrix 1&2 must be identically sized!");
 
+	for (int i = 0; i < nrows; ++i)
+		for (int j = 0; j < ncolumns; ++j)
+			m(i, j) = this->operator()(i, j) + m2(i, j);
+
 	return m;
 }
 
@@ -86,6 +113,9 @@ inline Matrix<T> Matrix<T>::operator-(const Matrix & m2) const
 		|| nrows != m2.nrows)
 		throw std::runtime_error("Matrix 1&2 must be identically sized!"); // TODO: Debug assertions not if statments
 
+	for (int i = 0; i < nrows; ++i)
+		for (int j = 0; j < ncolumns; ++j)
+			m(i, j) = this->operator()(i, j) - m2(i, j);
 
 	return m;
 }
@@ -111,10 +141,43 @@ inline Matrix<T> Matrix<T>::operator*(const Matrix & m2) const
 }
 
 template<class T>
+inline Matrix<T> & Matrix<T>::operator*=(const Matrix<T> & m2)
+{
+	*this = *this * m2;
+	return *this;
+}
+
+template<class T>
+template<class Num>
+inline Matrix<T> & Matrix<T>::operator*=(const Num & num)
+{
+	*this = *this * num;
+	return *this;
+}
+
+// TODO: Parallelize
+template<class T>
+template<class Num>
+inline Matrix<T> Matrix<T>::operator*(const Num & num) const
+{
+	Matrix<T> m;
+	m.resize(nrows, ncolumns);
+	for (int i = 0; i < vals.size(); ++i)
+		m.vals[i] = num * vals[i];
+	return m;
+}
+
+template<class T>
 template<class Func>
 inline void Matrix<T>::unaryExpr(Func && func)
 {
 	// TODO: Add OpenMp
 	for (auto& e : vals)
 		func(e);
+}
+
+template<class Num, class T>
+inline Matrix<T> operator*(const Num & num, const Matrix<T>& matrix)
+{
+	return matrix * num;
 }

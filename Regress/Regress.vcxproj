@@ -121,6 +121,7 @@
     <ClCompile Include="Network\Activation.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Linear\MatrixOp.h" />
     <ClInclude Include="Network\Activation.h" />
     <ClInclude Include="Network\Dense.h" />
     <ClInclude Include="Linear\Matrix.h" />

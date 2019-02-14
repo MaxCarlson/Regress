@@ -47,5 +47,8 @@
     <ClInclude Include="Network\ErrorFuncs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Linear\MatrixOp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
