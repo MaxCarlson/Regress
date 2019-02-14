@@ -16,13 +16,14 @@ public:
 
 	int rows()		const { return nrows; }
 	int columns()	const { return ncolumns; }
+	size_t sum() const;
 
 	T& operator()(int row, int col);
 	const T& operator()(int row, int col) const;
 
-	Matrix operator+(const Matrix& m2);
-	Matrix operator-(const Matrix& m2);
-	Matrix operator*(const Matrix& m2);
+	Matrix operator+(const Matrix& m2) const;
+	Matrix operator-(const Matrix& m2) const;
+	Matrix operator*(const Matrix& m2) const;
 
 	template<class Func>
 	void unaryExpr(Func&& func);
@@ -44,6 +45,16 @@ inline void Matrix<T>::resize(int rows, int columns)
 	vals.resize(nrows * ncolumns);
 }
 
+// TODO: Parrallelize
+template<class T>
+inline size_t Matrix<T>::sum() const
+{
+	size_t total = 0;
+	for (const auto& i : vals)
+		total += i;
+	return total;
+}
+
 template<class T>
 inline T & Matrix<T>::operator()(int row, int col) 
 {
@@ -57,23 +68,30 @@ inline const T & Matrix<T>::operator()(int row, int col) const
 }
 
 template<class T>
-inline Matrix<T> Matrix<T>::operator+(const Matrix & m2)
+inline Matrix<T> Matrix<T>::operator+(const Matrix & m2) const
 {
 	Matrix<T> m{ nrows, ncolumns };
+	if (ncolumns != m2.ncolumns
+		|| nrows != m2.nrows)
+		throw std::runtime_error("Matrix 1&2 must be identically sized!");
 
 	return m;
 }
 
 template<class T>
-inline Matrix<T> Matrix<T>::operator-(const Matrix & m2)
+inline Matrix<T> Matrix<T>::operator-(const Matrix & m2) const
 {
 	Matrix<T> m{ nrows, ncolumns };
+	if(ncolumns != m2.ncolumns
+		|| nrows != m2.nrows)
+		throw std::runtime_error("Matrix 1&2 must be identically sized!"); // TODO: Debug assertions not if statments
+
 
 	return m;
 }
 
 template<class T>
-inline Matrix<T> Matrix<T>::operator*(const Matrix & m2)
+inline Matrix<T> Matrix<T>::operator*(const Matrix & m2) const
 {
 	Matrix<T> m{ nrows, m2.ncolumns };
 

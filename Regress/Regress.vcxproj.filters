@@ -44,5 +44,8 @@
     <ClInclude Include="Network\OutputLayer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Network\ErrorFuncs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

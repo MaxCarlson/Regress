@@ -10,21 +10,26 @@ class Input : public Layer<T>
 	// samplen { f1, f2, ..., fn }
 	// Where f is a feature
 
-	Matrix<T>& input;
+	Matrix<T>* input;
 
 public:
-	Input(Matrix<T>& input);
+	Input(Matrix<T>* input);
 	void feedForward();
-	int numNodes() const { return input.columns(); }
+	int numNodes() const { return input->columns(); }
+	void setInput(Matrix<T>* newInput) { input = newInput; }
 };
 
 template<class T>
-inline Input<T>::Input(Matrix<T>& input) :
+inline Input<T>::Input(Matrix<T>* input) :
 	input{ input }
 {}
 
 template<class T>
 inline void Input<T>::feedForward()
 {
+	if (!input)
+		throw std::runtime_error("No input set during feedForward");
 
+	for (Layer<T>*& outs : this->outputs)
+		outs->feedForward(*input);
 }

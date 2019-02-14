@@ -1,4 +1,5 @@
 #include "Linear\Matrix.h"
+#include "Network\Model.h"
 #include "Network\Dense.h"
 #include "Network\InputLayer.h"
 
@@ -25,11 +26,14 @@ int main()
 	input(0, 0) = 2;
 	input(0, 1) = 3;
 
-	Input<float> in(input);
-	Dense<float> d1(3, false, &in, Relu);
-	Dense<float> d2(3, false, &d1, Relu);
+	Input<float>  in(&input);
+	Dense<float>  d1(3, false, &in, Activation::Relu);
+	Dense<float>  d2(3, false, &d1, Activation::SoftMax);
 
-	d1.feedForward(input);
+	Model<float> mod(in, &d2, 0.1, Error::Squared);
+	mod.feedForward();
+
+	squaredError(input, input, input);
 
 	return 0;
 }
