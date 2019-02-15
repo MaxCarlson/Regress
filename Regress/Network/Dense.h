@@ -26,6 +26,7 @@ class Dense : public Layer<T>
 	// { win, win, win, win, ..., win }
 
 	Matrix<T> weights;
+	Matrix<T> net;
 	Matrix<T> output;
 	Matrix<T> deltas;
 	Matrix<T> actPrime;
@@ -50,6 +51,7 @@ inline Dense<T>::Dense(int neurons, bool bias, Layer<T>* input, Activation activ
 	neurons{		neurons						},
 	bias{			bias						},
 	weights{},
+	net{},
 	output{},
 	deltas{},
 	actPrime{}
@@ -76,10 +78,17 @@ inline Dense<T>::Dense(int neurons, bool bias, Layer<T>* input, Activation activ
 template<class T>
 inline void Dense<T>::feedForward(Matrix<T>& input)
 {
-	// TODO: Make sure we're not reallocating space for output each time
-	output = input * weights;
+	net		= input * weights;
+	output	= net;
 
 	activationFunction(this->activation, output);
+
+	
+	// Store the derivative of the activation function
+	// applied to layers output (used in backprop to calculate deltas)
+	actPrime = output;
+	activationPrime(activation, actPrime);
+
 	
 	for (Layer<T>*& outs : this->outputs)
 		outs->feedForward(output);
@@ -88,7 +97,7 @@ inline void Dense<T>::feedForward(Matrix<T>& input)
 template<class T>
 inline void Dense<T>::calcDeltas(Matrix<T>& deltaIn, bool outputLayer)
 {
-
+	deltas = deltaIn
 }
 
 

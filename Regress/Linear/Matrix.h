@@ -1,6 +1,10 @@
 #pragma once
 #include <vector>
 
+class MatrixBase
+{
+};
+
 template<class T>
 class Matrix
 {
