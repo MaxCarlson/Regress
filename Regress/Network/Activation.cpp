@@ -13,12 +13,24 @@ void reluFunc(Matrix<T>& m)
 }
 
 template<class T>
-void reluPartialDerivative(Matrix<T>& m)
+void reluPrime(Matrix<T>& m)
 {
 	m.unaryExpr([](T& i)
 	{
 		i = i >= 0 ? 1 : 0;
 	});
+}
+
+template<class T>
+void sigmoidFunc(Matrix<T>& m)
+{
+
+}
+
+template<class T>
+void sigmoidPrime(Matrix<T>& m)
+{
+
 }
 
 template<class T>
@@ -34,6 +46,7 @@ void activationFunction(Activation act, Matrix<T>& m)
 	case SoftMax:
 		break;
 	case Sigmoid:
+		sigmoidFunc(m);
 		break;
 	default:
 		throw std::runtime_error("Invalid Activation function");
@@ -41,18 +54,19 @@ void activationFunction(Activation act, Matrix<T>& m)
 }
 
 template<class T>
-void activationPartialDerivative(Activation act, Matrix<T>& m)
+void activationPrime(Activation act, Matrix<T>& m)
 {
 	switch (act)
 	{
 	case None:
 		break;
 	case Relu:
-		reluPartialDerivative(m);
+		reluPrime(m);
 		break;
 	case SoftMax:
 		break;
 	case Sigmoid:
+		sigmoidPrime(m);
 		break;
 	default:
 		throw std::runtime_error("Invalid Activation function");
@@ -62,4 +76,9 @@ void activationPartialDerivative(Activation act, Matrix<T>& m)
 void activationFunction(Activation act, Matrix<float>& m)
 {
 	activationFunction<float>(act, m);
+}
+
+void activationPrime(Activation act, Matrix<float>& m)
+{
+	activationPrime<float>(act, m);
 }

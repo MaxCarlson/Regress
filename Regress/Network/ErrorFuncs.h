@@ -22,7 +22,7 @@ double squaredError(Matrix<T>& merror, const Matrix<T>& target, const Matrix<T>&
 }
 
 template<class T>
-double squaredPartialDeriv(Matrix<T>& pd, const Matrix<T>& target, const Matrix<T>& output)
+double squaredPrime(Matrix<T>& pd, const Matrix<T>& target, const Matrix<T>& output)
 {
 	pd = output - target;
 }
@@ -49,7 +49,7 @@ void partialErrorDerivative(Matrix<T>& pd, const Matrix<T>& target, const Matrix
 	switch (error)
 	{
 	case Squared:
-		squaredPartialDeriv(pd, target, output);
+		squaredPrime(pd, target, output);
 		break;
 	case BinaryCrossEntropy:
 		break;

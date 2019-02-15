@@ -11,3 +11,4 @@ enum Activation
 template<class> class Matrix;
 
 void activationFunction(Activation act, Matrix<float>& m);
+void activationPrime(Activation act, Matrix<float>& m);

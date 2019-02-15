@@ -36,9 +36,11 @@ public:
 
 	Dense(int neurons, bool bias, Layer<T>* input, Activation activation);
 
-	void feedForward(Matrix<T>& input);
-	int numNodes() const { return neurons; }
-	Matrix<T>* getOutput() { return &output; }
+	void		feedForward(Matrix<T>& input);
+	int			numNodes() const { return neurons; }
+	Matrix<T>*	getOutput() { return &output; }
+	Activation	getActivation() const { return activation; }
+	void		calcDeltas(Matrix<T>& deltaIn, bool outputLayer);
 };
 
 #include <random>
@@ -81,6 +83,12 @@ inline void Dense<T>::feedForward(Matrix<T>& input)
 	
 	for (Layer<T>*& outs : this->outputs)
 		outs->feedForward(output);
+}
+
+template<class T>
+inline void Dense<T>::calcDeltas(Matrix<T>& deltaIn, bool outputLayer)
+{
+
 }
 
 

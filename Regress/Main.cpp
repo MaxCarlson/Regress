@@ -4,6 +4,19 @@
 #include "Network\InputLayer.h"
 #include "Linear\MatrixOp.h"
 
+struct BaseB
+{
+	
+};
+
+template<class T>
+struct FF : public BaseB
+{
+	FF(T t) : t{t}
+	{}
+	T t;
+};
+
 int main()
 {
 	/*
@@ -23,16 +36,25 @@ int main()
 	auto m3 = m1 * m2;
 	*/
 
+	// Training bitwise OR ( | ) operation
+
+	std::vector<BaseB*> bb;
+	bb.emplace_back(new FF<float>(.1f));
+	bb.emplace_back(new FF<double>(0.0));
+
+
 	Matrix<float> input(1, 2);
 	input(0, 0) = 0;
 	input(0, 1) = 1;
 
-	Matrix<float> label(1, 1);
-	label(0, 0) = 1;
+	Matrix<float> label(1, 2);
+	label(0, 0) = 0;
+	label(0, 1) = 1;
+
 
 	Input<float>  in(&input);
 	Dense<float>  d1(3, false, &in, Activation::Relu);
-	Dense<float>  d2(1, false, &d1, Activation::SoftMax);
+	Dense<float>  d2(2, false, &d1, Activation::SoftMax);
 
 
 	Model<float> mod(in, &d2, 0.1, ErrorFunction::Squared);

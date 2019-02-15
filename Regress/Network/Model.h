@@ -26,9 +26,11 @@ public:
 template<class T>
 inline void Model<T>::calcError(Matrix<T>& labels)
 {
-	// TODO: This vec of errors might not be needed, we'll see
-	Matrix<T> m(labels.rows(), labels.columns());
-	error = calculateError(m, labels, *output->getOutput(), errorFunc);
+	Matrix<T> merror(labels.rows(), labels.columns());
+	error = calculateError(merror, labels, *output->getOutput(), errorFunc);
+	output->calcDeltas(merror, true);
+	
+	activationPrime(output->getActivation(), *output->getOutput());
 }
 
 template<class T>
