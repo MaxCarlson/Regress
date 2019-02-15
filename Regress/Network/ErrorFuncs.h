@@ -22,12 +22,35 @@ double squaredError(Matrix<T>& merror, const Matrix<T>& target, const Matrix<T>&
 }
 
 template<class T>
+double squaredPartialDeriv(Matrix<T>& pd, const Matrix<T>& target, const Matrix<T>& output)
+{
+	pd = output - target;
+}
+
+template<class T>
 double calculateError(Matrix<T>& merror, const Matrix<T>& target, const Matrix<T>& output, ErrorFunction error)
 {
 	switch (error)
 	{
 	case Squared:
 		return squaredError(merror, target, output);
+	case BinaryCrossEntropy:
+		break;
+	case CrossEntropyWithSoftmax:
+		break;
+	default:
+		break;
+	}
+}
+
+template<class T>
+void partialErrorDerivative(Matrix<T>& pd, const Matrix<T>& target, const Matrix<T>& output, ErrorFunction error)
+{
+	switch (error)
+	{
+	case Squared:
+		squaredPartialDeriv(pd, target, output);
+		break;
 	case BinaryCrossEntropy:
 		break;
 	case CrossEntropyWithSoftmax:

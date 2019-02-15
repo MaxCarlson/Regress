@@ -16,7 +16,7 @@ public:
 
 	int rows()		const { return nrows; }
 	int columns()	const { return ncolumns; }
-	size_t sum() const;
+	T sum() const;
 
 	Matrix<T>& operator=(const Matrix<T>& other);
 
@@ -60,9 +60,9 @@ inline void Matrix<T>::resize(int rows, int columns)
 
 // TODO: Parrallelize
 template<class T>
-inline size_t Matrix<T>::sum() const
+inline T Matrix<T>::sum() const
 {
-	size_t total = 0;
+	T total = 0;
 	for (const auto& i : vals)
 		total += i;
 	return total;

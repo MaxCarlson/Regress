@@ -36,7 +36,7 @@ inline Model<T>::Model(Input<T>& input, Layer<T>* output, double lr, ErrorFuncti
 	input{ input },
 	output{ output },
 	learningRate{ lr },
-	error{},
+	error{ 0.0 },
 	errorFunc{ errorFunc }
 {
 

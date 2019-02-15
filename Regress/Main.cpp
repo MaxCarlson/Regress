@@ -23,22 +23,17 @@ int main()
 	auto m3 = m1 * m2;
 	*/
 
-	Matrix<float> input(1, 3);
-	input(0, 0) = 2;
-	input(0, 1) = 3;
-	input(0, 2) = 4;
+	Matrix<float> input(1, 2);
+	input(0, 0) = 0;
+	input(0, 1) = 1;
 
-	Matrix<float> label(1, 3);
-	label(0, 0) = 0;
-	label(0, 1) = 5;
-	label(0, 2) = 3;
-
-	auto f = input - label;
-	f = input + label;
+	Matrix<float> label(1, 1);
+	label(0, 0) = 1;
 
 	Input<float>  in(&input);
 	Dense<float>  d1(3, false, &in, Activation::Relu);
-	Dense<float>  d2(3, false, &d1, Activation::SoftMax);
+	Dense<float>  d2(1, false, &d1, Activation::SoftMax);
+
 
 	Model<float> mod(in, &d2, 0.1, ErrorFunction::Squared);
 	
