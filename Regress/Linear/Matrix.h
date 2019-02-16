@@ -22,6 +22,7 @@ public:
 	int columns()	const { return ncolumns; }
 	T sum() const;
 	Matrix<T> transpose() const;
+	Matrix<T> cwiseProduct(const Matrix<T>& m) const;
 
 	Matrix<T>& operator=(const Matrix<T>& other);
 
@@ -29,7 +30,12 @@ public:
 	const T& operator()(int row, int col) const;
 
 	Matrix operator+(const Matrix& m2) const;
+
 	Matrix operator-(const Matrix& m2) const;
+	Matrix operator-() const;
+	template<class Num, class T>
+	friend Matrix operator-(const Num& n, const Matrix& m);
+
 	Matrix operator*(const Matrix& m2) const;
 
 	template<class Num>
@@ -89,6 +95,21 @@ inline Matrix<T> Matrix<T>::transpose() const
 }
 
 template<class T>
+inline Matrix<T> Matrix<T>::cwiseProduct(const Matrix<T>& m) const
+{
+	Matrix<T> m2(nrows, ncolumns);
+
+	if (nrows != m.nrows
+		|| ncolumns != m.ncolumns)
+		throw std::runtime_error("Matrices must match!");
+
+	for (int i = 0; i < nrows * ncolumns; ++i)
+		m2.vals[i] = vals[i] * m.vals[i];
+
+	return m2;
+}
+
+template<class T>
 inline Matrix<T>& Matrix<T>::operator=(const Matrix<T>& other)
 {
 	nrows		= other.nrows;
@@ -141,6 +162,26 @@ inline Matrix<T> Matrix<T>::operator-(const Matrix & m2) const
 }
 
 template<class T>
+inline Matrix<T> Matrix<T>::operator-() const
+{
+	Matrix<T> m{ nrows, ncolumns };
+
+	for (int i = 0; i < nrows * ncolumns; ++i)
+		m.vals[i] = -vals[i];
+	return m;
+}
+
+template<class Num, class T>
+inline Matrix<T> operator-(const Num & n, const Matrix<T> & m)
+{
+	Matrix<T> m1{ m.nrows, m.ncolumns };
+
+	for (int i = 0; i < m.nrows * m.ncolumns; ++i)
+		m1.vals[i] = n - m.vals[i];
+	return m1;
+}
+
+template<class T>
 inline Matrix<T> Matrix<T>::operator*(const Matrix & m2) const
 {
 	Matrix<T> m{ nrows, m2.ncolumns };
@@ -166,6 +207,8 @@ inline Matrix<T> & Matrix<T>::operator*=(const Matrix<T> & m2)
 	*this = *this * m2;
 	return *this;
 }
+
+
 
 template<class T>
 template<class Num>
@@ -201,3 +244,5 @@ inline Matrix<T> operator*(const Num & num, const Matrix<T>& matrix)
 {
 	return matrix * num;
 }
+
+

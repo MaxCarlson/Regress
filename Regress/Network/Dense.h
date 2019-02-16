@@ -99,8 +99,8 @@ inline void Dense<T>::calcDeltas(Matrix<T>& deltaIn, Matrix<T>& target, bool out
 {
 	if (outputLayer)
 	{
-		deltas = target - output;
-		//deltas *= 
+//		deltas = -(target - output);
+		deltas.cwiseProduct(output.cwiseProduct(1 - output));
 	}
 }
 
