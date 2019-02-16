@@ -54,7 +54,9 @@ int main()
 	
 	//Matrix<float> m1(label.rows(), label.columns());
 
-	mod.train(input, label);
+	while(true)
+		mod.train(input, label);
+
 
 
 	return 0;

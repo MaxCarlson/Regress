@@ -106,8 +106,15 @@ inline void Dense<T>::calcDeltas(Matrix<T>& deltaIn, Matrix<T>& target, bool out
 
 		deltas.cwiseProduct(actPrime);
 
-		Matrix<T>* prevWeights = this->inputs[0]->getWeights();
+		// Deltas calculated
+		// changing weights here for test
+		Matrix<T>* prevOutput = this->inputs[0]->getOutput();
+		
+		deltas = deltas.transpose();
+		deltas *= *prevOutput;
+		deltas = deltas.transpose();
 
+		weights = weights - deltas;
 	}
 }
 
