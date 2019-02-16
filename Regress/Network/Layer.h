@@ -20,12 +20,13 @@ protected:
 public:
 	Layer();
 	Layer(Activation activation);
+	virtual ~Layer() {}
 
 	virtual void		feedForward(Matrix<T>& input) {}
 	virtual int			numNodes() const { return 0; }
 	virtual Matrix<T>*	getOutput() { return nullptr; }
 	virtual Activation	getActivation() { return Activation::None; }
-	virtual void		calcDeltas(Matrix<T>& deltaIn, bool outputLayer) {}
+	virtual void		calcDeltas(Matrix<T>& deltaIn, Matrix<T>& target, bool outputLayer) {}
 
 	friend Dense<T>;
 	friend Input<T>;

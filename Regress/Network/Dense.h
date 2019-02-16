@@ -40,8 +40,8 @@ public:
 	void		feedForward(Matrix<T>& input);
 	int			numNodes() const { return neurons; }
 	Matrix<T>*	getOutput() { return &output; }
-	Activation	getActivation() const { return activation; }
-	void		calcDeltas(Matrix<T>& deltaIn, bool outputLayer);
+	Activation	getActivation() const { return this->activation; }
+	void		calcDeltas(Matrix<T>& deltaIn, Matrix<T>& target, bool outputLayer);
 };
 
 #include <random>
@@ -86,8 +86,8 @@ inline void Dense<T>::feedForward(Matrix<T>& input)
 	
 	// Store the derivative of the activation function
 	// applied to layers output (used in backprop to calculate deltas)
-	actPrime = output;
-	activationPrime(activation, actPrime);
+	//actPrime = output;
+	//activationPrime(this->activation, actPrime);
 
 	
 	for (Layer<T>*& outs : this->outputs)
@@ -95,9 +95,13 @@ inline void Dense<T>::feedForward(Matrix<T>& input)
 }
 
 template<class T>
-inline void Dense<T>::calcDeltas(Matrix<T>& deltaIn, bool outputLayer)
+inline void Dense<T>::calcDeltas(Matrix<T>& deltaIn, Matrix<T>& target, bool outputLayer)
 {
-	deltas = deltaIn
+	if (outputLayer)
+	{
+		deltas = target - output;
+		//deltas *= 
+	}
 }
 
 

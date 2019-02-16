@@ -21,6 +21,7 @@ public:
 	int rows()		const { return nrows; }
 	int columns()	const { return ncolumns; }
 	T sum() const;
+	Matrix<T> transpose() const;
 
 	Matrix<T>& operator=(const Matrix<T>& other);
 
@@ -70,6 +71,21 @@ inline T Matrix<T>::sum() const
 	for (const auto& i : vals)
 		total += i;
 	return total;
+}
+
+template<class T>
+inline Matrix<T> Matrix<T>::transpose() const
+{
+	Matrix<T> m(ncolumns, nrows);
+
+	#pragma omp parallel for
+	for (int n = 0; n < nrows*ncolumns; n++) {
+		int i = n % nrows;
+		int j = n / nrows;
+		m.vals[n] = vals[ncolumns*i + j];
+	}
+
+	return m;
 }
 
 template<class T>

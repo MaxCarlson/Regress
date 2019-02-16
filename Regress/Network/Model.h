@@ -11,8 +11,10 @@ class Model
 	double			learningRate;
 	double			error;
 	ErrorFunction	errorFunc;
+	Matrix<T>		merror;			// The error for each output neuron
 
 	void calcError(Matrix<T>& labels);
+	void backprop(Matrix<T>& labels);
 
 public:
 	Model(Input<T>& input, Layer<T>* output, double lr, ErrorFunction error);
@@ -26,11 +28,14 @@ public:
 template<class T>
 inline void Model<T>::calcError(Matrix<T>& labels)
 {
-	Matrix<T> merror(labels.rows(), labels.columns());
 	error = calculateError(merror, labels, *output->getOutput(), errorFunc);
+}
+
+template<class T>
+inline void Model<T>::backprop(Matrix<T>& labels)
+{
 	output->calcDeltas(merror, true);
-	
-	activationPrime(output->getActivation(), *output->getOutput());
+
 }
 
 template<class T>
@@ -39,7 +44,8 @@ inline Model<T>::Model(Input<T>& input, Layer<T>* output, double lr, ErrorFuncti
 	output{ output },
 	learningRate{ lr },
 	error{ 0.0 },
-	errorFunc{ errorFunc }
+	errorFunc{ errorFunc },
+	merror{}
 {
 
 }
@@ -53,6 +59,8 @@ inline void Model<T>::run(Matrix<T>& features)
 template<class T>
 inline void Model<T>::train(Matrix<T>& features, Matrix<T>& labels)
 {
+	merror.resize(labels.rows(), labels.columns());
+
 	input.feedForward();
 	calcError(labels);
 }
