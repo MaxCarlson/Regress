@@ -25,6 +25,7 @@ public:
 	virtual void		feedForward(Matrix<T>& input) {}
 	virtual int			numNodes() const { return 0; }
 	virtual Matrix<T>*	getOutput() { return nullptr; }
+	virtual Matrix<T>*	getWeights() { return nullptr; }
 	virtual Activation	getActivation() { return Activation::None; }
 	virtual void		calcDeltas(Matrix<T>& deltaIn, Matrix<T>& target, bool outputLayer) {}
 

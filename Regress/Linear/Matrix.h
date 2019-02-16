@@ -34,7 +34,7 @@ public:
 	Matrix operator-(const Matrix& m2) const;
 	Matrix operator-() const;
 	template<class Num, class T>
-	friend Matrix operator-(const Num& n, const Matrix& m);
+	friend Matrix<T> operator-(const Num& n, const Matrix<T>& m);
 
 	Matrix operator*(const Matrix& m2) const;
 
@@ -172,7 +172,7 @@ inline Matrix<T> Matrix<T>::operator-() const
 }
 
 template<class Num, class T>
-inline Matrix<T> operator-(const Num & n, const Matrix<T> & m)
+inline Matrix<T> operator-(const Num & n, const Matrix<T>& m)
 {
 	Matrix<T> m1{ m.nrows, m.ncolumns };
 
@@ -207,8 +207,6 @@ inline Matrix<T> & Matrix<T>::operator*=(const Matrix<T> & m2)
 	*this = *this * m2;
 	return *this;
 }
-
-
 
 template<class T>
 template<class Num>

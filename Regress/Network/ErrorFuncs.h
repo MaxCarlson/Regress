@@ -22,7 +22,7 @@ double squaredError(Matrix<T>& merror, const Matrix<T>& target, const Matrix<T>&
 }
 
 template<class T>
-double squaredPrime(Matrix<T>& pd, const Matrix<T>& target, const Matrix<T>& output)
+void squaredPrime(Matrix<T>& pd, const Matrix<T>& target, const Matrix<T>& output)
 {
 	pd = output - target;
 }
@@ -44,7 +44,7 @@ double calculateError(Matrix<T>& merror, const Matrix<T>& target, const Matrix<T
 }
 
 template<class T>
-void partialErrorDerivative(Matrix<T>& pd, const Matrix<T>& target, const Matrix<T>& output, ErrorFunction error)
+void errorPrime(Matrix<T>& pd, const Matrix<T>& target, const Matrix<T>& output, ErrorFunction error)
 {
 	switch (error)
 	{

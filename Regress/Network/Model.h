@@ -34,7 +34,7 @@ inline void Model<T>::calcError(Matrix<T>& labels)
 template<class T>
 inline void Model<T>::backprop(Matrix<T>& labels)
 {
-	output->calcDeltas(merror, true);
+	output->calcDeltas(merror, labels, true);
 
 }
 
@@ -63,6 +63,7 @@ inline void Model<T>::train(Matrix<T>& features, Matrix<T>& labels)
 
 	input.feedForward();
 	calcError(labels);
+	backprop(labels);
 }
 
 template<class T>
