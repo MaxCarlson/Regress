@@ -19,7 +19,7 @@ int main()
 	auto t = test.transpose();
 	*/
 
-	/* // Batch gradient descent testing
+	///* // Batch gradient descent testing
 	Matrix<float> input(2, 2);
 	input(0, 0) = 0;
 	input(0, 1) = 1;
@@ -31,8 +31,9 @@ int main()
 	label(0, 1) = 1;
 	label(1, 0) = 0;
 	label(1, 1) = 1;
-	*/
+	//*/
 
+	/*
 	Matrix<float> input(1, 2);
 	input(0, 0) = 0;
 	input(0, 1) = 1;
@@ -40,6 +41,7 @@ int main()
 	Matrix<float> label(1, 2);
 	label(0, 0) = 0;
 	label(0, 1) = 1;
+	*/
 
 	Input<float>  in(&input);
 	Dense<float>  d1(2, false, &in, Activation::Relu);

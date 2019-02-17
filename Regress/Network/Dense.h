@@ -124,7 +124,7 @@ inline void Dense<T>::calcDeltasOutput(Matrix<T>& target, ErrorFunction errorFun
 		in->calcDeltas(weights, errors, actPrime, target);
 
 	// Update weights. Should probably be done somewhere else of function renamed
-	//weights = weights - deltas;
+	weights = weights - deltas * 0.1;
 }
 
 
@@ -141,7 +141,7 @@ inline void Dense<T>::calcDeltas(Matrix<T>& outWeights, Matrix<T>& outErrors, Ma
 	//errors = errors.transpose();
 	errors *= *this->inputs[0]->getOutput();
 
-	weights = weights - errors;
+	weights = weights - errors * 0.1;
 }
 
 
