@@ -38,11 +38,14 @@ public:
 	Dense(int neurons, bool bias, Layer<T>* input, Activation activation);
 
 	void		feedForward(Matrix<T>& input);
-	int			numNodes() const { return neurons; }
-	Matrix<T>*	getOutput() { return &output; }
-	Matrix<T>*	getWeights() { return &weights; }
-	Activation	getActivation() const { return this->activation; }
-	void		calcDeltas(Matrix<T>& deltaIn, Matrix<T>& target, bool outputLayer);
+
+	int			numNodes()		const	{ return neurons; }
+	Matrix<T>*	getOutput()				{ return &output; }
+	Matrix<T>*	getWeights()			{ return &weights; }
+	Activation	getActivation() const	{ return this->activation; }
+
+	void		calcDeltasOutput(Matrix<T>& target, ErrorFunction errorFunc);
+	void		calcDeltas(Matrix<T>& deltaIn, Matrix<T>& target);
 };
 
 #include <random>
@@ -96,26 +99,33 @@ inline void Dense<T>::feedForward(Matrix<T>& input)
 }
 
 template<class T>
-inline void Dense<T>::calcDeltas(Matrix<T>& deltaIn, Matrix<T>& target, bool outputLayer)
+inline void Dense<T>::calcDeltasOutput(Matrix<T>& target, ErrorFunction errorFunc)
 {
-	if (outputLayer)
-	{
-		//deltas = -(target - output);
+	// Working for stoiciastic gradient descent, but not batch!!
 
-		errorPrime(deltas, target, output, ErrorFunction::Squared); // TODO: pass error function / make sepperate outputlayer calc deltas
+	errorPrime(deltas, target, output, errorFunc); // TODO: pass error function / make sepperate outputlayer calc deltas
 
-		deltas.cwiseProduct(actPrime);
+	deltas.cwiseProduct(actPrime);
 
-		// Deltas calculated
-		// changing weights here for test
-		Matrix<T>* prevOutput = this->inputs[0]->getOutput();
-		
-		deltas = deltas.transpose();
-		deltas *= *prevOutput;
-		deltas = deltas.transpose();
+	// Deltas calculated
+	// changing weights here for test
+	Matrix<T>* prevOutput = this->inputs[0]->getOutput();
 
-		weights = weights - deltas;
-	}
+	deltas = deltas.transpose();
+	deltas *= *prevOutput;
+	deltas = deltas.transpose();
+
+	weights = weights - deltas;
+	
+	for (auto& in : this->inputs)
+		in->calcDeltas(deltas, target);
+}
+
+
+template<class T>
+inline void Dense<T>::calcDeltas(Matrix<T>& deltaIn, Matrix<T>& target)
+{
+
 }
 
 

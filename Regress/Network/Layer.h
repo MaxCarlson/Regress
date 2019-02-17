@@ -1,5 +1,6 @@
 #pragma once
 #include "Activation.h"
+#include "ErrorFuncs.h"
 #include "Linear\Matrix.h"
 #include <vector>
 
@@ -27,7 +28,8 @@ public:
 	virtual Matrix<T>*	getOutput() { return nullptr; }
 	virtual Matrix<T>*	getWeights() { return nullptr; }
 	virtual Activation	getActivation() { return Activation::None; }
-	virtual void		calcDeltas(Matrix<T>& deltaIn, Matrix<T>& target, bool outputLayer) {}
+	virtual void		calcDeltasOutput(Matrix<T>& target, ErrorFunction errorFunc) {}
+	virtual void		calcDeltas(Matrix<T>& deltaIn, Matrix<T>& target) {}
 
 	friend Dense<T>;
 	friend Input<T>;
