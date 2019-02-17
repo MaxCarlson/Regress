@@ -124,7 +124,7 @@ inline void Dense<T>::calcDeltasOutput(Matrix<T>& target, ErrorFunction errorFun
 		in->calcDeltas(weights, errors, actPrime, target);
 
 	// Update weights. Should probably be done somewhere else of function renamed
-	weights = weights - deltas;
+	//weights = weights - deltas;
 }
 
 
@@ -136,7 +136,7 @@ inline void Dense<T>::calcDeltas(Matrix<T>& outWeights, Matrix<T>& outErrors, Ma
 	// this is actually the partial derivative of Etotal with respect to (output)s
 	errors = outWeights * outErrors.transpose();
 
-	errors = actPrime * errors;
+	errors = errors.cwiseProduct(actPrime.transpose());
 
 	//errors = errors.transpose();
 	errors *= *this->inputs[0]->getOutput();
