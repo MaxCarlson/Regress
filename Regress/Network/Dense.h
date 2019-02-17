@@ -132,14 +132,22 @@ inline void Dense<T>::calcDeltasOutput(Matrix<T>& target, ErrorFunction errorFun
 template<class T>
 inline void Dense<T>::calcDeltas(Matrix<T>& outWeights, Matrix<T>& outErrors, Matrix<T>& outActPrime, Matrix<T>& target)
 {
+	// TODO: Seperate operations into
+
 	// Instead of error (like it is in output node) 
 	// this is actually the partial derivative of Etotal with respect to (output)s
+
+	// BUG: Only works if layer has same number neurons as output layer!! FIX 
 	errors = outWeights * outErrors.transpose();
 
 	errors = errors.cwiseProduct(actPrime.transpose());
 
 	//errors = errors.transpose();
 	errors *= *this->inputs[0]->getOutput();
+
+	// TODO: Is outErrors the correct param to pass here? CHECK!
+	for (auto& in : this->inputs)
+		in->calcDeltas(weights, outErrors, actPrime, target);
 
 	weights = weights - errors * 0.1;
 }
