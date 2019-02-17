@@ -28,6 +28,7 @@ class Dense : public Layer<T>
 	Matrix<T> weights;
 	Matrix<T> net;
 	Matrix<T> output;
+	Matrix<T> errors;
 	Matrix<T> deltas;
 	Matrix<T> actPrime;
 
@@ -45,7 +46,7 @@ public:
 	Activation	getActivation() const	{ return this->activation; }
 
 	void		calcDeltasOutput(Matrix<T>& target, ErrorFunction errorFunc);
-	void		calcDeltas(Matrix<T>& deltaIn, Matrix<T>& target);
+	void		calcDeltas(Matrix<T>& outWeights, Matrix<T>& outErrors, Matrix<T>& outActPrime, Matrix<T>& target);
 };
 
 #include <random>
@@ -57,6 +58,7 @@ inline Dense<T>::Dense(int neurons, bool bias, Layer<T>* input, Activation activ
 	weights{},
 	net{},
 	output{},
+	errors{},
 	deltas{},
 	actPrime{}
 {
@@ -102,9 +104,11 @@ template<class T>
 inline void Dense<T>::calcDeltasOutput(Matrix<T>& target, ErrorFunction errorFunc)
 {
 	// Working for stoiciastic gradient descent, but not batch!!
+	// TODO: Make errors only availible in output layers!
 
-	errorPrime(deltas, target, output, errorFunc); // TODO: pass error function / make sepperate outputlayer calc deltas
+	errorPrime(errors, target, output, errorFunc); 
 
+	deltas = errors;
 	deltas.cwiseProduct(actPrime);
 
 	// Deltas calculated
@@ -115,17 +119,29 @@ inline void Dense<T>::calcDeltasOutput(Matrix<T>& target, ErrorFunction errorFun
 	deltas *= *prevOutput;
 	deltas = deltas.transpose();
 
-	weights = weights - deltas;
-	
+
 	for (auto& in : this->inputs)
-		in->calcDeltas(deltas, target);
+		in->calcDeltas(weights, errors, actPrime, target);
+
+	// Update weights. Should probably be done somewhere else of function renamed
+	weights = weights - deltas;
 }
 
 
+// Note outErrors are actually outErrorPrime's
 template<class T>
-inline void Dense<T>::calcDeltas(Matrix<T>& deltaIn, Matrix<T>& target)
+inline void Dense<T>::calcDeltas(Matrix<T>& outWeights, Matrix<T>& outErrors, Matrix<T>& outActPrime, Matrix<T>& target)
 {
+	// Instead of error (like it is in output node) 
+	// this is actually the partial derivative of Etotal with respect to (output)s
+	errors = outWeights * outErrors.transpose();
 
+	errors = actPrime * errors;
+
+	//errors = errors.transpose();
+	errors *= *this->inputs[0]->getOutput();
+
+	weights = weights - errors;
 }
 
 

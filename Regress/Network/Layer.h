@@ -15,7 +15,7 @@ class Layer
 protected:
 	
 	Activation			activation;
-	std::vector<Layer*> inputs;
+	std::vector<Layer*> inputs;		// TODO: Probably dont need multiple inputs? That would be handled by a layer by itself?
 	std::vector<Layer*> outputs;
 
 public:
@@ -29,7 +29,7 @@ public:
 	virtual Matrix<T>*	getWeights() { return nullptr; }
 	virtual Activation	getActivation() { return Activation::None; }
 	virtual void		calcDeltasOutput(Matrix<T>& target, ErrorFunction errorFunc) {}
-	virtual void		calcDeltas(Matrix<T>& deltaIn, Matrix<T>& target) {}
+	virtual void		calcDeltas(Matrix<T>& outWeights, Matrix<T>& outErrors, Matrix<T>& outActPrime, Matrix<T>& target) {}
 
 	friend Dense<T>;
 	friend Input<T>;

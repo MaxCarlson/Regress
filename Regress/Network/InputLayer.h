@@ -17,6 +17,9 @@ public:
 	void feedForward();
 	int numNodes() const { return input->columns(); }
 	void setInput(Matrix<T>* newInput) { input = newInput; }
+	//Matrix<T>& getInput() { return input; }
+	Matrix<T>* getOutput() { return input; }
+
 };
 
 template<class T>
