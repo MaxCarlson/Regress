@@ -16,11 +16,9 @@ int main()
 		{0, 1},
 	};
 
-	// TODO: Shit, looks like the backprop algo I wrote only works if all neurons are the same size!
-
 	Input<float>  in(&input);
 	Dense<float>  d1(2, false, &in, Activation::Relu);
-	Dense<float>  d2(3, false, &d1, Activation::Relu);
+	Dense<float>  d2(1, false, &d1, Activation::Relu);
 	Dense<float>  d3(2, false, &d2, Activation::SoftMax);
 
 

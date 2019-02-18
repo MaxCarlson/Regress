@@ -103,10 +103,9 @@ inline void Dense<T>::feedForward(Matrix<T>& input)
 template<class T>
 inline void Dense<T>::calcDeltasOutput(Matrix<T>& target, ErrorFunction errorFunc)
 {
-	// Working for stoiciastic gradient descent, but not batch!!
-	// TODO: Make errors only availible in output layers!
-
 	errorPrime(errors, target, output, errorFunc); 
+
+	errors = errors.columnwiseAvg();
 
 	deltas = errors;
 	deltas.cwiseProduct(actPrime);
@@ -139,6 +138,8 @@ inline void Dense<T>::calcDeltas(Matrix<T>& outWeights, Matrix<T>& outErrors, Ma
 
 	// BUG: Only works if layer has same number neurons as output layer!! FIX 
 	errors = outWeights * outErrors.transpose();
+
+	//auto mm = outWeights.rowwiseVectorMultiply(outErrors);
 
 	deltas = errors.cwiseProduct(actPrime.transpose());
 
