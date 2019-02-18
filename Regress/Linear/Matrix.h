@@ -15,6 +15,7 @@ class Matrix
 public:
 	Matrix() = default;
 	Matrix(int nrows, int ncolumns);
+	Matrix(const std::initializer_list<std::initializer_list<T>>& m);
 
 	void resize(int nrows, int ncolumns);
 
@@ -59,6 +60,18 @@ inline Matrix<T>::Matrix(int nrows, int ncolumns) :
 	ncolumns{	ncolumns		},
 	vals(		nrows * ncolumns)
 {
+}
+
+template<class T>
+inline Matrix<T>::Matrix(const std::initializer_list<std::initializer_list<T>>& m) :
+	nrows{ static_cast<int>(m.size()) },
+	ncolumns{ static_cast<int>(m.begin()->size()) },
+	vals(nrows * ncolumns)
+{
+	int i = 0;
+	for (auto it = std::begin(m); it != std::end(m); ++it)
+		for (auto jt = std::begin(*it); jt != std::end(*it); ++jt)
+			vals[i++] = *jt;
 }
 
 template<class T>
