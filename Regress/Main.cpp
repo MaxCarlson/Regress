@@ -8,17 +8,17 @@ int main()
 {
 	Matrix<float> input = {
 		{0, 1},
-		{1, 0}
+		//{1, 0}
 	};
 
 	Matrix<float> label = {
 		{0, 1},
-		{0, 1},
+		//{0, 1},
 	};
 
 	Input<float>  in(&input);
 	Dense<float>  d1(2, false, &in, Activation::Relu);
-	Dense<float>  d2(1, false, &d1, Activation::Relu);
+	Dense<float>  d2(2, false, &d1, Activation::Relu);
 	Dense<float>  d3(2, false, &d2, Activation::SoftMax);
 
 

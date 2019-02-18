@@ -105,22 +105,28 @@ inline void Dense<T>::calcDeltasOutput(Matrix<T>& target, ErrorFunction errorFun
 {
 	errorPrime(errors, target, output, errorFunc); 
 
+	// Average sample errors into a vector
+	// TODO: Revisit/look into if this is correct way of handling multiple samples 
 	errors = errors.columnwiseAvg();
+	actPrime = actPrime.columnwiseAvg();
 
 	deltas = errors;
-	deltas.cwiseProduct(actPrime);
+	deltas = deltas.cwiseProduct(actPrime);
 
-	// Deltas calculated
-	// changing weights here for test
+	Matrix<T>* prevOutput = this->inputs[0]->getOutput();
+
+	deltas = prevOutput->transpose() * deltas;
+	/*
 	Matrix<T>* prevOutput = this->inputs[0]->getOutput();
 
 	deltas = deltas.transpose();
 	deltas *= *prevOutput;
 	deltas = deltas.transpose();
+	*/
 
 
-	for (auto& in : this->inputs)
-		in->calcDeltas(weights, errors, actPrime, target);
+	//for (auto& in : this->inputs)
+	//	in->calcDeltas(weights, errors, actPrime, target);
 
 	// Update weights. Should probably be done somewhere else of function renamed
 	weights = weights - deltas * 0.1;
