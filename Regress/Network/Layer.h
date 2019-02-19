@@ -29,8 +29,8 @@ public:
 	virtual Matrix<T>*	getOutput()		{ return nullptr; }
 	virtual Matrix<T>*	getWeights()	{ return nullptr; }
 	virtual Activation	getActivation() { return Activation::None; }
-	virtual void		calcDeltasOutput(Matrix<T>& target, ErrorFunction errorFunc) {}
-	virtual void		calcDeltas(Matrix<T>& outWeights, Matrix<T>& outErrors, Matrix<T>& outActPrime, Matrix<T>& target) {}
+	virtual void		calcDeltasOutput(Matrix<T>& target, ErrorFunction errorFunc, double lr) {}
+	virtual void		calcDeltas(Matrix<T>& outWeights, Matrix<T>& outErrors, Matrix<T>& outActPrime, double lr) {}
 
 	friend Dense<T>;
 	friend Input<T>;

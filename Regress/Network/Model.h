@@ -2,6 +2,7 @@
 #include "InputLayer.h"
 #include "OutputLayer.h"
 #include "ErrorFuncs.h"
+#include "InfoPrinter.h"
 
 template<class T>
 class Model
@@ -12,12 +13,13 @@ class Model
 	double			error;
 	ErrorFunction	errorFunc;
 	Matrix<T>		merror;			// The error for each output neuron
+	InfoPrinter		printer;
 
 	void calcError(Matrix<T>& labels);
 	void backprop(Matrix<T>& labels);
 
 public:
-	Model(Input<T>& input, Layer<T>* output, double lr, ErrorFunction error);
+	Model(Input<T>& input, Layer<T>* output, double lr, ErrorFunction error, InfoPrinter printer);
 
 	void run(Matrix<T>& features);
 	void train(Matrix<T>& features, Matrix<T>& labels);
@@ -34,18 +36,18 @@ inline void Model<T>::calcError(Matrix<T>& labels)
 template<class T>
 inline void Model<T>::backprop(Matrix<T>& labels)
 {
-	output->calcDeltasOutput(labels, errorFunc);
-
+	output->calcDeltasOutput(labels, errorFunc, learningRate);
 }
 
 template<class T>
-inline Model<T>::Model(Input<T>& input, Layer<T>* output, double lr, ErrorFunction errorFunc) :
+inline Model<T>::Model(Input<T>& input, Layer<T>* output, double lr, ErrorFunction errorFunc, InfoPrinter printer) :
 	input{ input },
 	output{ output },
 	learningRate{ lr },
 	error{ 0.0 },
 	errorFunc{ errorFunc },
-	merror{}
+	merror{},
+	printer{printer}
 {
 
 }
@@ -64,6 +66,8 @@ inline void Model<T>::train(Matrix<T>& features, Matrix<T>& labels)
 	input.feedForward();
 	calcError(labels);
 	backprop(labels);
+
+	printer.printInfo(error);
 }
 
 template<class T>

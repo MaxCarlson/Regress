@@ -46,16 +46,16 @@ public:
 	Matrix<T>*	getWeights()			{ return &weights;	}
 	Activation	getActivation() const	{ return this->activation; }
 
-	void		calcDeltasOutput(Matrix<T>& target, ErrorFunction errorFunc);
-	void		calcDeltas(Matrix<T>& outWeights, Matrix<T>& outErrors, Matrix<T>& outActPrime, Matrix<T>& target);
+	void		calcDeltasOutput(Matrix<T>& target, ErrorFunction errorFunc, double lr);
+	void		calcDeltas(Matrix<T>& outWeights, Matrix<T>& outErrors, Matrix<T>& outActPrime, double lr);
 };
 
 #include <random>
 
 template<class T>
 inline Dense<T>::Dense(int neurons, bool bias, Layer<T>* input, Activation activation) : Layer<T>(activation),
-	neurons{		neurons						},
-	bias{			bias						},
+	neurons{ neurons },
+	bias{ bias },
 	weights{},
 	net{},
 	output{},
@@ -102,31 +102,27 @@ inline void Dense<T>::feedForward(Matrix<T>& input)
 }
 
 template<class T>
-inline void Dense<T>::calcDeltasOutput(Matrix<T>& target, ErrorFunction errorFunc)
+inline void Dense<T>::calcDeltasOutput(Matrix<T>& target, ErrorFunction errorFunc, double lr)
 {
 	errorPrime(errors, target, output, errorFunc); 
 	
-	//errors = errors.columnwiseAvg();
-	//actPrime = actPrime.columnwiseAvg();
-
 	deltas = errors;
 	deltas = deltas.cwiseProduct(actPrime);
 
 	Matrix<T>* prevOutput = this->inputs[0]->getOutput();
-
 	deltas = prevOutput->transpose() * deltas;
 
 	for (auto& in : this->inputs)
-		in->calcDeltas(weights, errors, actPrime, target);
+		in->calcDeltas(weights, errors, actPrime);
 
 	// Update weights. Should probably be done somewhere else of function renamed
-	weights = weights - deltas * 0.01;
+	weights = weights - deltas * lr;
 }
 
 
 // Note: outErrors are actually outErrorPrime's
 template<class T>
-inline void Dense<T>::calcDeltas(Matrix<T>& outWeights, Matrix<T>& outErrors, Matrix<T>& outActPrime, Matrix<T>& target)
+inline void Dense<T>::calcDeltas(Matrix<T>& outWeights, Matrix<T>& outErrors, Matrix<T>& outActPrime, double lr)
 {
 	// Instead of error (like it is in output node) 
 	// this is actually the partial derivative of Etotal with respect to (output)s
@@ -139,9 +135,9 @@ inline void Dense<T>::calcDeltas(Matrix<T>& outWeights, Matrix<T>& outErrors, Ma
 	deltas = deltas.transpose();
 
 	for (auto& in : this->inputs)
-		in->calcDeltas(weights, errors, actPrime, target);
+		in->calcDeltas(weights, errors, actPrime);
 
-	weights = weights - deltas * 0.01;
+	weights = weights - deltas * lr;
 
 
 	/*

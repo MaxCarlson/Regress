@@ -14,3 +14,8 @@ enum Op
 
 // TODO: system to evaluate matrix math expressions at operator=() time 
 // (instead of returning many matrices that are throw away)
+
+struct MatrixOp
+{
+
+};

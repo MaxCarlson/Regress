@@ -127,6 +127,7 @@
     <ClInclude Include="Linear\Matrix.h" />
     <ClInclude Include="Linear\Model.h" />
     <ClInclude Include="Network\ErrorFuncs.h" />
+    <ClInclude Include="Network\InfoPrinter.h" />
     <ClInclude Include="Network\InputLayer.h" />
     <ClInclude Include="Network\Layer.h" />
     <ClInclude Include="Network\OutputLayer.h" />
