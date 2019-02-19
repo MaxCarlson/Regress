@@ -6,7 +6,7 @@ class MatrixBase
 };
 
 template<class T>
-class Matrix
+class Matrix 
 {
 	int nrows;
 	int ncolumns;
@@ -100,7 +100,8 @@ inline Matrix<T> Matrix<T>::transpose() const
 	Matrix<T> m(ncolumns, nrows);
 
 	#pragma omp parallel for
-	for (int n = 0; n < nrows*ncolumns; n++) {
+	for (int n = 0; n < nrows*ncolumns; n++) 
+	{
 		int i = n % nrows;
 		int j = n / nrows;
 		m.vals[n] = vals[ncolumns*i + j];

@@ -47,10 +47,13 @@
     <ClInclude Include="Network\ErrorFuncs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Linear\MatrixOp.h">
+    <ClInclude Include="Network\InfoPrinter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Network\InfoPrinter.h">
+    <ClInclude Include="Linear\MatrixTest.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Linear\Expr.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
