@@ -25,8 +25,9 @@ public:
 
 	virtual void		feedForward(Matrix<T>& input) {}
 	virtual int			numNodes() const { return 0; }
-	virtual Matrix<T>*	getOutput() { return nullptr; }
-	virtual Matrix<T>*	getWeights() { return nullptr; }
+	virtual Matrix<T>*	getNet()		{ return nullptr; }
+	virtual Matrix<T>*	getOutput()		{ return nullptr; }
+	virtual Matrix<T>*	getWeights()	{ return nullptr; }
 	virtual Activation	getActivation() { return Activation::None; }
 	virtual void		calcDeltasOutput(Matrix<T>& target, ErrorFunction errorFunc) {}
 	virtual void		calcDeltas(Matrix<T>& outWeights, Matrix<T>& outErrors, Matrix<T>& outActPrime, Matrix<T>& target) {}

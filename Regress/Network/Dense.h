@@ -40,9 +40,10 @@ public:
 
 	void		feedForward(Matrix<T>& input);
 
-	int			numNodes()		const	{ return neurons; }
-	Matrix<T>*	getOutput()				{ return &output; }
-	Matrix<T>*	getWeights()			{ return &weights; }
+	int			numNodes()		const	{ return neurons;	}
+	Matrix<T>*	getNet()				{ return &net;		}
+	Matrix<T>*	getOutput()				{ return &output;	}
+	Matrix<T>*	getWeights()			{ return &weights;	}
 	Activation	getActivation() const	{ return this->activation; }
 
 	void		calcDeltasOutput(Matrix<T>& target, ErrorFunction errorFunc);
@@ -105,8 +106,6 @@ inline void Dense<T>::calcDeltasOutput(Matrix<T>& target, ErrorFunction errorFun
 {
 	errorPrime(errors, target, output, errorFunc); 
 	
-	// Average sample errors into a vector
-	// TODO: Revisit/look into if this is correct way of handling multiple samples 
 	//errors = errors.columnwiseAvg();
 	//actPrime = actPrime.columnwiseAvg();
 
@@ -117,23 +116,35 @@ inline void Dense<T>::calcDeltasOutput(Matrix<T>& target, ErrorFunction errorFun
 
 	deltas = prevOutput->transpose() * deltas;
 
-	//for (auto& in : this->inputs)
-	//	in->calcDeltas(weights, errors, actPrime, target);
+	for (auto& in : this->inputs)
+		in->calcDeltas(weights, errors, actPrime, target);
 
 	// Update weights. Should probably be done somewhere else of function renamed
-	weights = weights - deltas * 0.1;
+	weights = weights - deltas * 0.01;
 }
 
 
-// Note outErrors are actually outErrorPrime's
+// Note: outErrors are actually outErrorPrime's
 template<class T>
 inline void Dense<T>::calcDeltas(Matrix<T>& outWeights, Matrix<T>& outErrors, Matrix<T>& outActPrime, Matrix<T>& target)
 {
-	// TODO: Seperate operations into
-
 	// Instead of error (like it is in output node) 
 	// this is actually the partial derivative of Etotal with respect to (output)s
+	errors = outErrors * outWeights.transpose();
 
+	deltas = errors.cwiseProduct(actPrime);
+
+	auto& inNet = *this->inputs[0]->getNet();
+	deltas = deltas.transpose() * inNet;
+	deltas = deltas.transpose();
+
+	for (auto& in : this->inputs)
+		in->calcDeltas(weights, errors, actPrime, target);
+
+	weights = weights - deltas * 0.01;
+
+
+	/*
 	// BUG: Only works if layer has same number neurons as output layer!! FIX 
 	errors = outWeights * outErrors.transpose();
 
@@ -149,6 +160,7 @@ inline void Dense<T>::calcDeltas(Matrix<T>& outWeights, Matrix<T>& outErrors, Ma
 		in->calcDeltas(weights, errors, actPrime, target);
 
 	weights = weights - deltas * 0.1;
+	*/
 }
 
 

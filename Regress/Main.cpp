@@ -21,11 +21,12 @@ int main()
 
 	Input<float>  in(&input);
 	Dense<float>  d1(2, false, &in, Activation::Relu);
-	Dense<float>  d2(2, false, &d1, Activation::Relu);
-	Dense<float>  d3(2, false, &d2, Activation::Relu);
+	Dense<float>  d2(8, false, &d1, Activation::Relu);
+	Dense<float>  d3(4, false, &d1, Activation::Relu);
+	Dense<float>  d4(2, false, &d2, Activation::Relu);
 
 
-	Model<float> mod(in, &d3, 0.1, ErrorFunction::Squared);
+	Model<float> mod(in, &d4, 0.1, ErrorFunction::Squared);
 	
 	//Matrix<float> m1(label.rows(), label.columns());
 
