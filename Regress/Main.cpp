@@ -16,7 +16,7 @@ int main()
 		{3, 5}
 	};
 
-	t1 = t1 + t2;
+	t1 = (t2 + t2) + (t2 + t1);
 
 	Matrix<float> input = {
 		{0, 1},

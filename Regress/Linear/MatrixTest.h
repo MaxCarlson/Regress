@@ -20,15 +20,16 @@ struct MatrixT
 				vals[i++] = *jt;
 	}
 
-	MatrixT& operator=(BaseExpr* expr)
+	MatrixT& operator=(BaseExpr expr)
 	{
 
+		return *this;
 	}
 
 	template<class T>
-	BaseExpr* operator+(MatrixT<T>& other)
+	BaseExpr operator+(MatrixT<T>& other)
 	{
-		return new AddExpr<ThisType, decltype(other)>(this, &other);
+		return AddExpr<ThisType, decltype(other)>(*this, other);
 	}
 
 
