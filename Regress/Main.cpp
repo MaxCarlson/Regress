@@ -17,12 +17,12 @@ int main()
 	};
 
 	Vec a = { 1, 2 };
-	Vec b = { 1, 2 };
-	Vec c = { 1, 2 };
+	Vec b = { 3, 4 };
+	Vec c = { 5, 6 };
 
-	Vec x = a + b + c;
+	//Vec x = a + b + c;
 
-	//Matrix<float> t3 = t1 + t2;
+	MatrixT<float> t3 = t1 + t2 * t2;
 
 	Matrix<float> input = {
 		{0, 1},
