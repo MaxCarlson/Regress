@@ -138,25 +138,6 @@ inline void Dense<T>::calcDeltas(Matrix<T>& outWeights, Matrix<T>& outErrors, Ma
 		in->calcDeltas(weights, errors, actPrime, lr);
 
 	weights = weights - deltas * lr;
-
-
-	/*
-	// BUG: Only works if layer has same number neurons as output layer!! FIX 
-	errors = outWeights * outErrors.transpose();
-
-	//auto mm = outWeights.rowwiseVectorMultiply(outErrors);
-
-	deltas = errors.cwiseProduct(actPrime.transpose());
-
-	//errors = errors.transpose();
-	deltas *= *this->inputs[0]->getOutput();
-
-	// TODO: Is outErrors the correct param to pass here? CHECK!
-	for (auto& in : this->inputs)
-		in->calcDeltas(weights, errors, actPrime, target);
-
-	weights = weights - deltas * 0.1;
-	*/
 }
 
 
