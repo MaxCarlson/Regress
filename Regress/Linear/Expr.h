@@ -4,12 +4,27 @@
 // TODO: system to evaluate matrix math expressions at operator=() time 
 // (instead of returning many matrices that are throw away)
 
+class ExprAnalyzer
+{
+	int nrows;
+	int ncols;
+
+	// TODO: Could hold OP order in here if needed?
+
+public:
+	ExprAnalyzer(int nrows, int ncols) :
+		nrows{ nrows },
+		ncols{ ncols }
+	{
+	}
+
+};
 
 template<class E>
 class BaseExpr
 {
 public:
-	double operator[](int i)		const { return static_cast<E const&>(*this)[i]; }
+	//double operator[](int i)		const { return static_cast<E const&>(*this)[i]; }
 
 	//double operator()(int r, int c) const { return static_cast<E const&>(*this)(r, c); }
 	size_t size()					const { return static_cast<E const&>(*this).size(); }
@@ -19,17 +34,23 @@ public:
 
 	//using value_type = typename E::value_type;
 
+	void analyzeExpr(ExprAnalyzer& ea) const { return static_cast<E const&>(*this).analyzeExpr(ea);}
+
 	double evalExpr(int row, int col, int idx) const { return static_cast<E const&>(*this).evalExpr(row, col, idx); }
+
+	//int totalRows() const { return static_cast<E const&>(*this).totalRows(); }
+	//int totalCols() const { return static_cast<E const&>(*this).totalCols(); }
 
 };
 
 template<class Type>
-struct MatrixT : public BaseExpr<MatrixT<Type>>
+class MatrixT : public BaseExpr<MatrixT<Type>>
 {
 	int nrows;
 	int ncols;
 	std::vector<Type> vals;
 
+public:
 	using value_type	= Type;
 	using MyType		= MatrixT<Type>;
 
@@ -46,10 +67,16 @@ struct MatrixT : public BaseExpr<MatrixT<Type>>
 
 	template<class E>
 	MatrixT(const BaseExpr<E>& expr) :
-		nrows{expr.rows()},
-		ncols{expr.cols()},
-		vals(expr.size())
+		nrows{},
+		ncols{},
+		vals{}
+		//nrows{expr.totalRows()},
+		//ncols{expr.totalCols()},
+		//vals(nrows * ncols)
 	{
+		ExprAnalyzer ea;
+		expr.analyzeExpr(ea);
+
 		int idx = 0;
 		for(int i = 0; i < nrows; ++i)
 			for (int j = 0; j < ncols; ++j, ++idx)
@@ -58,11 +85,15 @@ struct MatrixT : public BaseExpr<MatrixT<Type>>
 			}
 	}
 
+
+
 	int size() const { return vals.size(); }
 	int rows() const { return nrows; }
 	int cols() const { return ncols; }
 	const value_type& operator[](int idx) const { return vals[idx]; }
 
+
+	void analyzeExpr(ExprAnalyzer& ea) const {}
 	const value_type& evalExpr(int row, int col, int idx) const { return vals[idx]; }
 };
 
@@ -83,6 +114,12 @@ public:
 	size_t size() const { return v1.size(); }
 	int rows() const { return v1.rows(); }
 	int cols() const { return v1.cols(); }
+
+	void analyzeExpr(ExprAnalyzer& ea) const
+	{
+		v1.analyzeExpr(ea);
+		v2.analyzeExpr(ea);
+	}
 
 	double evalExpr(int row, int col, int idx) const
 	{
@@ -121,8 +158,14 @@ public:
 	{}
 
 	size_t size() const { return v1.size(); }
-	int rows() const { return v1.rows(); }
+	int rows() const { return v2.rows(); }
 	int cols() const { return v1.cols(); }
+
+	void analyzeExpr(ExprAnalyzer& ea) const
+	{
+		v1.analyzeExpr(ea);
+		v2.analyzeExpr(ea);
+	}
 
 	double evalExpr(int row, int col, int idx) const
 	{
@@ -146,65 +189,3 @@ template<class A, class B>
 MulExpr<BaseExpr<A>, MatrixT<B>> operator*(const BaseExpr<A>& a, const MatrixT<B>& b) {
 	return MulExpr<BaseExpr<A>, MatrixT<B>>(a, b);
 }
-
-
-
-
-template <typename E>
-class VecExpression
-{
-public:
-	double operator[](size_t i) const { return static_cast<E const&>(*this)[i]; }
-	size_t size()               const { return static_cast<E const&>(*this).size(); }
-};
-
-class Vec 
-	: public VecExpression<Vec>
-{
-	std::vector<double> elems;
-
-public:
-	double operator[](size_t i) const { return elems[i]; }
-	double &operator[](size_t i) { return elems[i]; }
-	size_t size() const { return elems.size(); }
-
-	Vec(size_t n) : elems(n) {}
-
-	// construct vector using initializer list 
-	Vec(std::initializer_list<double>init) {
-		for (auto i : init)
-			elems.push_back(i);
-	}
-
-
-	// A Vec can be constructed from any VecExpression, forcing its evaluation.
-	template <typename E>
-	Vec(VecExpression<E> const& vec) 
-		: elems(vec.size()) 
-	{
-		for (size_t i = 0; i != vec.size(); ++i) {
-			elems[i] = vec[i];
-		}
-	}
-};
-
-template <typename E1, typename E2>
-class VecSum : public VecExpression<VecSum<E1, E2> >
-{
-	E1 const& _u;
-	E2 const& _v;
-public:
-
-	VecSum(E1 const& u, E2 const& v) : _u(u), _v(v) {
-	}
-
-	double operator[](size_t i) const { return _u[i] + _v[i]; }
-	size_t size()               const { return _v.size(); }
-};
-
-/*
-template <typename E1, typename E2>
-VecSum<E1, E2> operator+(E1 const& u, E2 const& v) {
-	return VecSum<E1, E2>(u, v);
-}
-*/

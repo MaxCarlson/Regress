@@ -8,21 +8,16 @@ int main()
 {
 	MatrixT<float> t1 = { 
 		{1, 2},
+		{3, 4},
 		{3, 4}
 	};
 
 	MatrixT<float> t2 = {
-		{6, 3},
-		{3, 5}
+		{5, 6, 1},
+		{7, 8, 1}
 	};
 
-	Vec a = { 1, 2 };
-	Vec b = { 3, 4 };
-	Vec c = { 5, 6 };
-
-	//Vec x = a + b + c;
-
-	MatrixT<float> t3 = t1 + t2 * t2;
+	MatrixT<float> t3 = (t1 + t1) * t2 * t1;
 
 	Matrix<float> input = {
 		{0, 1},
