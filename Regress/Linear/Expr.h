@@ -12,9 +12,9 @@ class ExprAnalyzer
 	// TODO: Could hold OP order in here if needed?
 
 public:
-	ExprAnalyzer(int nrows, int ncols) :
-		nrows{ nrows },
-		ncols{ ncols }
+	ExprAnalyzer() :
+		nrows{},
+		ncols{}
 	{
 	}
 
@@ -34,7 +34,8 @@ public:
 
 	//using value_type = typename E::value_type;
 
-	void analyzeExpr(ExprAnalyzer& ea) const { return static_cast<E const&>(*this).analyzeExpr(ea);}
+	void analyzeLeft(ExprAnalyzer& ea) const { return static_cast<E const&>(*this).analyzeLeft(ea);}
+	void analyzeRight(ExprAnalyzer& ea) const { return static_cast<E const&>(*this).analyzeRight(ea); }
 
 	double evalExpr(int row, int col, int idx) const { return static_cast<E const&>(*this).evalExpr(row, col, idx); }
 
@@ -43,8 +44,19 @@ public:
 
 };
 
+template<class E>
+struct MatrixTBase : public BaseExpr<E>
+{ };
+
+// TODO: Check for constants!
 template<class Type>
-class MatrixT : public BaseExpr<MatrixT<Type>>
+struct IsLeaf
+{
+	static constexpr bool value = std::is_base_of_v<MatrixTBase<Type>, Type>;
+};
+
+template<class Type>
+class MatrixT : public MatrixTBase<MatrixT<Type>>
 {
 	int nrows;
 	int ncols;
@@ -74,8 +86,8 @@ public:
 		//ncols{expr.totalCols()},
 		//vals(nrows * ncols)
 	{
-		ExprAnalyzer ea;
-		expr.analyzeExpr(ea);
+		//ExprAnalyzer ea;
+		//expr.analyzeExpr(ea);
 
 		int idx = 0;
 		for(int i = 0; i < nrows; ++i)
@@ -93,7 +105,8 @@ public:
 	const value_type& operator[](int idx) const { return vals[idx]; }
 
 
-	void analyzeExpr(ExprAnalyzer& ea) const {}
+	void analyzeLeft(ExprAnalyzer& ea) const {}
+	void analyzeRight(ExprAnalyzer& ea) const {}
 	const value_type& evalExpr(int row, int col, int idx) const { return vals[idx]; }
 };
 
@@ -105,7 +118,9 @@ class AddExpr : public BaseExpr<AddExpr<A, B>>
 public:
 
 	using value_type = typename MatrixT<A>::value_type;
-	
+	static constexpr bool left_leaf  = IsLeaf<A>::value;
+	static constexpr bool right_leaf = IsLeaf<B>::value;
+
 	AddExpr(const A& v1, const B& v2) :
 		v1{v1},
 		v2{v2}
@@ -115,11 +130,18 @@ public:
 	int rows() const { return v1.rows(); }
 	int cols() const { return v1.cols(); }
 
-	void analyzeExpr(ExprAnalyzer& ea) const
+	void analyzeLeft(ExprAnalyzer& ea) const 
 	{
-		v1.analyzeExpr(ea);
-		v2.analyzeExpr(ea);
+		if constexpr (!left_leaf)
+			v1.analyzeLeft(ea);
+		else
+		{
+			ea.nrows = v1.rows();
+			ea.ncols = v1.cols();
+		}
 	}
+
+	void analyzeRight(ExprAnalyzer& ea) const {}
 
 	double evalExpr(int row, int col, int idx) const
 	{
@@ -150,7 +172,8 @@ class MulExpr : public BaseExpr<MulExpr<A, B>>
 	const B& v2;
 public:
 
-	using value_type = typename MatrixT<A>::value_type;
+	static constexpr bool left_leaf  = IsLeaf<A>::value;
+	static constexpr bool right_leaf = IsLeaf<B>::value;
 
 	MulExpr(const A& v1, const B& v2) :
 		v1{ v1 },
@@ -161,11 +184,20 @@ public:
 	int rows() const { return v2.rows(); }
 	int cols() const { return v1.cols(); }
 
-	void analyzeExpr(ExprAnalyzer& ea) const
+	void analyzeLeft(ExprAnalyzer& ea) const 
 	{
-		v1.analyzeExpr(ea);
-		v2.analyzeExpr(ea);
+		if constexpr (!left_leaf)
+			v1.analyzeLeft(ea);
+		else
+		{
+			ea.nrows = v1.rows();
+			ea.ncols = v2.cols();
+			return;
+		}
+
 	}
+
+	void analyzeRight(ExprAnalyzer& ea) const {}
 
 	double evalExpr(int row, int col, int idx) const
 	{
@@ -180,12 +212,8 @@ public:
 
 };
 
-template<class A, class B>
-MulExpr<MatrixT<A>, MatrixT<B>> operator*(const MatrixT<A>& a, const MatrixT<B>& b) {
-	return MulExpr<MatrixT<A>, MatrixT<B>>(a, b);
-}
 
 template<class A, class B>
-MulExpr<BaseExpr<A>, MatrixT<B>> operator*(const BaseExpr<A>& a, const MatrixT<B>& b) {
-	return MulExpr<BaseExpr<A>, MatrixT<B>>(a, b);
+MulExpr<BaseExpr<A>, BaseExpr<B>> operator*(const BaseExpr<A>& a, const BaseExpr<B>& b) {
+	return MulExpr<BaseExpr<A>, BaseExpr<B>>(a, b);
 }
