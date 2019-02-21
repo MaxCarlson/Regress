@@ -4,8 +4,11 @@
 #include "Network\InputLayer.h"
 #include "Linear\MatrixTest.h"
 
+
+
 int main()
 {
+
 	MatrixT<float> t1 = { 
 		{1, 2},
 		{3, 4},
@@ -17,7 +20,7 @@ int main()
 		{7, 8, 1}
 	};
 
-	MatrixT<float> t3 = (t1 + t1) * t2;
+	MatrixT<float> t3 = t1 * (t1 + t1) * (t1 * t2);
 
 	Matrix<float> input = {
 		{0, 1},

@@ -6,12 +6,13 @@
 
 class ExprAnalyzer
 {
+public:
 	int nrows;
 	int ncols;
 
 	// TODO: Could hold OP order in here if needed?
 
-public:
+//public:
 	ExprAnalyzer() :
 		nrows{},
 		ncols{}
@@ -20,10 +21,20 @@ public:
 
 };
 
+
+struct ExprEvaluated
+{
+	bool done = false;
+	int nrows;
+	int ncols;
+};
+
 template<class E>
 class BaseExpr
 {
 public:
+	ExprEvaluated eval;
+
 	//double operator[](int i)		const { return static_cast<E const&>(*this)[i]; }
 
 	//double operator()(int r, int c) const { return static_cast<E const&>(*this)(r, c); }
@@ -86,8 +97,8 @@ public:
 		//ncols{expr.totalCols()},
 		//vals(nrows * ncols)
 	{
-		//ExprAnalyzer ea;
-		//expr.analyzeExpr(ea);
+		ExprAnalyzer ea;
+		expr.analyzeLeft(ea);
 
 		int idx = 0;
 		for(int i = 0; i < nrows; ++i)
@@ -115,6 +126,7 @@ class AddExpr : public BaseExpr<AddExpr<A, B>>
 {
 	const A& v1;
 	const B& v2;
+
 public:
 
 	using value_type = typename MatrixT<A>::value_type;
@@ -125,10 +137,6 @@ public:
 		v1{v1},
 		v2{v2}
 	{}
-
-	size_t size() const { return v1.size(); }
-	int rows() const { return v1.rows(); }
-	int cols() const { return v1.cols(); }
 
 	void analyzeLeft(ExprAnalyzer& ea) const 
 	{
@@ -170,6 +178,7 @@ class MulExpr : public BaseExpr<MulExpr<A, B>>
 {
 	const A& v1;
 	const B& v2;
+
 public:
 
 	static constexpr bool left_leaf  = IsLeaf<A>::value;
@@ -180,14 +189,25 @@ public:
 		v2{ v2 }
 	{}
 
-	size_t size() const { return v1.size(); }
-	int rows() const { return v2.rows(); }
-	int cols() const { return v1.cols(); }
-
 	void analyzeLeft(ExprAnalyzer& ea) const 
 	{
 		if constexpr (!left_leaf)
 			v1.analyzeLeft(ea);
+		else
+		{
+			this->eval.nrows = v1.rows();
+			this->eval.ncols = v2.cols();
+			this->eval.done = true;
+			return;
+		}
+
+		
+	}
+
+	void analyzeRight(ExprAnalyzer& ea) const 
+	{
+		if constexpr (!right_leaf)
+			v1.analyzeRight(ea);
 		else
 		{
 			ea.nrows = v1.rows();
@@ -195,17 +215,16 @@ public:
 			return;
 		}
 
+		ea.ncols = v2.cols();
 	}
-
-	void analyzeRight(ExprAnalyzer& ea) const {}
 
 	double evalExpr(int row, int col, int idx) const
 	{
 		int sum = 0;
-		int ncols = cols();
+		int ncols = 0;//cols(); // TODO: Must be replaced with number of columns
 		int fidx = row * ncols;
 
-		for(int i = 0; i < cols(); ++i)
+		for(int i = 0; i < ncols; ++i)
 			sum += v1.evalExpr(row, col, fidx + i) * v2.evalExpr(row, col, i * ncols + col);
 		return sum;
 	}
