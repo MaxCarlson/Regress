@@ -7,12 +7,15 @@
 int main()
 {
 
-
 	MatrixT<float> t1 = { 
 		{1, 2},
 		{3, 4},
 		{3, 4}
 	};
+
+	auto it = t1.begin();
+
+	auto vv = *it;
 
 	MatrixT<float> t2 = {
 		{5, 6, 1},

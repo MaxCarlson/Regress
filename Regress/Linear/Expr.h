@@ -23,7 +23,7 @@ class MatrixT : public MatrixTBase<Type>
 
 public:
 	using value_type	= Type;
-	using MyType		= MatrixT<Type>;
+	using ThisType		= MatrixT<Type>;
 	using SubType		= Type;
 
 	MatrixT(const std::initializer_list<std::initializer_list<Type>>& m) :
@@ -37,42 +37,75 @@ public:
 				vals[i++] = *jt;
 	}
 
-	template<class E>
-	MatrixT(BaseExpr<E> expr) :
-		nrows{},
-		ncols{},
-		vals{}
-	{
-		ExprAnalyzer ea;
-		expr.analyzeLeft(ea);
-
-		int idx = 0;
-		for(int i = 0; i < nrows; ++i)
-			for (int j = 0; j < ncols; ++j, ++idx)
-			{
-				vals[idx] = expr.evalExpr(i, j, idx);
-			}
-	}
-
-
-
 	int size() const { return vals.size(); }
 	int rows() const { return nrows; }
 	int cols() const { return ncols; }
 
 
-	struct col_iterator 
+	template<bool isConst>
+	class col_iterator_base 
 	{
+	protected:
 		using iterator_category = std::random_access_iterator_tag;
+		using ItType = std::conditional_t<isConst, 
+			typename Storage::const_iterator, 
+			typename Storage::iterator>;
+		using ContainerType = std::conditional_t<isConst,
+			const ThisType,
+			ThisType>;
 
-		col_iterator& operator++()
+		using reference = std::conditional_t<isConst,
+			const Type&,
+			Type&>;
+
+		using pointer = std::conditional_t<isConst,
+			const Type*,
+			Type*>;
+
+		ItType			it;
+		ContainerType	cont;
+
+	public:
+		col_iterator_base(ItType it, ContainerType& cont) :
+			it{ it },
+			cont{ cont }
+		{}
+
+		col_iterator_base& operator++()
 		{
-			++it
+			++it;
 			return *this;
 		}
 
-		Storage::iterator it;
+		col_iterator_base& operator--()
+		{
+			--it;
+			return *this;
+		}
+
+		reference operator*() const
+		{
+			return *it;
+		}
+
+		pointer operator->() const
+		{
+			return &(*it);
+		}
 	};
+
+	struct const_col_iterator : public col_iterator_base<true>
+	{
+		using MyBase = col_iterator_base<true>;
+		using ItType = typename MyBase::ItType;
+		using ContainerType = typename MyBase::ContainerType;
+
+		const_col_iterator(ItType it, ContainerType& cont) :
+			MyBase{it, cont}
+		{}
+	};
+
+	const_col_iterator begin() const { return const_col_iterator{ vals.cbegin(), *this }; }
 };
 
 struct MatrixOpBase
@@ -122,7 +155,7 @@ public:
 		op{ op }
 	{}
 };
-
+/*
 template<class Type>
 MatrixExpr<MatBinExpr<
 	typename MatrixT<Type>::col_iterator, 
@@ -140,5 +173,5 @@ MatrixExpr<MatBinExpr<
 	
 	}
 }
-
+*/
 
