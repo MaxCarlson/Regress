@@ -94,58 +94,71 @@ public:
 		}
 	};
 
-	struct const_col_iterator : public col_iterator_base<true>
+	struct col_const_iterator : public col_iterator_base<true>
 	{
 		using MyBase = col_iterator_base<true>;
 		using ItType = typename MyBase::ItType;
 		using ContainerType = typename MyBase::ContainerType;
 
-		const_col_iterator(ItType it, ContainerType& cont) :
+		col_const_iterator(ItType it, ContainerType& cont) :
 			MyBase{it, cont}
 		{}
 	};
 
-	const_col_iterator begin() const { return const_col_iterator{ vals.cbegin(), *this }; }
+	col_const_iterator begin() const { return col_const_iterator{ vals.cbegin(), *this }; }
 };
 
 struct MatrixOpBase
 {
-	enum Op
+	using size_type = int;
+
+	enum Op : size_type
 	{
 		PLUS,
 		MINUS,
-		MUL
+		MULTIPLY
 	};
 };
 
 template<class Type>
 class MatrixMultOp : public MatrixOpBase
 {
-
+	inline MatrixMultOp(size_type) {}
 };
 
 template<class Iter>
 class MatrixExpr
 {
+	using size_type = typename MatrixOpBase::size_type;
 
+	const Iter& expr;
+	size_type op;
+
+public:
+
+	inline MatrixExpr(const Iter& expr, size_type op) noexcept :
+		expr{expr},
+		op{op}
+	{}
 };
 
 template<class LIt, class RIt, class Op>
 class MatBinExpr
 {
+	using size_type = typename MatrixOpBase::size_type;
+
 	LIt lit;
 	RIt rit;
-	Op op;
-
-
-	const int lhsRows;
-	const int rhsRows;
-	const int lhsCols;
-	const int rhsCols;
+	const Op op;
+	const size_type lhsRows;
+	const size_type rhsRows;
+	const size_type lhsCols;
+	const size_type rhsCols;
 
 public:
 
-	MatBinExpr(LIt lit, RIt rit, int lhsRows, int rhsRows, int lhsCols, int rhsCols, Op op) :
+
+	MatBinExpr(LIt lit, RIt rit, size_type lhsRows, size_type rhsRows, size_type lhsCols, size_type rhsCols) :
 		lit{ lit },
 		rit{ rit },
 		lhsRows{ lhsRows },
@@ -155,23 +168,26 @@ public:
 		op{ op }
 	{}
 };
-/*
+
 template<class Type>
 MatrixExpr<MatBinExpr<
-	typename MatrixT<Type>::col_iterator, 
-	typename MatrixT<Type>::col_iterator,
+	typename MatrixT<Type>::col_const_iterator,
+	typename MatrixT<Type>::col_const_iterator,
 	MatrixMultOp<Type>>>
 	operator*(const MatrixT<Type>& lhs, const MatrixT<Type>& rhs) noexcept
 {
-	using RetType = MatrixExpr<MatBinExpr<
-		typename MatrixT<Type>::col_iterator,
-		typename MatrixT<Type>::col_iterator,
-		MatrixMultOp<Type>>>;
-	return RetType{MatBinExpr{ 
-		
-	}
-	
-	}
+	using ExprType = MatBinExpr<
+		typename MatrixT<Type>::col_const_iterator,
+		typename MatrixT<Type>::col_const_iterator,
+		MatrixMultOp<Type>>;
+	return MatrixExpr<ExprType>{ ExprType{
+		lhs.begin(),
+		rhs.begin(),
+		lhs.rows(),
+		rhs.rows(),
+		lhs.cols(),
+		rhs.cols()},
+		MatrixOpBase::Op::MULTIPLY };
 }
-*/
+
 

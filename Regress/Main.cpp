@@ -7,20 +7,18 @@
 int main()
 {
 
-	MatrixT<float> t1 = { 
+	MatrixT<float> lhs = { 
 		{1, 2},
 		{3, 4},
 		{3, 4}
 	};
 
-	auto it = t1.begin();
-
-	auto vv = *it;
-
-	MatrixT<float> t2 = {
+	MatrixT<float> rhs = {
 		{5, 6, 1},
 		{7, 8, 1}
 	};
+
+	auto ep = lhs * rhs;
 
 	//MatrixT<float> t3 = (t1 * t2);// t1 * (t1 + t1) * ;
 
