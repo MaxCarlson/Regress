@@ -15,9 +15,10 @@ template<class Type>
 class MatrixT : public MatrixTBase<Type>
 {
 	using Storage = std::vector<Type>;
+	using size_type = int;
 
-	int nrows;
-	int ncols;
+	size_type nrows;
+	size_type ncols;
 	Storage vals;
 
 
@@ -27,8 +28,8 @@ public:
 	using SubType		= Type;
 
 	MatrixT(const std::initializer_list<std::initializer_list<Type>>& m) :
-		nrows{ static_cast<int>(m.size()) },
-		ncols{ static_cast<int>(m.begin()->size()) },
+		nrows{ static_cast<size_type>(m.size()) },
+		ncols{ static_cast<size_type>(m.begin()->size()) },
 		vals(nrows * ncols)
 	{
 		int i = 0;
@@ -37,10 +38,15 @@ public:
 				vals[i++] = *jt;
 	}
 
-	int size() const { return vals.size(); }
-	int rows() const { return nrows; }
-	int cols() const { return ncols; }
-
+	size_type size() const { return vals.size(); }
+	size_type rows() const { return nrows; }
+	size_type cols() const { return ncols; }
+	void resize(size_type numRows, size_type numCols)
+	{
+		nrows = numRows;
+		ncols = numCols;
+		vals.reserve(numRows * numCols);
+	}
 
 	template<bool isConst>
 	class col_iterator_base 
@@ -124,12 +130,26 @@ template<class Type>
 class MatrixMultOp : public MatrixOpBase
 {
 	inline MatrixMultOp(size_type) {}
+
+	template<class Lit, class Rit>
+	inline Type operator()(Lit lit, Rit rit, size_type lhsRows, size_type rhsRows)
+	{
+		Type result = 0;
+		while (--rhsRows >= 0)
+		{
+			result += *lit * *rit;
+			++lit;
+			rit += rhsRows;
+		}
+		return result;
+	}
 };
 
-template<class Iter>
+template<class Iter, class Type>
 class MatrixExpr
 {
-	using size_type = typename MatrixOpBase::size_type;
+	using size_type		= typename MatrixOpBase::size_type;
+	using MatrixType	= MatrixT<Type>;
 
 	const Iter& expr;
 	size_type op;
@@ -140,9 +160,34 @@ public:
 		expr{expr},
 		op{op}
 	{}
+
+	inline size_type lhsRows() const noexcept { return expr.lhsRows(); }
+	inline size_type rhsRows() const noexcept { return expr.rhsRows(); }
+	inline size_type lhsCols() const noexcept { return expr.lhsCols(); }
+	inline size_type rhsCols() const noexcept { return expr.rhsCols(); }
+
+
+	// TODO: Will need to be modified as more operations are added!
+	size_type rowSize() const noexcept
+	{
+		return lhsRows();
+	}
+
+	// TODO: Will possibly need to be modified as more operations are added!
+	size_type colSize() const noexcept
+	{
+		return rhsCols();
+	}
+
+	void assign(MatrixType& to)
+	{
+
+		to.resize(rowSize(), colSize());
+
+	}
 };
 
-template<class LIt, class RIt, class Op>
+template<class LIt, class RIt, class Op, class Type>
 class MatBinExpr
 {
 	using size_type = typename MatrixOpBase::size_type;
@@ -150,37 +195,55 @@ class MatBinExpr
 	LIt lit;
 	RIt rit;
 	const Op op;
-	const size_type lhsRows;
-	const size_type rhsRows;
-	const size_type lhsCols;
-	const size_type rhsCols;
+	const size_type nlhsRows;
+	const size_type nrhsRows;
+	const size_type nlhsCols;
+	const size_type nrhsCols;
 
 public:
 
 
-	MatBinExpr(LIt lit, RIt rit, size_type lhsRows, size_type rhsRows, size_type lhsCols, size_type rhsCols) :
+	MatBinExpr(LIt lit, RIt rit, size_type nlhsRows, size_type nrhsRows, size_type nlhsCols, size_type nrhsCols) :
 		lit{ lit },
 		rit{ rit },
-		lhsRows{ lhsRows },
-		rhsRows{ rhsRows },
-		lhsCols{ lhsCols },
-		rhsCols{ rhsCols },
+		nlhsRows{ nlhsRows },
+		nrhsRows{ nrhsRows },
+		nlhsCols{ nlhsCols },
+		nrhsCols{ nrhsCols },
 		op{ op }
 	{}
+
+	inline void left_inc(int i)  noexcept { lit += i; }
+	inline void left_dec(int i)  noexcept { lit -= i; }
+	inline void right_inc(int i) noexcept { rit += i; }
+	inline void right_dec(int i) noexcept { rit -= i; }
+
+	inline size_type lhsRows() const noexcept { return nlhsRows; }
+	inline size_type rhsRows() const noexcept { return nrhsRows; }
+	inline size_type lhsCols() const noexcept { return nlhsCols; }
+	inline size_type rhsCols() const noexcept { return nrhsCols; }
+
+
+	Type operator*() const noexcept
+	{
+		return op(lit, rit, nlhsRows, nrhsRows);
+	}
 };
 
 template<class Type>
 MatrixExpr<MatBinExpr<
 	typename MatrixT<Type>::col_const_iterator,
 	typename MatrixT<Type>::col_const_iterator,
-	MatrixMultOp<Type>>>
+	MatrixMultOp<Type>,
+	Type>, Type>
 	operator*(const MatrixT<Type>& lhs, const MatrixT<Type>& rhs) noexcept
 {
 	using ExprType = MatBinExpr<
 		typename MatrixT<Type>::col_const_iterator,
 		typename MatrixT<Type>::col_const_iterator,
-		MatrixMultOp<Type>>;
-	return MatrixExpr<ExprType>{ ExprType{
+		MatrixMultOp<Type>,
+		Type>;
+	return MatrixExpr<ExprType, Type>{ ExprType{
 		lhs.begin(),
 		rhs.begin(),
 		lhs.rows(),
