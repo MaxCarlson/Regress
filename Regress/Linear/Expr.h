@@ -38,6 +38,12 @@ public:
 				vals[i++] = *jt;
 	}
 
+	template<class Expr>
+	MatrixT(const Expr& expr)
+	{
+		expr.assign(*this);
+	}
+
 	size_type size() const { return vals.size(); }
 	size_type rows() const { return nrows; }
 	size_type cols() const { return ncols; }
@@ -69,7 +75,7 @@ public:
 			Type*>;
 
 		ItType			it;
-		ContainerType	cont;
+		ContainerType&	cont;
 
 	public:
 		col_iterator_base(ItType it, ContainerType& cont) :
@@ -129,13 +135,14 @@ struct MatrixOpBase
 template<class Type>
 class MatrixMultOp : public MatrixOpBase
 {
+public:
 	inline MatrixMultOp(size_type) {}
 
 	template<class Lit, class Rit>
 	inline Type operator()(Lit lit, Rit rit, size_type lhsRows, size_type rhsRows)
 	{
 		Type result = 0;
-		while (--rhsRows >= 0)
+		while (--rhsRows >= 0) // TODO: I this code is wrong, we need rit += rhsCols 
 		{
 			result += *lit * *rit;
 			++lit;
@@ -145,26 +152,66 @@ class MatrixMultOp : public MatrixOpBase
 	}
 };
 
+//     +---+---+
+//     | A | B |
+//     +---+---+
+// n = | C | D |
+//     +---+---+
+//     | E | F |
+//     +---+---+
+//
+//     +---+---+---+---+
+//     | Z | Y | X | W |
+// m = +---+---+---+---+
+//     | V | U | T | S |
+//     +---+---+---+---+
+//
+//       +---------------+---------------+---------------+---------------+
+//       | (A*Z) + (B*V) | (A*Y) + (B*U) | (A*X) + (B*T) | (A*W) + (B*S) |
+//       +---------------+---------------+---------------+---------------+
+// m*n = | (C*Z) + (D*V) | (C*Y) + (D*U) | (C*X) + (D*T) | (C*W) + (D*S) |
+//       +---------------+---------------+---------------+---------------+
+//       | (E*Z) + (F*V) | (E*Y) + (F*U) | (E*X) + (F*T) | (E*W) + (F*S) |
+//       +---------------+---------------+---------------+---------------+
+//
+
 template<class Iter, class Type>
 class MatrixExpr
 {
 	using size_type		= typename MatrixOpBase::size_type;
 	using MatrixType	= MatrixT<Type>;
 
-	const Iter& expr;
-	size_type op;
+	Iter expr;
+	const size_type op;
+	size_type multiCount; // Number of times the multiply op has been applied (if applicable)
 
 public:
 
 	inline MatrixExpr(const Iter& expr, size_type op) noexcept :
-		expr{expr},
-		op{op}
+		expr{ expr },
+		op{ op },
+		multiCount{ 0 }
 	{}
 
 	inline size_type lhsRows() const noexcept { return expr.lhsRows(); }
 	inline size_type rhsRows() const noexcept { return expr.rhsRows(); }
 	inline size_type lhsCols() const noexcept { return expr.lhsCols(); }
 	inline size_type rhsCols() const noexcept { return expr.rhsCols(); }
+
+	inline MatrixExpr& operator++() noexcept
+	{
+		if (op == MatrixOpBase::MULTIPLY)
+		{
+			expr.lhsInc(1);
+			if (++multiCount == lhsCols())
+			{
+				multiCount = 0;
+				expr.lhsDec();
+			}
+		}
+		else
+			++expr;
+	}
 
 
 	// TODO: Will need to be modified as more operations are added!
@@ -179,7 +226,7 @@ public:
 		return rhsCols();
 	}
 
-	void assign(MatrixType& to)
+	void assign(MatrixType& to) const
 	{
 
 		to.resize(rowSize(), colSize());
@@ -210,13 +257,13 @@ public:
 		nrhsRows{ nrhsRows },
 		nlhsCols{ nlhsCols },
 		nrhsCols{ nrhsCols },
-		op{ op }
+		op{ 0 }
 	{}
 
-	inline void left_inc(int i)  noexcept { lit += i; }
-	inline void left_dec(int i)  noexcept { lit -= i; }
-	inline void right_inc(int i) noexcept { rit += i; }
-	inline void right_dec(int i) noexcept { rit -= i; }
+	inline void lhsInc(int i)  noexcept { lit += i; }
+	inline void lhsDec(int i)  noexcept { lit -= i; }
+	inline void rhsInc(int i) noexcept { rit += i; }
+	inline void rhsDec(int i) noexcept { rit -= i; }
 
 	inline size_type lhsRows() const noexcept { return nlhsRows; }
 	inline size_type rhsRows() const noexcept { return nrhsRows; }
