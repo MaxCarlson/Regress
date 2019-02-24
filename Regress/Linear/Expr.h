@@ -101,6 +101,12 @@ public:
 			return *this;
 		}
 
+		col_iterator_base& operator-=(size_type i)
+		{
+			it -= i;
+			return *this;
+		}
+
 		reference operator*() const
 		{
 			return *it;
@@ -120,6 +126,7 @@ public:
 		{
 			return !(*this == other);
 		}
+
 	};
 
 	struct col_const_iterator : public col_iterator_base<true>
@@ -172,12 +179,21 @@ public:
 	inline Type operator()(Lit lit, Rit rit, size_type rhsRows, size_type rhsCols) const noexcept
 	{
 		Type result = 0;
-		while (--rhsRows >= 0) // TODO: I this code is wrong, we need rit += rhsCols 
+		for (;; --rhsRows, ++lit, rit += rhsCols)
+		{
+			result += *lit * *rit;
+			if (rhsRows <= 1)
+				break;
+		}
+
+		/*
+		while (rhsRows-- > 0)  
 		{
 			result += *lit * *rit;
 			++lit;
 			rit += rhsCols;
 		}
+		*/
 		return result;
 	}
 };
@@ -225,6 +241,7 @@ public:
 	{}
 
 	inline Iter getExprOp()		const noexcept { return exprOp; }
+	inline size_type opType()	const noexcept { return op; }
 	inline size_type lhsRows()	const noexcept { return exprOp.lhsRows(); }
 	inline size_type rhsRows()	const noexcept { return exprOp.rhsRows(); }
 	inline size_type lhsCols()	const noexcept { return exprOp.lhsCols(); }
@@ -275,13 +292,15 @@ public:
 	{
 		using MatrixExpr = ThisType;
 
-		const MatrixExpr* expr;
-		Iter exprOp;
+		const MatrixExpr* expr; // Container class pointer
+		Iter exprOp;			// Expression iterator of expr
+		size_type multiCount;
 
 	public:
-		const_iterator(const MatrixExpr& expr) noexcept :
-			expr{ &expr },
-			exprOp{ expr.getExprOp() }
+		const_iterator(const MatrixExpr* expr) noexcept :
+			expr{ expr },
+			exprOp{ expr->getExprOp() },
+			multiCount{ expr->multiCount }
 		{}
 
 		inline bool operator==(const const_iterator& other) noexcept
@@ -301,18 +320,29 @@ public:
 
 		inline const_iterator& operator++() noexcept
 		{
-			++expr;
+			if (expr->opType() == MatrixOpBase::Op::MULTIPLY)
+			{
+				exprOp.rhsInc(1);
+				if (++multiCount % expr->rhsCols() == 0)
+				{
+					exprOp.rhsDec(expr->rhsCols());
+					exprOp.lhsInc(expr->lhsCols());
+				}
+			}
+			else
+				++exprOp;
 			return *this;
 		}
 	};
 
-	const_iterator begin() const noexcept { return const_iterator{ *this }; }
+	const_iterator begin() const noexcept { return const_iterator{ this }; }
 };
 
 template<class LIt, class RIt, class Op, class Type>
 class MatBinExpr
 {
 	using size_type = typename MatrixOpBase::size_type;
+	using ThisType	= MatBinExpr<LIt, RIt, Op, Type>;
 
 	LIt lit;
 	RIt rit;
@@ -349,6 +379,20 @@ public:
 	Type operator*() const noexcept
 	{
 		return op(lit, rit, nrhsRows, nrhsCols);
+	}
+
+	ThisType& operator++() noexcept
+	{
+		lhsInc(1);
+		rhsInc(1);
+		return *this;
+	}
+
+	ThisType& operator--() noexcept
+	{
+		lhsDec(1);
+		rhsDec(1);
+		return *this;
 	}
 };
 

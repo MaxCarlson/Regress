@@ -10,12 +10,12 @@ int main()
 	MatrixT<float> lhs = { 
 		{1, 2},
 		{3, 4},
-		{3, 4}
+		{5, 6}
 	};
 
 	MatrixT<float> rhs = {
-		{5, 6, 1},
-		{7, 8, 1}
+		{5, 6, 7},
+		{8, 9, 10}
 	};
 
 	auto ep = lhs * rhs;
