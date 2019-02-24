@@ -262,6 +262,17 @@ public:
 		}
 		else
 			++exprOp;
+
+		return *this;
+	}
+
+	inline MatrixExpr& operator+=(size_type i) noexcept
+	{
+		while (i--)
+		{
+			++(*this);
+		}
+		return *this;
 	}
 
 
@@ -419,4 +430,26 @@ MatrixExpr<MatBinExpr<
 		MatrixOpBase::Op::MULTIPLY };
 }
 
+template<class Type, class Iter>
+MatrixExpr<MatBinExpr<
+	MatrixExpr<Iter, Type>,
+	typename MatrixT<Type>::col_const_iterator,
+	MatrixMultOp<Type>,
+	Type>, Type>
+	operator*(const MatrixExpr<Iter, Type>& lhs, const MatrixT<Type>& rhs) noexcept
+{
+	using ExprType = MatBinExpr<
+		MatrixExpr<Iter, Type>,
+		typename MatrixT<Type>::col_const_iterator,
+		MatrixMultOp<Type>,
+		Type>;
+	return MatrixExpr<ExprType, Type>{ ExprType{
+		lhs,
+		rhs.begin(),
+		lhs.lhsRows(),
+		rhs.rows(),
+		lhs.lhsCols(), // TODO: This might be an issue right here!
+		rhs.cols() },
+		MatrixOpBase::Op::MULTIPLY };
+}
 
