@@ -146,30 +146,66 @@ public:
 
 	inline Type operator*() const noexcept { return *exprOp; }
 
-	inline MatrixExpr& operator++() noexcept
+	template<bool Inc>
+	inline void incrementSelf(size_type i)
 	{
 		if (op == MatrixOpBase::MULTIPLY)
 		{
-			exprOp.rhsInc(1);
-			if (++multiCount % rhsCols() == 0)
+			while (i--)
 			{
-				exprOp.rhsDec(rhsCols());
-				exprOp.lhsInc(rhsRows()); // Same as lhsCols
+				if constexpr (Inc)
+				{
+					exprOp.rhsInc(1);
+					++multiCount;
+				}
+				else
+				{
+					exprOp.rhsDec(1);
+					--multiCount;
+				}
+
+				if (multiCount % rhsCols() == 0)
+				{
+					if constexpr (Inc)
+					{
+						exprOp.rhsDec(rhsCols());
+						exprOp.lhsInc(rhsRows()); // Same as lhsCols
+					}
+					else
+					{
+						exprOp.rhsInc(rhsCols());
+						exprOp.lhsDec(rhsRows());
+					}
+				}
 			}
 		}
 		else
-			++exprOp;
+			exprOp += i;
+	}
 
+	inline MatrixExpr& operator++() noexcept
+	{
+		incrementSelf<true>(1);
 		return *this;
 	}
 
 	inline MatrixExpr& operator+=(size_type i) noexcept
 	{
-		while (i--) // Note: This checks expression branch each time (could be optimized)
-			++(*this);
+		incrementSelf<true>(i);
 		return *this;
 	}
 
+	inline MatrixExpr& operator--() noexcept
+	{
+		incrementSelf<false>(1);
+		return *this;
+	}
+
+	inline MatrixExpr& operator-=(size_type i) noexcept
+	{
+		incrementSelf<false>(i);
+		return *this;
+	}
 
 	// TODO: Will need to be modified as more operations are added!
 	size_type rowSize() const noexcept
@@ -269,10 +305,10 @@ public:
 		op{ 0 }
 	{}
 
-	inline void lhsInc(int i)  noexcept { lit += i; }
-	inline void lhsDec(int i)  noexcept { lit -= i; }
-	inline void rhsInc(int i)  noexcept { rit += i; }
-	inline void rhsDec(int i)  noexcept { rit -= i; }
+	inline void lhsInc(size_type i)  noexcept { lit += i; }
+	inline void lhsDec(size_type i)  noexcept { lit -= i; }
+	inline void rhsInc(size_type i)  noexcept { rit += i; }
+	inline void rhsDec(size_type i)  noexcept { rit -= i; }
 
 	inline size_type lhsRows() const noexcept { return nlhsRows; }
 	inline size_type rhsRows() const noexcept { return nrhsRows; }
@@ -291,10 +327,24 @@ public:
 		return *this;
 	}
 
+	ThisType& operator+=(size_type i) noexcept
+	{
+		lhsInc(i);
+		rhsInc(i);
+		return *this;
+	}
+
 	ThisType& operator--() noexcept
 	{
 		lhsDec(1);
 		rhsDec(1);
+		return *this;
+	}
+
+	ThisType& operator-=(size_type i) noexcept
+	{
+		lhsDec(i);
+		rhsDec(i);
 		return *this;
 	}
 };

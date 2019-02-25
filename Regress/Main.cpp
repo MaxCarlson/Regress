@@ -20,7 +20,7 @@ int main()
 		{4, 5, 6}
 	};
 
-	auto ep = (lhs * rhs * lhs * rhs);
+	auto ep = rhs* (lhs * rhs);
 	rhs = ep;
 
 	//MatrixT<float> t3 = (t1 * t2);// t1 * (t1 + t1) * ;
