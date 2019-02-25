@@ -13,15 +13,14 @@ int main()
 		{1, 2},
 		{3, 4},
 		{5, 6},
-		{7, 8}
 	};
 
 	MatrixT<int> rhs = {
-		{5, 6, 7},
-		{8, 9, 10}
+		{1, 2, 3},
+		{4, 5, 6}
 	};
 
-	auto ep = lhs * rhs * lhs;
+	auto ep = (lhs * rhs * lhs * rhs);
 	rhs = ep;
 
 	//MatrixT<float> t3 = (t1 * t2);// t1 * (t1 + t1) * ;

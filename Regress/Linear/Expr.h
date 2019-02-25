@@ -14,11 +14,13 @@ struct MatrixTBase
 template<class Type>
 class MatrixT : public MatrixTBase<Type>
 {
+public:
 	using Storage				= std::vector<Type>;
 	using col_iterator			= typename Storage::iterator;
 	using col_const_iterator	= typename Storage::const_iterator;
 	using size_type				= int;
 
+private:
 	size_type nrows;
 	size_type ncols;
 	Storage vals;
@@ -58,7 +60,7 @@ public:
 
 	col_const_iterator begin() const	{ return vals.cbegin(); }
 	col_const_iterator end()   const	{ return vals.cend(); }
-	col_iterator begin()				{ return begin(); }
+	col_iterator begin()				{ return vals.begin(); }
 	col_iterator end()					{ return vals.end(); }
 };
 
@@ -140,7 +142,6 @@ public:
 	inline size_type opType()	const noexcept { return op; }
 	inline size_type lhsRows()	const noexcept { return exprOp.lhsRows(); }
 	inline size_type rhsRows()	const noexcept { return exprOp.rhsRows(); }
-	inline size_type lhsCols()	const noexcept { return exprOp.lhsCols(); }
 	inline size_type rhsCols()	const noexcept { return exprOp.rhsCols(); }
 
 	inline Type operator*() const noexcept { return *exprOp; }
@@ -153,7 +154,7 @@ public:
 			if (++multiCount % rhsCols() == 0)
 			{
 				exprOp.rhsDec(rhsCols());
-				exprOp.lhsInc(lhsCols());
+				exprOp.lhsInc(rhsRows()); // Same as lhsCols
 			}
 		}
 		else
@@ -231,7 +232,7 @@ public:
 				if (++multiCount % expr->rhsCols() == 0)
 				{
 					exprOp.rhsDec(expr->rhsCols());
-					exprOp.lhsInc(expr->lhsCols());
+					exprOp.lhsInc(expr->rhsRows());
 				}
 			}
 			else
@@ -254,18 +255,16 @@ class MatBinExpr
 	const Op op;
 	const size_type nlhsRows;
 	const size_type nrhsRows;
-	const size_type nlhsCols;
 	const size_type nrhsCols;
 
 public:
 
 
-	MatBinExpr(LIt lit, RIt rit, size_type nlhsRows, size_type nrhsRows, size_type nlhsCols, size_type nrhsCols) :
+	MatBinExpr(LIt lit, RIt rit, size_type nlhsRows, size_type nrhsRows, size_type nrhsCols) :
 		lit{ lit },
 		rit{ rit },
 		nlhsRows{ nlhsRows },
 		nrhsRows{ nrhsRows },
-		nlhsCols{ nlhsCols },
 		nrhsCols{ nrhsCols },
 		op{ 0 }
 	{}
@@ -277,7 +276,6 @@ public:
 
 	inline size_type lhsRows() const noexcept { return nlhsRows; }
 	inline size_type rhsRows() const noexcept { return nrhsRows; }
-	inline size_type lhsCols() const noexcept { return nlhsCols; }
 	inline size_type rhsCols() const noexcept { return nrhsCols; }
 
 
@@ -319,7 +317,6 @@ MatrixExpr<MatBinExpr<
 		rhs.begin(),
 		lhs.rows(),
 		rhs.rows(),
-		lhs.cols(),
 		rhs.cols()},
 		MatrixOpBase::Op::MULTIPLY };
 }
@@ -342,8 +339,28 @@ MatrixExpr<MatBinExpr<
 		rhs.begin(),
 		lhs.lhsRows(),
 		rhs.rows(),
-		lhs.lhsCols(), // TODO: This might be an issue right here! 
 		rhs.cols() },
 		MatrixOpBase::Op::MULTIPLY };
 }
 
+template<class Type, class Iter>
+MatrixExpr<MatBinExpr<
+	typename MatrixT<Type>::col_const_iterator,
+	MatrixExpr<Iter, Type>,
+	MatrixMultOp<Type>,
+	Type>, Type>
+	operator*(const MatrixT<Type>& lhs, const MatrixExpr<Iter, Type>& rhs) noexcept
+{
+	using ExprType = MatBinExpr<
+		typename MatrixT<Type>::col_const_iterator,
+		MatrixExpr<Iter, Type>,
+		MatrixMultOp<Type>,
+		Type>;
+	return MatrixExpr<ExprType, Type>{ ExprType{
+		lhs.begin(),
+		rhs,
+		lhs.rows(),
+		rhs.rhsRows(),
+		rhs.rhsCols() },
+		MatrixOpBase::Op::MULTIPLY };
+}
