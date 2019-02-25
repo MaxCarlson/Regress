@@ -4,16 +4,19 @@
 #include "Network\InputLayer.h"
 #include "Linear\MatrixTest.h"
 
+
 int main()
 {
 
-	MatrixT<float> lhs = { 
+
+	MatrixT<int> lhs = { 
 		{1, 2},
 		{3, 4},
-		{5, 6}
+		{5, 6},
+		{7, 8}
 	};
 
-	MatrixT<float> rhs = {
+	MatrixT<int> rhs = {
 		{5, 6, 7},
 		{8, 9, 10}
 	};

@@ -14,8 +14,10 @@ struct MatrixTBase
 template<class Type>
 class MatrixT : public MatrixTBase<Type>
 {
-	using Storage = std::vector<Type>;
-	using size_type = int;
+	using Storage				= std::vector<Type>;
+	using col_iterator			= typename Storage::iterator;
+	using col_const_iterator	= typename Storage::const_iterator;
+	using size_type				= int;
 
 	size_type nrows;
 	size_type ncols;
@@ -54,107 +56,10 @@ public:
 		vals.resize(numRows * numCols);
 	}
 
-	template<bool isConst>
-	class col_iterator_base 
-	{
-	protected:
-		using iterator_category = std::random_access_iterator_tag;
-		using ItType = std::conditional_t<isConst, 
-			typename Storage::const_iterator, 
-			typename Storage::iterator>;
-		using ContainerType = std::conditional_t<isConst,
-			const ThisType,
-			ThisType>;
-
-		using reference = std::conditional_t<isConst,
-			const Type&,
-			Type&>;
-
-		using pointer = std::conditional_t<isConst,
-			const Type*,
-			Type*>;
-
-		ItType			it;
-		ContainerType&	cont;
-
-	public:
-		col_iterator_base(ItType it, ContainerType& cont) :
-			it{ it },
-			cont{ cont }
-		{}
-
-		col_iterator_base& operator++()
-		{
-			++it;
-			return *this;
-		}
-
-		col_iterator_base& operator+=(size_type i)
-		{
-			it += i;
-			return *this;
-		}
-
-		col_iterator_base& operator--()
-		{
-			--it;
-			return *this;
-		}
-
-		col_iterator_base& operator-=(size_type i)
-		{
-			it -= i;
-			return *this;
-		}
-
-		reference operator*() const
-		{
-			return *it;
-		}
-
-		pointer operator->() const
-		{
-			return &(*it);
-		}
-
-		bool operator==(const col_iterator_base& other) const
-		{
-			return it == other.it;
-		}
-
-		bool operator!=(const col_iterator_base& other) const
-		{
-			return !(*this == other);
-		}
-
-	};
-
-	struct col_const_iterator : public col_iterator_base<true>
-	{
-		using MyBase = col_iterator_base<true>;
-		using ItType = typename MyBase::ItType;
-		using ContainerType = typename MyBase::ContainerType;
-
-		col_const_iterator(ItType it, ContainerType& cont) :
-			MyBase{it, cont}
-		{}
-	};
-
-	struct col_iterator : public col_iterator_base<false>
-	{
-		using MyBase = col_iterator_base<false>;
-		using ItType = typename MyBase::ItType;
-		using ContainerType = typename MyBase::ContainerType;
-
-		col_iterator(ItType it, ContainerType& cont) :
-			MyBase{it, cont}
-		{}
-	};
-
-	col_const_iterator begin() const { return col_const_iterator{ vals.cbegin(), *this }; }
-	col_const_iterator end()   const { return col_const_iterator{ vals.cend(),   *this }; }
-	col_iterator begin()  { return col_iterator{ vals.begin(), *this }; }
-	col_iterator end()   { return col_iterator{ vals.end(),   *this }; }
+	col_const_iterator begin() const	{ return vals.cbegin(); }
+	col_const_iterator end()   const	{ return vals.cend(); }
+	col_iterator begin()				{ return begin(); }
+	col_iterator end()					{ return vals.end(); }
 };
 
 struct MatrixOpBase
@@ -185,15 +90,6 @@ public:
 			if (rhsRows <= 1)
 				break;
 		}
-
-		/*
-		while (rhsRows-- > 0)  
-		{
-			result += *lit * *rit;
-			++lit;
-			rit += rhsCols;
-		}
-		*/
 		return result;
 	}
 };
@@ -268,10 +164,8 @@ public:
 
 	inline MatrixExpr& operator+=(size_type i) noexcept
 	{
-		while (i--)
-		{
+		while (i--) // Note: This checks expression branch each time (could be optimized)
 			++(*this);
-		}
 		return *this;
 	}
 
@@ -448,7 +342,7 @@ MatrixExpr<MatBinExpr<
 		rhs.begin(),
 		lhs.lhsRows(),
 		rhs.rows(),
-		lhs.lhsCols(), // TODO: This might be an issue right here!
+		lhs.lhsCols(), // TODO: This might be an issue right here! 
 		rhs.cols() },
 		MatrixOpBase::Op::MULTIPLY };
 }
