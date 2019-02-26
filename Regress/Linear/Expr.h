@@ -86,7 +86,7 @@ public:
 	inline Type operator()(Lit lit, Rit rit, size_type rhsRows, size_type rhsCols) const noexcept
 	{
 		Type result = 0;
-		for (;; --rhsRows, ++lit, rit += rhsCols)
+		for (;; --rhsRows, ++lit, rit += rhsCols) // Current issues stems from rit += rhsCols (iterators are in wrong spot after if rit is an expression
 		{
 			result += *lit * *rit;
 			if (rhsRows <= 1)
@@ -95,29 +95,6 @@ public:
 		return result;
 	}
 };
-
-//     +---+---+
-//     | A | B |
-//     +---+---+
-// n = | C | D |
-//     +---+---+
-//     | E | F |
-//     +---+---+
-//
-//     +---+---+---+---+
-//     | Z | Y | X | W |
-// m = +---+---+---+---+
-//     | V | U | T | S |
-//     +---+---+---+---+
-//
-//       +---------------+---------------+---------------+---------------+
-//       | (A*Z) + (B*V) | (A*Y) + (B*U) | (A*X) + (B*T) | (A*W) + (B*S) |
-//       +---------------+---------------+---------------+---------------+
-// m*n = | (C*Z) + (D*V) | (C*Y) + (D*U) | (C*X) + (D*T) | (C*W) + (D*S) |
-//       +---------------+---------------+---------------+---------------+
-//       | (E*Z) + (F*V) | (E*Y) + (F*U) | (E*X) + (F*T) | (E*W) + (F*S) |
-//       +---------------+---------------+---------------+---------------+
-//
 
 template<class Iter, class Type>
 class MatrixExpr
@@ -146,42 +123,119 @@ public:
 
 	inline Type operator*() const noexcept { return *exprOp; }
 
-	template<bool Inc>
-	inline void incrementSelf(size_type i)
+private:
+
+//     +---+---+
+//     | A | B |
+//     +---+---+
+// n = | C | D |
+//     +---+---+
+//     | E | F |
+//     +---+---+
+//
+//     +---+---+---+---+
+//     | Z | Y | X | W |
+// m = +---+---+---+---+
+//     | V | U | T | S |
+//     +---+---+---+---+
+//
+//       +---------------+---------------+---------------+---------------+
+//       | (A*Z) + (B*V) | (A*Y) + (B*U) | (A*X) + (B*T) | (A*W) + (B*S) |
+//       +---------------+---------------+---------------+---------------+
+// m*n = | (C*Z) + (D*V) | (C*Y) + (D*U) | (C*X) + (D*T) | (C*W) + (D*S) |
+//       +---------------+---------------+---------------+---------------+
+//       | (E*Z) + (F*V) | (E*Y) + (F*U) | (E*X) + (F*T) | (E*W) + (F*S) |
+//       +---------------+---------------+---------------+---------------+
+//
+/*
+{
+	Type result = 0;
+	for (;; --rhsRows, ++lit, rit += rhsCols)
 	{
-		if (op == MatrixOpBase::MULTIPLY)
+		result += *lit * *rit;
+		if (rhsRows <= 1)
+			break;
+	}
+	return result;
+}
+*/
+	template<bool Inc>
+	inline void incrementSelf(size_type i) noexcept
+	{
+		if (op != MatrixOpBase::MULTIPLY)
 		{
-			while (i--)
+			exprOp += i;
+			return;
+		}
+
+		if constexpr (Inc)
+			exprOp.rhsInc(i);
+		else
+			exprOp.rhsDec(i);
+
+		while (i--)
+		{
+			if constexpr (Inc)
+				++multiCount;
+			else
+				--multiCount;
+
+			if (multiCount % rhsCols() == 0)
 			{
 				if constexpr (Inc)
 				{
-					exprOp.rhsInc(1);
-					++multiCount;
+					exprOp.rhsDec(rhsCols());
+					exprOp.lhsInc(rhsRows()); // Same as lhsCols
 				}
 				else
 				{
-					exprOp.rhsDec(1);
-					--multiCount;
+					exprOp.rhsInc(rhsCols());
+					exprOp.lhsDec(rhsRows());
 				}
-
-				if (multiCount % rhsCols() == 0)
-				{
-					if constexpr (Inc)
-					{
-						exprOp.rhsDec(rhsCols());
-						exprOp.lhsInc(rhsRows()); // Same as lhsCols
-					}
-					else
-					{
-						exprOp.rhsInc(rhsCols());
-						exprOp.lhsDec(rhsRows());
-					}
-				}
+				break;
 			}
 		}
-		else
-			exprOp += i;
 	}
+	/*
+	template<bool Inc>
+	inline void incrementSelf(size_type i)
+	{
+		if (op != MatrixOpBase::MULTIPLY)
+		{
+			exprOp += i;
+			return;
+		}
+
+		if constexpr (Inc)
+			exprOp.rhsInc(i);
+		else
+			exprOp.rhsDec(i);
+			
+		while (i--)
+		{
+			if constexpr (Inc)
+				++multiCount;
+			else
+				--multiCount;
+
+			if (multiCount % rhsCols() == 0)
+			{
+				if constexpr (Inc)
+				{
+					exprOp.rhsDec(rhsCols());
+					exprOp.lhsInc(rhsRows()); // Same as lhsCols
+				}
+				else
+				{
+					exprOp.rhsInc(rhsCols());
+					exprOp.lhsDec(rhsRows());
+				}
+				break;
+			}
+		}
+	}
+	*/
+public:
 
 	inline MatrixExpr& operator++() noexcept
 	{
@@ -410,7 +464,7 @@ MatrixExpr<MatBinExpr<
 		lhs.begin(),
 		rhs,
 		lhs.rows(),
-		rhs.rhsRows(),
+		rhs.lhsRows(),
 		rhs.rhsCols() },
 		MatrixOpBase::Op::MULTIPLY };
 }
