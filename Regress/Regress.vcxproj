@@ -126,7 +126,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Linear\Expr.h" />
+    <ClInclude Include="Linear\ExprOperators.h" />
     <ClInclude Include="Linear\MatrixTest.h" />
+    <ClInclude Include="Stopwatch.h" />
     <ClInclude Include="Network\Activation.h" />
     <ClInclude Include="Network\Dense.h" />
     <ClInclude Include="Linear\Matrix.h" />

@@ -56,5 +56,11 @@
     <ClInclude Include="Linear\Expr.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Linear\ExprOperators.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Stopwatch.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

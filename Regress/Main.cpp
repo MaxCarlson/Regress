@@ -2,8 +2,8 @@
 #include "Network\Model.h"
 #include "Network\Dense.h"
 #include "Network\InputLayer.h"
-#include "Linear\MatrixTest.h"
-
+#include "Linear\ExprOperators.h" // TODO: replace this with Matrix header once implemented
+#include "Stopwatch.h"
 
 int main()
 {
@@ -25,12 +25,15 @@ int main()
 	// {1, 2, 3} *	{19, 26, 33} =	{305, 418, 531}
 	// {4, 5, 6}	{29, 40, 51}
 
-//	auto ep = (lhs * rhs) * lhs; // Working
-	auto ep = rhs * (lhs * rhs) * (lhs * rhs); // Not working
 
-	rhs = ep;
+	//Stopwatch w;
 
-	//MatrixT<float> t3 = (t1 * t2);// t1 * (t1 + t1) * ;
+	MatrixT<int> exVal;
+	auto exp = rhs + (rhs + rhs) + (rhs + rhs);
+	exVal = exp;
+
+	auto ex = rhs * (lhs * rhs) * (lhs * rhs); 
+	exVal = ex;
 
 	Matrix<float> input = {
 		{0, 1},
