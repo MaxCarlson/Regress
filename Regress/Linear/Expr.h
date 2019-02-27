@@ -468,3 +468,25 @@ MatrixExpr<MatBinExpr<
 		rhs.rhsCols() },
 		MatrixOpBase::Op::MULTIPLY };
 }
+
+template<class Type, class Iter1, class Iter2>
+MatrixExpr<MatBinExpr<
+	MatrixExpr<Iter1, Type>,
+	MatrixExpr<Iter2, Type>,
+	MatrixMultOp<Type>,
+	Type>, Type>
+	operator*(const MatrixExpr<Iter1, Type>& lhs, const MatrixExpr<Iter2, Type>& rhs) noexcept
+{
+	using ExprType = MatBinExpr<
+		MatrixExpr<Iter1, Type>,
+		MatrixExpr<Iter2, Type>,
+		MatrixMultOp<Type>,
+		Type>;
+	return MatrixExpr<ExprType, Type>{ ExprType{
+		lhs,
+		rhs,
+		lhs.lhsRows(),
+		rhs.lhsRows(),
+		rhs.rhsCols() },
+		MatrixOpBase::Op::MULTIPLY };
+}
