@@ -21,6 +21,7 @@ public:
 private:
 	size_type	nrows;
 	size_type	ncols;
+	size_type	lastRowIdx;
 	Storage		vals;
 
 
@@ -52,7 +53,83 @@ public:
 	template<bool isConst>
 	class col_iterator_base
 	{
+	public:
+		using iterator_category = std::random_access_iterator_tag;
+		//using ItType = std::conditional_t<isConst,
+		//	const_iterator,
+		//	iterator>;
+		using ContainerType = std::conditional_t<isConst,
+			const ThisType,
+			ThisType>;
 
+		using reference = std::conditional_t<isConst,
+			const Type&,
+			Type&>;
+
+		using pointer = std::conditional_t<isConst,
+			const Type*,
+			Type*>;
+	private:
+		size_type		idx;
+		ContainerType& cont;
+
+	public:
+		col_iterator_base(size_type idx, ContainerType& cont) :
+			idx{ idx },
+			cont{ cont }
+		{}
+
+		col_iterator_base& operator++()
+		{
+			if (idx < cont.lastRowIdx)
+				idx += cont.cols();
+			else
+				idx %= cont.cols();
+			
+			return *this;
+		}
+
+		col_iterator_base& operator+=(size_type i)
+		{
+			idx += i * cont.cols();
+			if (idx >= cont.size())
+			{
+
+			}
+			return *this;
+		}
+
+		col_iterator_base& operator--()
+		{
+			--it;
+			return *this;
+		}
+
+		col_iterator_base& operator-=(size_type i)
+		{
+			it -= i;
+			return *this;
+		}
+
+		reference operator*() const
+		{
+			return *it;
+		}
+
+		pointer operator->() const
+		{
+			return &(*it);
+		}
+
+		bool operator==(const col_iterator_base& other) const
+		{
+			return it == other.it;
+		}
+
+		bool operator!=(const col_iterator_base& other) const
+		{
+			return !(*this == other);
+		}
 	};
 };
 
@@ -60,6 +137,7 @@ template<class Type>
 inline MatrixT<Type>::MatrixT(const std::initializer_list<std::initializer_list<Type>>& m) :
 	nrows{ static_cast<size_type>(m.size()) },
 	ncols{ static_cast<size_type>(m.begin()->size()) },
+	lastRowIdx{ (nrows - 1) * ncols }, 
 	vals(nrows * ncols)
 {
 	int i = 0;
@@ -94,6 +172,7 @@ inline void MatrixT<Type>::resize(size_type numRows, size_type numCols)
 {
 	nrows = numRows;
 	ncols = numCols;
+	lastRowIdx = (numRows - 1) * numCols;
 	vals.resize(numRows * numCols);
 }
 
