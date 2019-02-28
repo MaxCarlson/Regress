@@ -46,6 +46,12 @@ public:
 	iterator begin()			 noexcept { return vals.begin(); }
 	iterator end()				 noexcept { return vals.end(); }
 
+	class col_const_iterator;
+	col_const_iterator ccol_begin() const noexcept { return { 0,		*this }; }
+	col_const_iterator ccol_end()	const noexcept { return { size(),	*this }; }
+	col_const_iterator col_begin()	const noexcept { return { 0,		*this }; }
+	col_const_iterator col_end()	const noexcept { return { size(),	*this }; }
+
 	bool operator==(const MatrixT& other) const;
 
 	void resize(size_type numRows, size_type numCols);
@@ -81,55 +87,107 @@ public:
 
 		col_iterator_base& operator++()
 		{
-			if (idx < cont.lastRowIdx)
+			if (idx >= cont.size() - 1)
+				++idx;
+			else if (idx < cont.lastRowIdx)
 				idx += cont.cols();
 			else
-				idx %= cont.cols();
+				++idx %= cont.cols();
 			
 			return *this;
 		}
 
+		// TODO: Revist for optimizations!
 		col_iterator_base& operator+=(size_type i)
 		{
-			idx += i * cont.cols();
-			if (idx >= cont.size())
-			{
-
-			}
+			while (i--)
+				++(*this);
 			return *this;
 		}
 
 		col_iterator_base& operator--()
 		{
-			--it;
+			if (idx <= 0 || idx >= cont.size())
+				--idx;
+			else if (idx < cont.cols())
+			{
+				--idx;
+				idx += cont.lastRowIdx;
+			}
+			else
+				idx -= cont.cols();
 			return *this;
 		}
 
+		// TODO: Revist for optimizations!
 		col_iterator_base& operator-=(size_type i)
 		{
-			it -= i;
+			while (i--)
+				--(*this);
 			return *this;
 		}
 
 		reference operator*() const
 		{
-			return *it;
+			return cont.vals[idx];
 		}
 
 		pointer operator->() const
 		{
-			return &(*it);
+			return &cont.vals[idx];
 		}
 
 		bool operator==(const col_iterator_base& other) const
 		{
-			return it == other.it;
+			return &cont == &other.cont
+				&& idx == other.idx;
 		}
 
 		bool operator!=(const col_iterator_base& other) const
 		{
 			return !(*this == other);
 		}
+
+		bool operator>(const col_iterator_base& other) const
+		{
+			return idx > other.idx;
+		}
+		bool operator<(const col_iterator_base& other) const
+		{
+			return idx < other.idx;
+		}
+
+		bool operator>=(const col_iterator_base& other) const
+		{
+			return idx >= other.idx;
+		}
+
+		bool operator<=(const col_iterator_base& other) const
+		{
+			return idx <= other.idx;
+		}
+	};
+
+	class col_const_iterator : public col_iterator_base<true>
+	{
+	public:
+		using MyBase		= col_iterator_base<true>;
+		using ContainerType = typename MyBase::ContainerType;
+
+		col_const_iterator(size_type idx, ContainerType& cont) :
+			MyBase{ idx, cont }
+		{}
+	};
+
+	class col_iterator : public col_iterator_base<false>
+	{
+	public:
+		using MyBase		= col_iterator_base<false>;
+		using ContainerType = typename MyBase::ContainerType;
+
+		col_iterator(size_type idx, ContainerType& cont) :
+			MyBase{ idx, cont }
+		{}
 	};
 };
 

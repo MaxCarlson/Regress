@@ -18,6 +18,17 @@ int main()
 		{4, 5, 6}
 	};
 
+	/*
+	auto it = rhs.col_begin();
+	for (; it != rhs.col_end(); ++it)
+		std::cout << *it << ", ";
+
+	std::cout << '\n';
+	--it;
+	for (; it >= rhs.col_begin(); --it)
+		std::cout << *it << ", ";
+	*/
+
 	//				  lhs*rhs
 	//				{9,  12, 15}	{134, 184, 234}
 	// {1, 2, 3} *	{19, 26, 33} =	{305, 418, 531}

@@ -21,7 +21,7 @@ template<class Type>
 class MatrixAddOp : public MatrixOpBase
 {
 public:
-	constexpr Op type = ADD;
+	static constexpr Op type = ADD;
 
 	inline MatrixAddOp(size_type) {}
 
@@ -36,7 +36,7 @@ template<class Type>
 class MatrixMultOp : public MatrixOpBase
 {
 public:
-	constexpr Op type = MULTIPLY;
+	static constexpr Op type = MULTIPLY;
 
 	inline MatrixMultOp(size_type) {}
 
@@ -58,7 +58,7 @@ template<class Type>
 class MatrixTransposeOp : public MatrixOpBase
 {
 public:
-	constexpr Op type = TRANSPOSE;
+	static constexpr Op type = TRANSPOSE;
 
 	template<class It>
 	inline Type operator()(It it, size_type, size_type) const noexcept
