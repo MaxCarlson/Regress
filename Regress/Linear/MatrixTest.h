@@ -5,6 +5,8 @@ template<class E>
 struct MatrixTBase
 { };
 
+// TODO: Add a storage abstraction so we can have multiple things point to the same memory, such as view slices
+// without duplications
 template<class Type>
 class MatrixT : public MatrixTBase<Type>
 {

@@ -63,9 +63,9 @@ MatrixExpr<MatBinExpr<
 	return MatrixExpr<ExprType, Type>{ ExprType{
 		lhs.begin(),
 		rhs,
-		lhs.rows(),
-		rhs.lhsRows(),
-		rhs.rhsCols() },
+		lhs.rows(), 
+		rhs.lhsRows(),		// << TODO: Issue happening here with mul expression
+		rhs.rhsCols() },	// <<
 		MatrixOpBase::Op::PLUS };
 }
 

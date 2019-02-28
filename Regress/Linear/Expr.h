@@ -81,7 +81,10 @@ private:
 	{
 		if (op != MatrixOpBase::MULTIPLY)
 		{
-			exprOp += i;
+			if constexpr (Inc)
+				exprOp += i;
+			else
+				exprOp -= i;
 			return;
 		}
 

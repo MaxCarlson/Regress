@@ -8,17 +8,12 @@
 int main()
 {
 
-	MatrixT<int> ihs = {
-		{1, 2},
-		{3, 4},
-		{5, 6},
-	};
+
 
 	MatrixT<int> lhs = { 
 		{1, 2},
 		{3, 4},
 		{5, 6},
-		{7, 8}
 	};
 
 	MatrixT<int> rhs = {
@@ -32,14 +27,19 @@ int main()
 	// {4, 5, 6}	{29, 40, 51}
 
 
+	//   lhs
+	// {1, 2}		  rhs*2			{18, 24,  30}
+	// {3, 4}   { {1, 2, 3} * 2 } = {38, 52,  66}
+	// {5, 6} * { {4, 5, 6}     }   {58, 80, 102}
+
 	//Stopwatch w;
 
 	MatrixT<int> exVal;
-	//auto exp = rhs * (lhs * (rhs + rhs)); // Is not working!!
-	//exVal = exp;
+	auto exp = lhs * (rhs + rhs); 
+	exVal = exp;
 
-	auto ex = (lhs * rhs) * (ihs * rhs); 
-	exVal = ex;
+	//auto ex = (lhs * rhs) * (ihs * rhs); 
+	//exVal = ex;
 
 	Matrix<float> input = {
 		{0, 1},
