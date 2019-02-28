@@ -8,9 +8,12 @@ struct MatrixOpBase
 
 	enum Op : size_type
 	{
-		PLUS,
+		ADD,
 		MINUS,
-		MULTIPLY
+		MULTIPLY,
+		DIV,
+		DOT,
+		TRANSPOSE
 	};
 };
 
@@ -18,6 +21,8 @@ template<class Type>
 class MatrixAddOp : public MatrixOpBase
 {
 public:
+	constexpr Op type = ADD;
+
 	inline MatrixAddOp(size_type) {}
 
 	template<class Lit, class Rit>
@@ -31,6 +36,8 @@ template<class Type>
 class MatrixMultOp : public MatrixOpBase
 {
 public:
+	constexpr Op type = MULTIPLY;
+
 	inline MatrixMultOp(size_type) {}
 
 	template<class Lit, class Rit>
@@ -44,6 +51,19 @@ public:
 				break;
 		}
 		return result;
+	}
+};
+
+template<class Type>
+class MatrixTransposeOp : public MatrixOpBase
+{
+public:
+	constexpr Op type = TRANSPOSE;
+
+	template<class It>
+	inline Type operator()(It it, size_type, size_type) const noexcept
+	{
+		return *it;
 	}
 };
 
@@ -305,5 +325,49 @@ public:
 		ncols{ncols}
 	{}
 
+	inline void lhsInc(size_type)  { throw std::runtime_error("Cannot inc lhs in Unary Expr"); }
+	inline void lhsDec(size_type)  { throw std::runtime_error("Cannot dec lhs in Unary Expr"); }
+	inline void rhsInc(size_type i)  noexcept { it += i; }
+	inline void rhsDec(size_type i)  noexcept { it -= i; }
 
+	inline size_type lhsRows() const noexcept { return it.lhsRows(); }
+	
+	inline size_type rhsRows() const noexcept 
+	{ 
+		return op.type == MatrixOpBase::TRANSPOSE ? nrows : ncols;
+	}
+	
+	inline size_type rhsCols() const noexcept 
+	{ 
+		return op.type == MatrixOpBase::TRANSPOSE ? ncols : nrows;
+	}
+
+	Type operator*() const noexcept
+	{
+		return op(it, nrows, ncols);
+	}
+
+	ThisType& operator++() noexcept
+	{
+		rhsInc(1);
+		return *this;
+	}
+
+	ThisType& operator+=(size_type i) noexcept
+	{
+		rhsInc(i);
+		return *this;
+	}
+
+	ThisType& operator--() noexcept
+	{
+		rhsDec(1);
+		return *this;
+	}
+
+	ThisType& operator-=(size_type i) noexcept
+	{
+		rhsDec(i);
+		return *this;
+	}
 };

@@ -22,7 +22,7 @@ MatrixExpr<MatBinExpr<
 		lhs.rows(),
 		rhs.rows(),
 		rhs.cols() },
-		MatrixOpBase::Op::PLUS };
+		MatrixOpBase::Op::ADD };
 }
 
 template<class Type, class Iter>
@@ -44,7 +44,7 @@ MatrixExpr<MatBinExpr<
 		lhs.lhsRows(),
 		rhs.rows(),
 		rhs.cols() },
-		MatrixOpBase::Op::PLUS };
+		MatrixOpBase::Op::ADD };
 }
 
 template<class Type, class Iter>
@@ -66,7 +66,7 @@ MatrixExpr<MatBinExpr<
 		lhs.rows(), 
 		rhs.lhsRows(),		// << TODO: Issue happening here with mul expression
 		rhs.rhsCols() },	// <<
-		MatrixOpBase::Op::PLUS };
+		MatrixOpBase::Op::ADD };
 }
 
 template<class Type, class Iter1, class Iter2>
@@ -88,7 +88,7 @@ MatrixExpr<MatBinExpr<
 		lhs.lhsRows(),
 		rhs.lhsRows(),
 		rhs.rhsCols() },
-		MatrixOpBase::Op::PLUS };
+		MatrixOpBase::Op::ADD };
 }
 
 // Multiply operators

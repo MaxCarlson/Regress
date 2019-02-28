@@ -16,7 +16,7 @@ public:
 	using const_iterator	= typename Storage::const_iterator;
 	using size_type			= int;
 
-	// TODO: Column iterator
+	
 
 private:
 	size_type	nrows;
@@ -49,6 +49,11 @@ public:
 
 	void resize(size_type numRows, size_type numCols);
 
+	template<bool isConst>
+	class col_iterator_base
+	{
+
+	};
 };
 
 template<class Type>
