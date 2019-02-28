@@ -7,9 +7,6 @@
 
 int main()
 {
-
-
-
 	MatrixT<int> lhs = { 
 		{1, 2},
 		{3, 4},
@@ -35,7 +32,7 @@ int main()
 	//Stopwatch w;
 
 	MatrixT<int> exVal;
-	auto exp = lhs * (rhs + rhs); 
+	auto exp = (lhs * (rhs + rhs)) * (lhs * (rhs + rhs));
 	exVal = exp;
 
 	//auto ex = (lhs * rhs) * (ihs * rhs); 

@@ -162,7 +162,7 @@ public:
 		// Fill the matrix 'to' column by column
 		// Evaluating the expression tree the same way
 		const_iterator rIt = begin();
-		for (auto lIt = to.begin(); lIt != std::end(to); ++lIt, ++rIt)
+		for (auto lIt = std::begin(to); lIt != std::end(to); ++lIt, ++rIt)
 			*lIt = *rIt;
 	}
 
@@ -232,13 +232,13 @@ class MatBinExpr
 public:
 
 
-	MatBinExpr(LIt lit, RIt rit, size_type nlhsRows, size_type nrhsRows, size_type nrhsCols) :
+	MatBinExpr(LIt lit, RIt rit, size_type nlhsRows, size_type nrhsRows, size_type nrhsCols) noexcept :
 		lit{ lit },
 		rit{ rit },
+		op{ 0 },
 		nlhsRows{ nlhsRows },
 		nrhsRows{ nrhsRows },
-		nrhsCols{ nrhsCols },
-		op{ 0 }
+		nrhsCols{ nrhsCols }
 	{}
 
 	inline void lhsInc(size_type i)  noexcept { lit += i; }
@@ -283,4 +283,27 @@ public:
 		rhsDec(i);
 		return *this;
 	}
+};
+
+template<class It, class Op, class Type>
+class MatUnaExpr
+{
+	using size_type = typename MatrixOpBase::size_type;
+	using ThisType	= MatUnaExpr<It, Op, Type>;
+
+	It it;
+	const Op op;
+	size_type nrows;
+	size_type ncols;
+
+public:
+
+	MatUnaExpr(It it, size_type nrows, size_type ncols) noexcept :
+		it{it},
+		op{0},
+		nrows{nrows},
+		ncols{ncols}
+	{}
+
+
 };

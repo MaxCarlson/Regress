@@ -5,15 +5,15 @@
 
 template<class Type>
 MatrixExpr<MatBinExpr<
-	typename MatrixT<Type>::col_const_iterator,
-	typename MatrixT<Type>::col_const_iterator,
+	typename MatrixT<Type>::const_iterator,
+	typename MatrixT<Type>::const_iterator,
 	MatrixAddOp<Type>,
 	Type>, Type>
 	operator+(const MatrixT<Type>& lhs, const MatrixT<Type>& rhs) noexcept
 {
 	using ExprType = MatBinExpr<
-		typename MatrixT<Type>::col_const_iterator,
-		typename MatrixT<Type>::col_const_iterator,
+		typename MatrixT<Type>::const_iterator,
+		typename MatrixT<Type>::const_iterator,
 		MatrixAddOp<Type>,
 		Type>;
 	return MatrixExpr<ExprType, Type>{ ExprType{
@@ -28,14 +28,14 @@ MatrixExpr<MatBinExpr<
 template<class Type, class Iter>
 MatrixExpr<MatBinExpr<
 	MatrixExpr<Iter, Type>,
-	typename MatrixT<Type>::col_const_iterator,
+	typename MatrixT<Type>::const_iterator,
 	MatrixAddOp<Type>,
 	Type>, Type>
 	operator+(const MatrixExpr<Iter, Type>& lhs, const MatrixT<Type>& rhs) noexcept
 {
 	using ExprType = MatBinExpr<
 		MatrixExpr<Iter, Type>,
-		typename MatrixT<Type>::col_const_iterator,
+		typename MatrixT<Type>::const_iterator,
 		MatrixAddOp<Type>,
 		Type>;
 	return MatrixExpr<ExprType, Type>{ ExprType{
@@ -49,14 +49,14 @@ MatrixExpr<MatBinExpr<
 
 template<class Type, class Iter>
 MatrixExpr<MatBinExpr<
-	typename MatrixT<Type>::col_const_iterator,
+	typename MatrixT<Type>::const_iterator,
 	MatrixExpr<Iter, Type>,
 	MatrixAddOp<Type>,
 	Type>, Type>
 	operator+(const MatrixT<Type>& lhs, const MatrixExpr<Iter, Type>& rhs) noexcept
 {
 	using ExprType = MatBinExpr<
-		typename MatrixT<Type>::col_const_iterator,
+		typename MatrixT<Type>::const_iterator,
 		MatrixExpr<Iter, Type>,
 		MatrixAddOp<Type>,
 		Type>;
@@ -95,15 +95,15 @@ MatrixExpr<MatBinExpr<
 
 template<class Type>
 MatrixExpr<MatBinExpr<
-	typename MatrixT<Type>::col_const_iterator,
-	typename MatrixT<Type>::col_const_iterator,
+	typename MatrixT<Type>::const_iterator,
+	typename MatrixT<Type>::const_iterator,
 	MatrixMultOp<Type>,
 	Type>, Type>
 	operator*(const MatrixT<Type>& lhs, const MatrixT<Type>& rhs) noexcept
 {
 	using ExprType = MatBinExpr<
-		typename MatrixT<Type>::col_const_iterator,
-		typename MatrixT<Type>::col_const_iterator,
+		typename MatrixT<Type>::const_iterator,
+		typename MatrixT<Type>::const_iterator,
 		MatrixMultOp<Type>,
 		Type>;
 	return MatrixExpr<ExprType, Type>{ ExprType{
@@ -118,14 +118,14 @@ MatrixExpr<MatBinExpr<
 template<class Type, class Iter>
 MatrixExpr<MatBinExpr<
 	MatrixExpr<Iter, Type>,
-	typename MatrixT<Type>::col_const_iterator,
+	typename MatrixT<Type>::const_iterator,
 	MatrixMultOp<Type>,
 	Type>, Type>
 	operator*(const MatrixExpr<Iter, Type>& lhs, const MatrixT<Type>& rhs) noexcept
 {
 	using ExprType = MatBinExpr<
 		MatrixExpr<Iter, Type>,
-		typename MatrixT<Type>::col_const_iterator,
+		typename MatrixT<Type>::const_iterator,
 		MatrixMultOp<Type>,
 		Type>;
 	return MatrixExpr<ExprType, Type>{ ExprType{
@@ -139,14 +139,14 @@ MatrixExpr<MatBinExpr<
 
 template<class Type, class Iter>
 MatrixExpr<MatBinExpr<
-	typename MatrixT<Type>::col_const_iterator,
+	typename MatrixT<Type>::const_iterator,
 	MatrixExpr<Iter, Type>,
 	MatrixMultOp<Type>,
 	Type>, Type>
 	operator*(const MatrixT<Type>& lhs, const MatrixExpr<Iter, Type>& rhs) noexcept
 {
 	using ExprType = MatBinExpr<
-		typename MatrixT<Type>::col_const_iterator,
+		typename MatrixT<Type>::const_iterator,
 		MatrixExpr<Iter, Type>,
 		MatrixMultOp<Type>,
 		Type>;
