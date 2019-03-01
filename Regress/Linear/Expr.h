@@ -5,6 +5,7 @@
 struct MatrixOpBase
 {
 	using size_type = int;
+	static_assert(std::is_signed_v<size_type>);
 
 	enum Op : size_type
 	{
@@ -44,7 +45,7 @@ public:
 	inline Type operator()(Lit lit, Rit rit, size_type rhsRows, size_type rhsCols) const noexcept
 	{
 		Type result = 0;
-		for (;; --rhsRows, ++lit, rit += rhsCols) // Current issues stems from rit += rhsCols (iterators are in wrong spot after if rit is an expression
+		for (;; --rhsRows, ++lit, rit += rhsCols) 
 		{
 			result += *lit * *rit;
 			if (rhsRows <= 1)
@@ -59,8 +60,15 @@ class MatrixTransposeOp : public MatrixOpBase
 {
 public:
 	static constexpr Op type = TRANSPOSE;
+private:
+	const size_type nlhsRows;
+public:
 	
-	inline MatrixTransposeOp(size_type) {}
+	inline MatrixTransposeOp(size_type nlhsRows) :
+		nlhsRows{ nlhsRows }
+	{}
+
+	inline size_type lhsRows() const noexcept { return nlhsRows; }
 
 	template<class It>
 	inline Type operator()(It it, size_type, size_type) const noexcept
@@ -321,10 +329,10 @@ class MatUnaExpr
 public:
 
 	MatUnaExpr(It it, size_type nrows, size_type ncols) noexcept :
-		it{it},
-		op{0},
-		nrows{nrows},
-		ncols{ncols}
+		it{ it },
+		op{ ncols },
+		nrows{ nrows },
+		ncols{ ncols }
 	{}
 
 	inline void lhsInc(size_type)  { throw std::runtime_error("Cannot inc lhs in Unary Expr"); }
@@ -332,16 +340,16 @@ public:
 	inline void rhsInc(size_type i)  noexcept { it += i; }
 	inline void rhsDec(size_type i)  noexcept { it -= i; }
 
-	inline size_type lhsRows() const noexcept { return nrows; }
+	inline size_type lhsRows() const noexcept { return op.lhsRows(); }
 	
 	inline size_type rhsRows() const noexcept 
 	{ 
-		return op.type == MatrixOpBase::TRANSPOSE ? nrows : ncols;
+		return Op::type == MatrixOpBase::TRANSPOSE ? nrows : ncols;
 	}
 	
 	inline size_type rhsCols() const noexcept 
 	{ 
-		return op.type == MatrixOpBase::TRANSPOSE ? ncols : nrows;
+		return Op::type == MatrixOpBase::TRANSPOSE ? nrows : ncols;
 	}
 
 	Type operator*() const noexcept
