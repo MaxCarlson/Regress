@@ -59,6 +59,8 @@ class MatrixTransposeOp : public MatrixOpBase
 {
 public:
 	static constexpr Op type = TRANSPOSE;
+	
+	inline MatrixTransposeOp(size_type) {}
 
 	template<class It>
 	inline Type operator()(It it, size_type, size_type) const noexcept
@@ -330,7 +332,7 @@ public:
 	inline void rhsInc(size_type i)  noexcept { it += i; }
 	inline void rhsDec(size_type i)  noexcept { it -= i; }
 
-	inline size_type lhsRows() const noexcept { return it.lhsRows(); }
+	inline size_type lhsRows() const noexcept { return nrows; }
 	
 	inline size_type rhsRows() const noexcept 
 	{ 

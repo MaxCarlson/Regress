@@ -180,3 +180,21 @@ MatrixExpr<MatBinExpr<
 		rhs.rhsCols() },
 		MatrixOpBase::Op::MULTIPLY };
 }
+
+template<class Type>
+MatrixExpr<MatUnaExpr<
+	typename MatrixT<Type>::col_const_iterator,
+	MatrixTransposeOp<Type>,
+	Type>, Type>
+	operator~(const MatrixT<Type>& it)
+{
+	using ExprType = MatUnaExpr<
+		typename MatrixT<Type>::col_const_iterator,
+		MatrixTransposeOp<Type>,
+		Type>;
+	return MatrixExpr<ExprType, Type>{ ExprType{
+		it.ccol_begin(),
+		it.rows(),
+		it.cols() },
+		MatrixOpBase::Op::TRANSPOSE };
+}
