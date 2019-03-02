@@ -75,6 +75,9 @@ public:
 	template<class Func>
 	void unaryExpr(Func&& func);
 
+	template<class Func>
+	void unaryExprPara(Func&& func);
+
 	void resize(size_type numRows, size_type numCols);
 	Matrix<Type> transpose() const;
 	Type sum() const;
@@ -297,6 +300,14 @@ template<class Type>
 template<class Func>
 inline void Matrix<Type>::unaryExpr(Func && func)
 {
+	for (int i = 0; i < size(); ++i)
+		func(vals[i]);
+}
+
+template<class Type>
+template<class Func>
+inline void Matrix<Type>::unaryExprPara(Func && func)
+{
 #pragma omp parallel for
 	for (int i = 0; i < size(); ++i)
 		func(vals[i]);
@@ -313,7 +324,7 @@ inline void Matrix<Type>::resize(size_type numRows, size_type numCols)
 
 template<class Type>
 inline Type Matrix<Type>::sum() const
-{
+{	// TODO: Test unrolling
 	Type sum = 0;
 	for (int i = 0; i < size(); ++i)
 		sum += vals[i];

@@ -41,6 +41,7 @@ int main()
 	//auto ex = (lhs * rhs) * (ihs * rhs); 
 	//exVal = ex;
 
+
 	Matrix<float> input = {
 		{0, 1},
 		{1, 0},
