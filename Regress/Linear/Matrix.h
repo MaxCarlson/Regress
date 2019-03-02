@@ -24,7 +24,6 @@ public:
 	T sum() const;
 	Matrix<T> transpose() const;
 	Matrix<T> cwiseProduct(const Matrix<T>& m) const;
-	Matrix<T> rowwiseVectorMultiply(const Matrix<T>& m) const;
 	Matrix<T> columnwiseAvg() const;
 
 	Matrix<T>& operator=(const Matrix<T>& other);
@@ -84,7 +83,7 @@ inline void Matrix<T>::resize(int rows, int columns)
 	vals.resize(nrows * ncolumns);
 }
 
-// TODO: Parrallelize
+// TODO: Parallelize
 template<class T>
 inline T Matrix<T>::sum() const
 {
@@ -123,26 +122,6 @@ inline Matrix<T> Matrix<T>::cwiseProduct(const Matrix<T>& m) const
 		m2.vals[i] = vals[i] * m.vals[i];
 
 	return m2;
-}
-
-template<class T>
-inline Matrix<T> Matrix<T>::rowwiseVectorMultiply(const Matrix<T>& m) const
-{
-	Matrix<T> v(nrows, m.rows());
-
-	//if (m.rows() > 1)
-	//	throw std::runtime_error("Only vectors can be row-wise multiplied in rowwiseVectorMultiply!");
-
-	for (int i = 0; i < nrows; ++i)
-	{
-		int sum = 0;
-		for (int j = 0; j < ncolumns; ++j)
-		{
-			sum += this->operator()(i, j) * m(0, j);
-		}
-		v(i, 0) = sum;
-	}
-	return v;
 }
 
 template<class T>

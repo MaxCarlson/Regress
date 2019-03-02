@@ -31,6 +31,7 @@ public:
 	using SubType		= Type;
 
 	MatrixT() = default;
+	MatrixT(size_type nrows, size_type ncols);
 	MatrixT(const std::initializer_list<std::initializer_list<Type>>& m);
 
 	// Handles assignment from expressions
@@ -41,20 +42,30 @@ public:
 	size_type rows() const noexcept { return nrows; }
 	size_type cols() const noexcept { return ncols; }
 
-	const_iterator begin() const noexcept { return vals.cbegin(); }
-	const_iterator end()   const noexcept { return vals.cend(); }
-	iterator begin()			 noexcept { return vals.begin(); }
-	iterator end()				 noexcept { return vals.end(); }
 
+	iterator		begin()		  noexcept { return vals.begin(); }
+	iterator		end()		  noexcept { return vals.end(); }
+	const_iterator	begin() const noexcept { return vals.cbegin(); }
+	const_iterator	end()   const noexcept { return vals.cend(); }
+
+	class col_iterator;
 	class col_const_iterator;
-	col_const_iterator ccol_begin() const noexcept { return { 0,		*this }; }
-	col_const_iterator ccol_end()	const noexcept { return { size(),	*this }; }
-	col_const_iterator col_begin()	const noexcept { return { 0,		*this }; }
-	col_const_iterator col_end()	const noexcept { return { size(),	*this }; }
+	col_iterator		col_begin()		const noexcept { return { 0,		*this }; }
+	col_iterator		col_end()		const noexcept { return { size(),	*this }; }
+	col_const_iterator	ccol_begin()	const noexcept { return { 0,		*this }; }
+	col_const_iterator	ccol_end()		const noexcept { return { size(),	*this }; }
+
+	Type& operator()(int row, int col);
+	const Type& operator()(int row, int col) const;
 
 	bool operator==(const MatrixT& other) const;
+	bool operator!=(const MatrixT& other) const;
+
+	template<class Func>
+	void unaryExpr(Func&& func);
 
 	void resize(size_type numRows, size_type numCols);
+	MatrixT<Type> transpose() const;
 
 	template<bool isConst>
 	class col_iterator_base
@@ -194,6 +205,15 @@ public:
 };
 
 template<class Type>
+inline MatrixT<Type>::MatrixT(size_type nrows, size_type ncols) :
+	nrows{ nrows },
+	ncols{ ncols },
+	lastRowIdx{ (nrows - 1) * ncols },
+	vals(nrows * ncols)
+{
+}
+
+template<class Type>
 inline MatrixT<Type>::MatrixT(const std::initializer_list<std::initializer_list<Type>>& m) :
 	nrows{ static_cast<size_type>(m.size()) },
 	ncols{ static_cast<size_type>(m.begin()->size()) },
@@ -214,6 +234,19 @@ inline MatrixT<Type>::MatrixT(const Expr & expr)
 }
 
 template<class Type>
+inline Type & MatrixT<Type>::operator()(int row, int col)
+{	// TODO: Changing access methods would allow us to change this to a column major order matrix
+	// (as well as initilizer list init)
+	return vals[row * ncols + col]; 
+}
+
+template<class Type>
+inline const Type & MatrixT<Type>::operator()(int row, int col) const
+{
+	return vals[row * ncols + col];
+}
+
+template<class Type>
 inline bool MatrixT<Type>::operator==(const MatrixT& other) const
 {
 	if (rows() != other.rows()
@@ -228,6 +261,21 @@ inline bool MatrixT<Type>::operator==(const MatrixT& other) const
 }
 
 template<class Type>
+inline bool MatrixT<Type>::operator!=(const MatrixT & other) const
+{
+	return !(*this == other);
+}
+
+template<class Type>
+template<class Func>
+inline void MatrixT<Type>::unaryExpr(Func && func)
+{
+#pragma omp parallel for
+	for (int i = 0; i < size(); ++i)
+		func(vals[i]);
+}
+
+template<class Type>
 inline void MatrixT<Type>::resize(size_type numRows, size_type numCols) 
 {
 	nrows = numRows;
@@ -235,5 +283,14 @@ inline void MatrixT<Type>::resize(size_type numRows, size_type numCols)
 	lastRowIdx = (numRows - 1) * numCols;
 	vals.resize(numRows * numCols);
 }
+
+template<class Type>
+inline MatrixT<Type> MatrixT<Type>::transpose() const
+{
+	MatrixT<Type> m(ncols, nrows);
+	m = ~(*this);
+	return m;
+}
+
 
 

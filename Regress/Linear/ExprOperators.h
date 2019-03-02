@@ -99,7 +99,7 @@ inline MatrixExpr<MatBinExpr<
 	typename MatrixT<Type>::const_iterator,
 	MatrixSubOp<Type>,
 	Type>, Type>
-	operator+(const MatrixT<Type>& lhs, const MatrixT<Type>& rhs) noexcept
+	operator-(const MatrixT<Type>& lhs, const MatrixT<Type>& rhs) noexcept
 {
 	using ExprType = MatBinExpr<
 		typename MatrixT<Type>::const_iterator,
@@ -291,6 +291,7 @@ inline MatrixExpr<MatUnaExpr<
 		MatrixOpBase::Op::TRANSPOSE };
 }
 
+/*
 // TODO: NOT working!
 template<class Type, class Iter>
 inline MatrixExpr<MatUnaExpr<
@@ -309,3 +310,4 @@ inline MatrixExpr<MatUnaExpr<
 		it.rhsCols() },
 		MatrixOpBase::Op::TRANSPOSE };
 }
+*/

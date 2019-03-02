@@ -30,11 +30,12 @@ int main()
 	// {5, 6} * { {4, 5, 6}     }   {58, 80, 102}
 
 	//Stopwatch w;
-	MatrixT<int> tVal = ~(rhs + rhs);
 
 	MatrixT<int> exVal;
-	auto exp = (lhs * (rhs + rhs)) * (lhs * (rhs + rhs));
+	auto exp = (lhs * ((rhs - rhs) + rhs) * (lhs * (rhs + rhs))) - lhs * rhs;
 	exVal = exp;
+
+	auto vv = exVal.transpose();
 
 	//auto ex = (lhs * rhs) * (ihs * rhs); 
 	//exVal = ex;
