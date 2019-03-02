@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include "Expr.h"
 
 template<class E>
 struct MatrixTBase
@@ -75,8 +76,16 @@ public:
 	MatrixT<Type> transpose() const;
 
 	inline MatrixExpr<MatBinExpr<
-		MatrixT<Type>,
-		MatrixT<Type>,
+		typename MatrixT<Type>::const_iterator,
+		typename MatrixT<Type>::const_iterator,
+		MatrixCwiseProductOp<Type>,
+		Type>, Type>
+		cwiseProduct(const MatrixT<Type>& rhs) noexcept;
+
+	template<class Iter>
+	inline MatrixExpr<MatBinExpr<
+		typename MatrixT<Type>::const_iterator,
+		MatrixExpr<Iter, Type>,
 		MatrixCwiseProductOp<Type>,
 		Type>, Type>
 		cwiseProduct(const MatrixT<Type>& rhs) noexcept;
@@ -306,11 +315,19 @@ inline MatrixT<Type> MatrixT<Type>::transpose() const
 	return m;
 }
 
+// All operations below this point return a Matrix Expression
+// (only Expressions that can't be handled outside are here,
+// the rest are in ExprOperators)
+
 template<class Type>
-inline MatrixExpr<MatBinExpr<MatrixT<Type>, MatrixT<Type>, MatrixCwiseProductOp<Type>, Type>, Type> MatrixT<Type>::cwiseProduct(const MatrixT<Type>& rhs) noexcept
+inline MatrixExpr<MatBinExpr<
+	typename MatrixT<Type>::const_iterator,
+	typename MatrixT<Type>::const_iterator,
+	MatrixCwiseProductOp<Type>, Type>, Type> MatrixT<Type>::cwiseProduct(const MatrixT<Type>& rhs) noexcept
 {
-	using ExprType = MatBinExpr<MatrixT<Type>,
-		MatrixT<Type>,
+	using ExprType = MatBinExpr<
+		typename MatrixT<Type>::const_iterator,
+		typename MatrixT<Type>::const_iterator,
 		MatrixCwiseProductOp<Type>, Type>;
 	return MatrixExpr<ExprType, Type>{ExprType{
 		begin(),
@@ -318,6 +335,26 @@ inline MatrixExpr<MatBinExpr<MatrixT<Type>, MatrixT<Type>, MatrixCwiseProductOp<
 		rows(),
 		rhs.rows(),
 		rhs.cols() },
+		MatrixOpBase::Op::CWISE_PRODUCT};
+}
+
+template<class Type>
+template<class Iter>
+inline MatrixExpr<MatBinExpr<
+	typename MatrixT<Type>::const_iterator,
+	MatrixExpr<Iter, Type>,
+	MatrixCwiseProductOp<Type>, Type>, Type> MatrixT<Type>::cwiseProduct(const MatrixT<Type>& rhs) noexcept
+{
+	using ExprType = MatBinExpr<
+		typename MatrixT<Type>::const_iterator,
+		MatrixExpr<Iter, Type>,
+		MatrixCwiseProductOp<Type>, Type>;
+	return MatrixExpr<ExprType, Type>{ExprType{
+		begin(),
+		rhs,
+		rows(),
+		rhs.lhsRows(),
+		rhs.rhsCols() },
 		MatrixOpBase::Op::CWISE_PRODUCT};
 }
 

@@ -36,7 +36,7 @@ int main()
 	exVal = exp;
 
 	auto vv = exVal.transpose();
-	//auto vvv = vv.cwiseProduct(exVal);
+	MatrixT<int> vvv = lhs.cwiseProduct(~rhs);
 
 	//auto ex = (lhs * rhs) * (ihs * rhs); 
 	//exVal = ex;
