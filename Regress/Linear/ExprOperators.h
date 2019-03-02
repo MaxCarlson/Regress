@@ -1,6 +1,7 @@
 #pragma once
 #include "Matrix.h"
 
+// Binary Expressions
 // Addition operators
 
 template<class Type>
@@ -271,6 +272,18 @@ inline MatrixExpr<MatBinExpr<
 		MatrixOpBase::Op::MULTIPLY };
 }
 
+// Binary Constant Expressions
+template<class Type, class Iter, class Num>
+inline MatrixExpr<MatBinExpr<
+	typename Matrix<Type>::const_iterator,
+	MatrixMulConstantOp<Type, Num>,
+	Type>, Type>
+	operator*(const Matrix<Type>& lhs, const Num& num) noexcept
+{
+
+}
+
+// Unary Expressions
 // Transpose operators
 
 template<class Type>

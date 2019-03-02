@@ -56,6 +56,9 @@ int main()
 		{1, 0},
 	};
 
+	auto it = label.col_begin();
+	*it = 5;
+
 	Input<float>  in(&input);
 	Dense<float>  d1(2, false, &in, Activation::Relu);
 	Dense<float>  d2(10, false, &d1, Activation::Relu);

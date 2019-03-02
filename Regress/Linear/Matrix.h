@@ -44,12 +44,20 @@ public:
 
 	// Handles assignment from expressions
 	template<class Expr>
-	Matrix(const Expr& expr);
+	Matrix(const Expr& expr) { expr.assign(*this); }
 
 	size_type size() const noexcept { return vals.size(); }
 	size_type rows() const noexcept { return nrows; }
 	size_type cols() const noexcept { return ncols; }
 
+	Type& operator()(size_type row, size_type col);
+	const Type& operator()(size_type row, size_type col) const;
+
+	bool operator==(const Matrix& other) const;
+	bool operator!=(const Matrix& other) const;
+
+	template<class Num, class = typename std::enable_if<std::is_arithmetic<Num>::value, Num>::type>
+	inline Matrix operator*(const Num & num) const;
 
 	iterator		begin()		  noexcept { return vals.begin(); }
 	iterator		end()		  noexcept { return vals.end(); }
@@ -58,25 +66,21 @@ public:
 
 	class col_iterator;
 	class col_const_iterator;
-	col_iterator		col_begin()		const noexcept { return { 0,		*this }; }
-	col_iterator		col_end()		const noexcept { return { size(),	*this }; }
+	col_iterator		col_begin()			  noexcept { return { 0,		*this }; }
+	col_iterator		col_end()			  noexcept { return { size(),	*this }; }
 	col_const_iterator	ccol_begin()	const noexcept { return { 0,		*this }; }
 	col_const_iterator	ccol_end()		const noexcept { return { size(),	*this }; }
 
-	Type& operator()(int row, int col);
-	const Type& operator()(int row, int col) const;
-
-	bool operator==(const Matrix& other) const;
-	bool operator!=(const Matrix& other) const;
-
-	template<class Num>
-	inline Matrix operator*(const Num & num) const;
-
 	template<class Func>
 	void unaryExpr(Func&& func);
+	template<class Func>
+	void unaryExpr(Func&& func) const;
+
 
 	template<class Func>
 	void unaryExprPara(Func&& func);
+	template<class Func>
+	void unaryExprPara(Func&& func) const;
 
 	void resize(size_type numRows, size_type numCols);
 	Matrix<Type> transpose() const;
@@ -257,21 +261,14 @@ inline Matrix<Type>::Matrix(const std::initializer_list<std::initializer_list<Ty
 }
 
 template<class Type>
-template<class Expr>
-inline Matrix<Type>::Matrix(const Expr & expr)
-{
-	expr.assign(*this);
-}
-
-template<class Type>
-inline Type & Matrix<Type>::operator()(int row, int col)
+inline Type & Matrix<Type>::operator()(size_type row, size_type col)
 {	// TODO: Changing access methods would allow us to change this to a column major order matrix
 	// (as well as initilizer list init)
 	return vals[row * ncols + col]; 
 }
 
 template<class Type>
-inline const Type & Matrix<Type>::operator()(int row, int col) const
+inline const Type & Matrix<Type>::operator()(size_type row, size_type col) const
 {
 	return vals[row * ncols + col];
 }
@@ -306,7 +303,24 @@ inline void Matrix<Type>::unaryExpr(Func && func)
 
 template<class Type>
 template<class Func>
+inline void Matrix<Type>::unaryExpr(Func && func) const
+{
+	for (int i = 0; i < size(); ++i)
+		func(vals[i]);
+}
+
+template<class Type>
+template<class Func>
 inline void Matrix<Type>::unaryExprPara(Func && func)
+{
+#pragma omp parallel for
+	for (int i = 0; i < size(); ++i)
+		func(vals[i]);
+}
+
+template<class Type>
+template<class Func>
+inline void Matrix<Type>::unaryExprPara(Func && func) const
 {
 #pragma omp parallel for
 	for (int i = 0; i < size(); ++i)
@@ -383,7 +397,7 @@ inline MatrixExpr<MatBinExpr<
 }
 
 template<class Type>
-template<class Num>
+template<class Num, class>
 inline Matrix<Type> Matrix<Type>::operator*(const Num & num) const
 {
 	Matrix<Type> m;

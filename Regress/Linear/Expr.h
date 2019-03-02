@@ -16,6 +16,10 @@ struct MatrixOpBase
 		MULTIPLY,
 		DIV,
 		CWISE_PRODUCT,
+		ADD_CONSTANT,
+		SUB_CONSTANT,
+		MUL_CONSTANT,
+		DIV_CONSTANT,
 		DOT,
 		TRANSPOSE
 	};
@@ -44,7 +48,7 @@ template<class Type>
 class MatrixSubOp : public MatrixOpBase
 {
 public:
-	static constexpr Op type = ADD;
+	static constexpr Op type = SUB;
 
 	inline MatrixSubOp(size_type) {}
 
@@ -89,6 +93,53 @@ public:
 	inline Type operator()(LIt lit, RIt rit, size_type, size_type) const noexcept
 	{
 		return *lit * *rit;
+	}
+};
+
+// A wrapper class for numerical constants so we can conform to
+// the binary expressions interface
+template<class Num>
+class ConstantIteratorWrapper
+{
+	Num num;
+
+	static_assert(std::is_arithmetic_v<Num>);
+public:
+	using size_type = typename MatrixOpBase::size_type;
+	using ThisType = ConstantIteratorWrapper<Num>;
+
+	ConstantIteratorWrapper(Num num) :
+		num{ num }
+	{}
+
+	inline ThisType& operator++()			{ return *this; }
+	inline ThisType& operator--()			{ return *this; }
+	inline ThisType& operator++()			{ return *this; }
+	inline ThisType& operator+=(size_type)	{ return *this; }
+	inline ThisType& operator-=(size_type)	{ return *this; }
+
+	inline Num& operator*()  { return num; }
+	inline Num* operator->() { return &num; }
+
+};
+
+template<class Type, class Num>
+class MatrixMulConstantOp : public MatrixOpBase
+{
+public:
+	static constexpr Op type = MUL_CONSTANT;
+private:
+	Num num;
+public:
+
+	inline MatrixMulConstantOp(Num num) :
+		num{ num }
+	{}
+
+	template<class It>
+	inline Type operator()(It it, size_type, size_type) const noexcept
+	{
+		return *it * num;
 	}
 };
 
@@ -379,7 +430,7 @@ public:
 		it{ it },
 		op{ ncols },
 		nrows{ nrows },
-		ncols{ ncols }
+		ncols{ ncols },
 	{}
 
 	inline void lhsInc(size_type)  { throw std::runtime_error("Cannot inc lhs in Unary Expr"); }
