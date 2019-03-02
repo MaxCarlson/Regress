@@ -2,7 +2,7 @@
 #include <vector>
 
 template<class Type>
-class MatrixT;
+class Matrix;
 
 struct MatrixOpBase
 {
@@ -123,7 +123,7 @@ template<class Iter, class Type>
 class MatrixExpr
 {
 	using size_type		= typename MatrixOpBase::size_type;
-	using MatrixType	= MatrixT<Type>;
+	using MatrixType	= Matrix<Type>;
 	using ThisType		= MatrixExpr<Iter, Type>;
 
 	Iter exprOp;

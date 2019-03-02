@@ -15,7 +15,7 @@ class Input : public Layer<T>
 public:
 	Input(Matrix<T>* input);
 	void feedForward();
-	int numNodes() const { return input->columns(); }
+	int numNodes() const { return input->cols(); }
 	void setInput(Matrix<T>* newInput) { input = newInput; }
 	Matrix<T>* getNet() { return input; }
 

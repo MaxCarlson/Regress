@@ -10,13 +10,13 @@ namespace test
 	{
 	public:
 
-		MatrixT<int> lhs = {
+		Matrix<int> lhs = {
 			{1, 2},
 			{3, 4},
 			{5, 6},
 		};
 
-		MatrixT<int> rhs = {
+		Matrix<int> rhs = {
 			{1, 2, 3},
 			{4, 5, 6}
 		};

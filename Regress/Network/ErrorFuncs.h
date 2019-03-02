@@ -16,7 +16,8 @@ double squaredError(Matrix<T>& merror, const Matrix<T>& target, const Matrix<T>&
 	{
 		i = std::pow(i, 2);
 	});
-	merror *= 0.5;
+	//merror *= 0.5;
+	merror.unaryExpr([](auto& v) {v *= 0.5; });
 
 	return merror.sum();
 }

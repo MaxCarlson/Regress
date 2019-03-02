@@ -129,11 +129,10 @@
   <ItemGroup>
     <ClInclude Include="Linear\Expr.h" />
     <ClInclude Include="Linear\ExprOperators.h" />
-    <ClInclude Include="Linear\MatrixTest.h" />
+    <ClInclude Include="Linear\Matrix.h" />
     <ClInclude Include="Stopwatch.h" />
     <ClInclude Include="Network\Activation.h" />
     <ClInclude Include="Network\Dense.h" />
-    <ClInclude Include="Linear\Matrix.h" />
     <ClInclude Include="Linear\Model.h" />
     <ClInclude Include="Network\ErrorFuncs.h" />
     <ClInclude Include="Network\InfoPrinter.h" />

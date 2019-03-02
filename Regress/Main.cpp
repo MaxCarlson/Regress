@@ -7,13 +7,13 @@
 
 int main()
 {
-	MatrixT<int> lhs = { 
+	Matrix<int> lhs = { 
 		{1, 2},
 		{3, 4},
 		{5, 6},
 	};
 
-	MatrixT<int> rhs = {
+	Matrix<int> rhs = {
 		{1, 2, 3},
 		{4, 5, 6}
 	};
@@ -31,12 +31,12 @@ int main()
 
 	//Stopwatch w;
 
-	MatrixT<int> exVal;
+	Matrix<int> exVal;
 	auto exp = (lhs * ((rhs - rhs) + rhs) * (lhs * (rhs + rhs))) - lhs * rhs;
 	exVal = exp;
 
 	auto vv = exVal.transpose();
-	MatrixT<int> vvv = lhs.cwiseProduct(~rhs);
+	Matrix<int> vvv = lhs.cwiseProduct(~rhs);
 
 	//auto ex = (lhs * rhs) * (ihs * rhs); 
 	//exVal = ex;

@@ -23,9 +23,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Linear\Matrix.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Linear\Model.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -50,9 +47,6 @@
     <ClInclude Include="Network\InfoPrinter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Linear\MatrixTest.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Linear\Expr.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -60,6 +54,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Stopwatch.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Linear\Matrix.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

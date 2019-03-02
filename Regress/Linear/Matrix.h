@@ -1,73 +1,251 @@
 #pragma once
 #include <vector>
+#include "Expr.h"
 
-class MatrixBase
-{
-};
+template<class E>
+struct MatrixTBase
+{ };
 
-template<class T>
-class Matrix 
+template<class Iter, class Type>
+class MatrixExpr;
+template<class LIt, class RIt, class Op, class Type>
+class MatBinExpr;
+template<class Type>
+class MatrixCwiseProductOp;
+
+// TODO: Add a storage abstraction so we can have multiple things point to the same memory, such as view slices
+// without duplications
+template<class Type>
+class Matrix : public MatrixTBase<Type>
 {
-	int nrows;
-	int ncolumns;
-	std::vector<T> vals;
+public:
+	using Storage			= std::vector<Type>;
+	using iterator			= typename Storage::iterator;
+	using const_iterator	= typename Storage::const_iterator;
+	using size_type			= int;
+
+	
+
+private:
+	size_type	nrows;
+	size_type	ncols;
+	size_type	lastRowIdx;
+	Storage		vals;			// TODO: This should really be a column-order matrix 
+
 
 public:
+	using value_type	= Type;
+	using ThisType		= Matrix<Type>;
+	using SubType		= Type;
+
 	Matrix() = default;
-	Matrix(int nrows, int ncolumns);
-	Matrix(const std::initializer_list<std::initializer_list<T>>& m);
+	Matrix(size_type nrows, size_type ncols);
+	Matrix(const std::initializer_list<std::initializer_list<Type>>& m);
 
-	void resize(int nrows, int ncolumns);
+	// Handles assignment from expressions
+	template<class Expr>
+	Matrix(const Expr& expr);
 
-	int rows()		const { return nrows; }
-	int columns()	const { return ncolumns; }
-	T sum() const;
-	Matrix<T> transpose() const;
-	Matrix<T> cwiseProduct(const Matrix<T>& m) const;
-	Matrix<T> columnwiseAvg() const;
-
-	Matrix<T>& operator=(const Matrix<T>& other);
-
-	T& operator()(int row, int col);
-	const T& operator()(int row, int col) const;
-
-	Matrix operator+(const Matrix& m2) const;
-
-	Matrix operator-(const Matrix& m2) const;
-	Matrix operator-() const;
-	template<class Num, class T>
-	friend Matrix<T> operator-(const Num& n, const Matrix<T>& m);
-
-	Matrix operator*(const Matrix& m2) const;
-
-	template<class Num>
-	Matrix& operator*=(const Num& num);
-	Matrix& operator*=(const Matrix& m2);
+	size_type size() const noexcept { return vals.size(); }
+	size_type rows() const noexcept { return nrows; }
+	size_type cols() const noexcept { return ncols; }
 
 
-	template<class Num>
-	Matrix operator*(const Num& num) const;
+	iterator		begin()		  noexcept { return vals.begin(); }
+	iterator		end()		  noexcept { return vals.end(); }
+	const_iterator	begin() const noexcept { return vals.cbegin(); }
+	const_iterator	end()   const noexcept { return vals.cend(); }
+
+	class col_iterator;
+	class col_const_iterator;
+	col_iterator		col_begin()		const noexcept { return { 0,		*this }; }
+	col_iterator		col_end()		const noexcept { return { size(),	*this }; }
+	col_const_iterator	ccol_begin()	const noexcept { return { 0,		*this }; }
+	col_const_iterator	ccol_end()		const noexcept { return { size(),	*this }; }
+
+	Type& operator()(int row, int col);
+	const Type& operator()(int row, int col) const;
+
+	bool operator==(const Matrix& other) const;
+	bool operator!=(const Matrix& other) const;
 
 	template<class Num>
-	friend Matrix operator*(const Num& num, const Matrix<T>& matrix);
+	inline Matrix operator*(const Num & num) const;
 
 	template<class Func>
 	void unaryExpr(Func&& func);
+
+	void resize(size_type numRows, size_type numCols);
+	Matrix<Type> transpose() const;
+	Type sum() const;
+
+	inline MatrixExpr<MatBinExpr<
+		typename Matrix<Type>::const_iterator,
+		typename Matrix<Type>::const_iterator,
+		MatrixCwiseProductOp<Type>,
+		Type>, Type>
+		cwiseProduct(const Matrix<Type>& rhs) noexcept;
+
+	template<class Iter>
+	inline MatrixExpr<MatBinExpr<
+		typename Matrix<Type>::const_iterator,
+		MatrixExpr<Iter, Type>,
+		MatrixCwiseProductOp<Type>,
+		Type>, Type>
+		cwiseProduct(const Matrix<Type>& rhs) noexcept;
+
+	template<bool isConst>
+	class col_iterator_base
+	{
+	public:
+		using iterator_category = std::random_access_iterator_tag;
+		//using ItType = std::conditional_t<isConst,
+		//	const_iterator,
+		//	iterator>;
+		using ContainerType = std::conditional_t<isConst,
+			const ThisType,
+			ThisType>;
+
+		using reference = std::conditional_t<isConst,
+			const Type&,
+			Type&>;
+
+		using pointer = std::conditional_t<isConst,
+			const Type*,
+			Type*>;
+	private:
+		size_type		idx;
+		ContainerType& cont;
+
+	public:
+		col_iterator_base(size_type idx, ContainerType& cont) :
+			idx{ idx },
+			cont{ cont }
+		{}
+
+		// TODO: Perhaps iterating shouldn't do these tests, but dereferncing should!
+		// would be much more effeciant
+		col_iterator_base& operator++()
+		{
+			if (idx >= cont.size() - 1)
+				++idx;
+			else if (idx < cont.lastRowIdx)
+				idx += cont.cols();
+			else
+				++idx %= cont.cols();
+			
+			return *this;
+		}
+
+		// TODO: Revist for optimizations!
+		col_iterator_base& operator+=(size_type i)
+		{
+			while (i--)
+				++(*this);
+			return *this;
+		}
+
+		col_iterator_base& operator--()
+		{
+			if (idx <= 0 || idx >= cont.size())
+				--idx;
+			else if (idx < cont.cols())
+			{
+				--idx;
+				idx += cont.lastRowIdx;
+			}
+			else
+				idx -= cont.cols();
+			return *this;
+		}
+
+		// TODO: Revist for optimizations!
+		col_iterator_base& operator-=(size_type i)
+		{
+			while (i--)
+				--(*this);
+			return *this;
+		}
+
+		reference operator*() const
+		{
+			return cont.vals[idx];
+		}
+
+		pointer operator->() const
+		{
+			return &cont.vals[idx];
+		}
+
+		bool operator==(const col_iterator_base& other) const
+		{
+			return &cont == &other.cont
+				&& idx == other.idx;
+		}
+
+		bool operator!=(const col_iterator_base& other) const
+		{
+			return !(*this == other);
+		}
+
+		bool operator>(const col_iterator_base& other) const
+		{
+			return idx > other.idx;
+		}
+		bool operator<(const col_iterator_base& other) const
+		{
+			return idx < other.idx;
+		}
+
+		bool operator>=(const col_iterator_base& other) const
+		{
+			return idx >= other.idx;
+		}
+
+		bool operator<=(const col_iterator_base& other) const
+		{
+			return idx <= other.idx;
+		}
+	};
+
+	class col_const_iterator : public col_iterator_base<true>
+	{
+	public:
+		using MyBase		= col_iterator_base<true>;
+		using ContainerType = typename MyBase::ContainerType;
+
+		col_const_iterator(size_type idx, ContainerType& cont) :
+			MyBase{ idx, cont }
+		{}
+	};
+
+	class col_iterator : public col_iterator_base<false>
+	{
+	public:
+		using MyBase		= col_iterator_base<false>;
+		using ContainerType = typename MyBase::ContainerType;
+
+		col_iterator(size_type idx, ContainerType& cont) :
+			MyBase{ idx, cont }
+		{}
+	};
 };
 
-template<class T>
-inline Matrix<T>::Matrix(int nrows, int ncolumns) :
-	nrows{		nrows			},
-	ncolumns{	ncolumns		},
-	vals(		nrows * ncolumns)
+template<class Type>
+inline Matrix<Type>::Matrix(size_type nrows, size_type ncols) :
+	nrows{ nrows },
+	ncols{ ncols },
+	lastRowIdx{ (nrows - 1) * ncols },
+	vals(nrows * ncols)
 {
 }
 
-template<class T>
-inline Matrix<T>::Matrix(const std::initializer_list<std::initializer_list<T>>& m) :
-	nrows{ static_cast<int>(m.size()) },
-	ncolumns{ static_cast<int>(m.begin()->size()) },
-	vals(nrows * ncolumns)
+template<class Type>
+inline Matrix<Type>::Matrix(const std::initializer_list<std::initializer_list<Type>>& m) :
+	nrows{ static_cast<size_type>(m.size()) },
+	ncols{ static_cast<size_type>(m.begin()->size()) },
+	lastRowIdx{ (nrows - 1) * ncols }, 
+	vals(nrows * ncols)
 {
 	int i = 0;
 	for (auto it = std::begin(m); it != std::end(m); ++it)
@@ -75,202 +253,134 @@ inline Matrix<T>::Matrix(const std::initializer_list<std::initializer_list<T>>& 
 			vals[i++] = *jt;
 }
 
-template<class T>
-inline void Matrix<T>::resize(int rows, int columns)
+template<class Type>
+template<class Expr>
+inline Matrix<Type>::Matrix(const Expr & expr)
 {
-	nrows		= rows;
-	ncolumns	= columns;
-	vals.resize(nrows * ncolumns);
+	expr.assign(*this);
 }
 
-// TODO: Parallelize
-template<class T>
-inline T Matrix<T>::sum() const
-{
-	T total = 0;
-	for (const auto& i : vals)
-		total += i;
-	return total;
+template<class Type>
+inline Type & Matrix<Type>::operator()(int row, int col)
+{	// TODO: Changing access methods would allow us to change this to a column major order matrix
+	// (as well as initilizer list init)
+	return vals[row * ncols + col]; 
 }
 
-template<class T>
-inline Matrix<T> Matrix<T>::transpose() const
+template<class Type>
+inline const Type & Matrix<Type>::operator()(int row, int col) const
 {
-	Matrix<T> m(ncolumns, nrows);
+	return vals[row * ncols + col];
+}
 
-	#pragma omp parallel for
-	for (int n = 0; n < nrows*ncolumns; n++) 
-	{
-		int i = n % nrows;
-		int j = n / nrows;
-		m.vals[n] = vals[ncolumns*i + j];
-	}
+template<class Type>
+inline bool Matrix<Type>::operator==(const Matrix& other) const
+{
+	if (rows() != other.rows()
+		|| cols() != other.cols())
+		return false;
 
+	// TODO: Revisit and paralellize
+	for (int i = 0; i < vals.size(); ++i)
+		if (vals[i] != other.vals[i])
+			return false;
+	return true;
+}
+
+template<class Type>
+inline bool Matrix<Type>::operator!=(const Matrix & other) const
+{
+	return !(*this == other);
+}
+
+template<class Type>
+template<class Func>
+inline void Matrix<Type>::unaryExpr(Func && func)
+{
+#pragma omp parallel for
+	for (int i = 0; i < size(); ++i)
+		func(vals[i]);
+}
+
+template<class Type>
+inline void Matrix<Type>::resize(size_type numRows, size_type numCols) 
+{
+	nrows = numRows;
+	ncols = numCols;
+	lastRowIdx = (numRows - 1) * numCols;
+	vals.resize(numRows * numCols);
+}
+
+template<class Type>
+inline Type Matrix<Type>::sum() const
+{
+	Type sum = 0;
+	for (int i = 0; i < size(); ++i)
+		sum += vals[i];
+	return sum;
+}
+
+template<class Type>
+inline Matrix<Type> Matrix<Type>::transpose() const
+{
+	Matrix<Type> m(ncols, nrows);
+	m = ~(*this);
 	return m;
 }
 
-template<class T>
-inline Matrix<T> Matrix<T>::cwiseProduct(const Matrix<T>& m) const
+// All operations below this point return a Matrix Expression
+// (only Expressions that can't be handled outside are here,
+// the rest are in ExprOperators)
+
+template<class Type>
+inline MatrixExpr<MatBinExpr<
+	typename Matrix<Type>::const_iterator,
+	typename Matrix<Type>::const_iterator,
+	MatrixCwiseProductOp<Type>, Type>, Type> Matrix<Type>::cwiseProduct(const Matrix<Type>& rhs) noexcept
 {
-	Matrix<T> m2(nrows, ncolumns);
-
-	if (nrows != m.nrows
-		|| ncolumns != m.ncolumns)
-		throw std::runtime_error("Matrices must match!");
-
-	for (int i = 0; i < nrows * ncolumns; ++i)
-		m2.vals[i] = vals[i] * m.vals[i];
-
-	return m2;
+	using ExprType = MatBinExpr<
+		typename Matrix<Type>::const_iterator,
+		typename Matrix<Type>::const_iterator,
+		MatrixCwiseProductOp<Type>, Type>;
+	return MatrixExpr<ExprType, Type>{ExprType{
+		begin(),
+		rhs.begin(),
+		rows(),
+		rhs.rows(),
+		rhs.cols() },
+		MatrixOpBase::Op::CWISE_PRODUCT};
 }
 
-template<class T>
-inline Matrix<T> Matrix<T>::columnwiseAvg() const
+template<class Type>
+template<class Iter>
+inline MatrixExpr<MatBinExpr<
+	typename Matrix<Type>::const_iterator,
+	MatrixExpr<Iter, Type>,
+	MatrixCwiseProductOp<Type>, Type>, Type> Matrix<Type>::cwiseProduct(const Matrix<Type>& rhs) noexcept
 {
-	Matrix<T> m(1, ncolumns);
-
-	for (int i = 0; i < nrows; ++i)
-		for (int j = 0; j < ncolumns; ++j)
-			m(0, j) += this->operator()(i, j);
-
-	for (auto& c : m.vals)
-		c /= nrows;
-
-	return m;
+	using ExprType = MatBinExpr<
+		typename Matrix<Type>::const_iterator,
+		MatrixExpr<Iter, Type>,
+		MatrixCwiseProductOp<Type>, Type>;
+	return MatrixExpr<ExprType, Type>{ExprType{
+		begin(),
+		rhs,
+		rows(),
+		rhs.lhsRows(),
+		rhs.rhsCols() },
+		MatrixOpBase::Op::CWISE_PRODUCT};
 }
 
-template<class T>
-inline Matrix<T>& Matrix<T>::operator=(const Matrix<T>& other)
-{
-	nrows		= other.nrows;
-	ncolumns	= other.ncolumns;
-	vals.resize(other.vals.size());
-	std::copy(std::begin(other.vals), std::end(other.vals), std::begin(vals));
-	return *this;
-}
-
-template<class T>
-inline T & Matrix<T>::operator()(int row, int col) 
-{
-	return vals[row * ncolumns + col];
-}
-
-template<class T>
-inline const T & Matrix<T>::operator()(int row, int col) const
-{
-	return vals[row * ncolumns + col];
-}
-
-template<class T>
-inline Matrix<T> Matrix<T>::operator+(const Matrix & m2) const
-{
-	Matrix<T> m{ nrows, ncolumns };
-	if (ncolumns != m2.ncolumns
-		|| nrows != m2.nrows)
-		throw std::runtime_error("Matrix 1&2 must be identically sized!");
-
-	for (int i = 0; i < nrows; ++i)
-		for (int j = 0; j < ncolumns; ++j)
-			m(i, j) = this->operator()(i, j) + m2(i, j);
-
-	return m;
-}
-
-template<class T>
-inline Matrix<T> Matrix<T>::operator-(const Matrix & m2) const
-{
-	Matrix<T> m{ nrows, ncolumns };
-	if(ncolumns != m2.ncolumns
-		|| nrows != m2.nrows)
-		throw std::runtime_error("Matrix 1&2 must be identically sized!"); // TODO: Debug assertions not if statments
-
-	for (int i = 0; i < nrows; ++i)
-		for (int j = 0; j < ncolumns; ++j)
-			m(i, j) = this->operator()(i, j) - m2(i, j);
-
-	return m;
-}
-
-template<class T>
-inline Matrix<T> Matrix<T>::operator-() const
-{
-	Matrix<T> m{ nrows, ncolumns };
-
-	for (int i = 0; i < nrows * ncolumns; ++i)
-		m.vals[i] = -vals[i];
-	return m;
-}
-
-template<class Num, class T>
-inline Matrix<T> operator-(const Num & n, const Matrix<T>& m)
-{
-	Matrix<T> m1{ m.nrows, m.ncolumns };
-
-	for (int i = 0; i < m.nrows * m.ncolumns; ++i)
-		m1.vals[i] = n - m.vals[i];
-	return m1;
-}
-
-template<class T>
-inline Matrix<T> Matrix<T>::operator*(const Matrix & m2) const
-{
-	Matrix<T> m{ nrows, m2.ncolumns };
-
-	if (ncolumns != m2.nrows)
-		throw std::runtime_error("Matrix1 columns != Matrix2 rows!");
-	
-	for (int i = 0; i < nrows; ++i)
-		for (int j = 0; j < m2.ncolumns; ++j)
-		{
-			T sum = 0;
-			for (int k = 0; k < ncolumns; ++k)
-				sum += this->operator()(i, k) * m2(k, j);
-			m(i, j) = sum;
-		}
-	
-	return m;
-}
-
-template<class T>
-inline Matrix<T> & Matrix<T>::operator*=(const Matrix<T> & m2)
-{
-	*this = *this * m2;
-	return *this;
-}
-
-template<class T>
+template<class Type>
 template<class Num>
-inline Matrix<T> & Matrix<T>::operator*=(const Num & num)
+inline Matrix<Type> Matrix<Type>::operator*(const Num & num) const
 {
-	*this = *this * num;
-	return *this;
-}
-
-// TODO: Parallelize
-template<class T>
-template<class Num>
-inline Matrix<T> Matrix<T>::operator*(const Num & num) const
-{
-	Matrix<T> m;
-	m.resize(nrows, ncolumns);
+	Matrix<Type> m;
+	m.resize(nrows, ncols);
 	for (int i = 0; i < vals.size(); ++i)
 		m.vals[i] = num * vals[i];
 	return m;
 }
 
-template<class T>
-template<class Func>
-inline void Matrix<T>::unaryExpr(Func && func)
-{
-	// TODO: Add OpenMp
-	for (auto& e : vals)
-		func(e);
-}
-
-template<class Num, class T>
-inline Matrix<T> operator*(const Num & num, const Matrix<T>& matrix)
-{
-	return matrix * num;
-}
 
 

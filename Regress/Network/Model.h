@@ -61,7 +61,7 @@ inline void Model<T>::run(Matrix<T>& features)
 template<class T>
 inline void Model<T>::train(Matrix<T>& features, Matrix<T>& labels)
 {
-	merror.resize(labels.rows(), labels.columns());
+	merror.resize(labels.rows(), labels.cols());
 
 	input.feedForward();
 	calcError(labels);
