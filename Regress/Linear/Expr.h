@@ -10,7 +10,7 @@ struct MatrixOpBase
 	enum Op : size_type
 	{
 		ADD,
-		MINUS,
+		SUB,
 		MULTIPLY,
 		DIV,
 		DOT,
@@ -30,6 +30,21 @@ public:
 	inline Type operator()(Lit lit, Rit rit, size_type rhsRows, size_type rhsCols) const noexcept
 	{
 		return *lit + *rit;
+	}
+};
+
+template<class Type>
+class MatrixSubOp : public MatrixOpBase
+{
+public:
+	static constexpr Op type = ADD;
+
+	inline MatrixSubOp(size_type) {}
+
+	template<class Lit, class Rit>
+	inline Type operator()(Lit lit, Rit rit, size_type rhsRows, size_type rhsCols) const noexcept
+	{
+		return *lit - *rit;
 	}
 };
 

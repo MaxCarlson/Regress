@@ -22,7 +22,7 @@ private:
 	size_type	nrows;
 	size_type	ncols;
 	size_type	lastRowIdx;
-	Storage		vals;
+	Storage		vals;			// TODO: This should really be a column-order matrix 
 
 
 public:
@@ -85,6 +85,8 @@ public:
 			cont{ cont }
 		{}
 
+		// TODO: Perhaps iterating shouldn't do these tests, but dereferncing should!
+		// would be much more effeciant
 		col_iterator_base& operator++()
 		{
 			if (idx >= cont.size() - 1)
