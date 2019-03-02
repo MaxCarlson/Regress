@@ -276,11 +276,23 @@ inline MatrixExpr<MatBinExpr<
 template<class Type, class Iter, class Num>
 inline MatrixExpr<MatBinExpr<
 	typename Matrix<Type>::const_iterator,
-	MatrixMulConstantOp<Type, Num>,
+	ConstantIteratorWrapper<Num>,
+	MatrixMulConstantOp<Type>,
 	Type>, Type>
 	operator*(const Matrix<Type>& lhs, const Num& num) noexcept
 {
-
+	using ExprType = MatBinExpr<
+		typename Matrix<Type>::const_iterator,
+		ConstantIteratorWrapper<Num>,
+		MatrixMulConstantOp<Type>,
+		Type>;
+	return MatrixExpr<ExprType, Type>{ExprType{
+		lhs.begin(),
+		MatrixMulConstantOp<Type>{num},
+		lhs.rows(),
+		lhs.rows(),
+		lhs.cols() },
+		MatrixOpBase::MUL_CONSTANT };
 }
 
 // Unary Expressions

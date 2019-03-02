@@ -102,44 +102,38 @@ template<class Num>
 class ConstantIteratorWrapper
 {
 	Num num;
-
 	static_assert(std::is_arithmetic_v<Num>);
 public:
 	using size_type = typename MatrixOpBase::size_type;
-	using ThisType = ConstantIteratorWrapper<Num>;
+	using ThisType	= ConstantIteratorWrapper<Num>;
 
-	ConstantIteratorWrapper(Num num) :
+	inline ConstantIteratorWrapper(Num num) :
 		num{ num }
 	{}
 
-	inline ThisType& operator++()			{ return *this; }
-	inline ThisType& operator--()			{ return *this; }
-	inline ThisType& operator++()			{ return *this; }
-	inline ThisType& operator+=(size_type)	{ return *this; }
-	inline ThisType& operator-=(size_type)	{ return *this; }
+	inline ThisType& operator++()			noexcept { return *this; }
+	inline ThisType& operator--()			noexcept { return *this; }
+	inline ThisType& operator++()			noexcept { return *this; }
+	inline ThisType& operator+=(size_type)	noexcept { return *this; }
+	inline ThisType& operator-=(size_type)	noexcept { return *this; }
 
-	inline Num& operator*()  { return num; }
-	inline Num* operator->() { return &num; }
+	inline const Num& operator*()  const noexcept { return num; }
+	inline const Num* operator->() const noexcept { return &num; }
 
 };
 
-template<class Type, class Num>
+template<class Type>
 class MatrixMulConstantOp : public MatrixOpBase
 {
 public:
 	static constexpr Op type = MUL_CONSTANT;
-private:
-	Num num;
-public:
 
-	inline MatrixMulConstantOp(Num num) :
-		num{ num }
-	{}
+	inline MatrixMulConstantOp(size_type) {}
 
-	template<class It>
-	inline Type operator()(It it, size_type, size_type) const noexcept
+	template<class LIt, class RIt>
+	inline Type operator()(LIt lit, RIt rit, size_type, size_type) const noexcept
 	{
-		return *it * num;
+		return *it * *rit;
 	}
 };
 
