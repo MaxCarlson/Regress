@@ -36,6 +36,7 @@ int main()
 	exVal = exp;
 
 	auto vv = exVal.transpose();
+	//auto vvv = vv.cwiseProduct(exVal);
 
 	//auto ex = (lhs * rhs) * (ihs * rhs); 
 	//exVal = ex;

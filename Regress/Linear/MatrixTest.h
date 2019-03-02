@@ -5,6 +5,13 @@ template<class E>
 struct MatrixTBase
 { };
 
+template<class Iter, class Type>
+class MatrixExpr;
+template<class LIt, class RIt, class Op, class Type>
+class MatBinExpr;
+template<class Type>
+class MatrixCwiseProductOp;
+
 // TODO: Add a storage abstraction so we can have multiple things point to the same memory, such as view slices
 // without duplications
 template<class Type>
@@ -66,6 +73,13 @@ public:
 
 	void resize(size_type numRows, size_type numCols);
 	MatrixT<Type> transpose() const;
+
+	inline MatrixExpr<MatBinExpr<
+		MatrixT<Type>,
+		MatrixT<Type>,
+		MatrixCwiseProductOp<Type>,
+		Type>, Type>
+		cwiseProduct(const MatrixT<Type>& rhs) noexcept;
 
 	template<bool isConst>
 	class col_iterator_base
@@ -290,6 +304,21 @@ inline MatrixT<Type> MatrixT<Type>::transpose() const
 	MatrixT<Type> m(ncols, nrows);
 	m = ~(*this);
 	return m;
+}
+
+template<class Type>
+inline MatrixExpr<MatBinExpr<MatrixT<Type>, MatrixT<Type>, MatrixCwiseProductOp<Type>, Type>, Type> MatrixT<Type>::cwiseProduct(const MatrixT<Type>& rhs) noexcept
+{
+	using ExprType = MatBinExpr<MatrixT<Type>,
+		MatrixT<Type>,
+		MatrixCwiseProductOp<Type>, Type>;
+	return MatrixExpr<ExprType, Type>{ExprType{
+		begin(),
+		rhs.begin(),
+		rows(),
+		rhs.rows(),
+		rhs.cols() },
+		MatrixOpBase::Op::CWISE_PRODUCT};
 }
 
 

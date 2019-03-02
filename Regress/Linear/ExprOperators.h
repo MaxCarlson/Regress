@@ -1,5 +1,6 @@
 #pragma once
 #include "Expr.h"
+#include "MatrixTest.h"
 
 // Addition operators
 

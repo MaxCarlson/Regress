@@ -1,6 +1,8 @@
 #pragma once
 #include <vector>
-#include "MatrixTest.h"
+
+template<class Type>
+class MatrixT;
 
 struct MatrixOpBase
 {
@@ -13,10 +15,15 @@ struct MatrixOpBase
 		SUB,
 		MULTIPLY,
 		DIV,
+		CWISE_PRODUCT,
 		DOT,
 		TRANSPOSE
 	};
 };
+
+// Different Matrix expression operations
+
+// Types of Binary Expressions
 
 template<class Type>
 class MatrixAddOp : public MatrixOpBase
@@ -71,6 +78,23 @@ public:
 };
 
 template<class Type>
+class MatrixCwiseProductOp : public MatrixOpBase
+{
+public:
+	static constexpr Op type = CWISE_PRODUCT;
+
+	inline MatrixCwiseProductOp(size_type) {}
+
+	template<class LIt, class RIt>
+	inline Type operator()(LIt lit, RIt rit, size_type, size_type) const noexcept
+	{
+		return *lit * *rit;
+	}
+};
+
+// Types of Unary Expressions
+
+template<class Type>
 class MatrixTransposeOp : public MatrixOpBase
 {
 public:
@@ -91,6 +115,9 @@ public:
 		return *it;
 	}
 };
+
+// This is the basic expression that encompasses all other tyes of expressions
+// It is also reasponsible for assigning the final values of expressions to the Matrix
 
 template<class Iter, class Type>
 class MatrixExpr
@@ -261,6 +288,9 @@ public:
 	const_iterator begin() const noexcept { return const_iterator{ this }; }
 };
 
+// A type of Matrix Expression that takes a left and right iterator 
+// (to either a Matrix or another expression)
+
 template<class LIt, class RIt, class Op, class Type>
 class MatBinExpr
 {
@@ -329,6 +359,8 @@ public:
 		return *this;
 	}
 };
+
+// A Unary expression. Takes an iterator to only one Matrix or Expression
 
 template<class It, class Op, class Type>
 class MatUnaExpr
