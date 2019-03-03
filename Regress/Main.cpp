@@ -23,21 +23,10 @@ int main()
 	// {1, 2, 3} *	{19, 26, 33} =	{305, 418, 531}
 	// {4, 5, 6}	{29, 40, 51}
 
-
 	//   lhs
 	// {1, 2}		  rhs*2			{18, 24,  30}
 	// {3, 4}   { {1, 2, 3} * 2 } = {38, 52,  66}
 	// {5, 6} * { {4, 5, 6}     }   {58, 80, 102}
-
-	//Stopwatch w;
-
-	Matrix<int> exVal;
-	auto exp = (lhs * ((rhs - rhs) + rhs) * (lhs * (rhs + rhs))) - lhs * rhs;
-	exVal = exp;
-
-	auto llhs = lhs;
-	lhs = 2 / llhs + 1;
-
 
 	Matrix<float> input = {
 		{0, 1},
@@ -54,15 +43,15 @@ int main()
 	};
 
 	Input<float>  in(&input);
-	Dense<float>  d1(2, false, &in, Activation::Relu);
+	Dense<float>  d1(2,  false, &in, Activation::Relu);
 	Dense<float>  d2(10, false, &d1, Activation::Relu);
 	Dense<float>  d3(16, false, &d1, Activation::Relu);
-	Dense<float>  d4(2, false, &d2, Activation::Relu);
+	Dense<float>  d4(2,  false, &d2, Activation::Relu);
 
 
-	Model<float> mod(in, &d4, 0.009, ErrorFunction::Squared, InfoPrinter{ 5 });
+	Model<float> mod(in, &d4, 0.005, ErrorFunction::Squared, InfoPrinter{ 5 });
 	
-	for(int i = 0; i < 100; ++i)
+	for(int i = 0; i < 1500; ++i)
 		mod.train(input, label);
 
 

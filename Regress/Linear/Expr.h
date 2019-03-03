@@ -60,7 +60,7 @@ private:
 	template<bool Inc>
 	inline void incrementSelf(size_type i) noexcept
 	{
-		if (op != MatrixOpBase::MULTIPLY)
+		if (exprOp.getOp() != MatrixOpBase::MULTIPLY)
 		{
 			if constexpr (Inc)
 				exprOp += i;
@@ -179,7 +179,7 @@ public:
 
 		inline const_iterator& operator++() noexcept
 		{
-			if (expr->opType() == MatrixOpBase::Op::MULTIPLY)
+			if (exprOp.getOp() == MatrixOpBase::Op::MULTIPLY)
 			{
 				exprOp.rhsInc(1);
 				if (++multiCount % expr->rhsCols() == 0)
@@ -234,6 +234,7 @@ public:
 	inline size_type rhsRows() const noexcept { return nrhsRows; }
 	inline size_type rhsCols() const noexcept { return nrhsCols; }
 
+	inline static constexpr size_type getOp() { return Op::type; }
 
 	Type operator*() const noexcept
 	{
@@ -295,6 +296,9 @@ public:
 	inline void lhsDec(size_type)  { throw std::runtime_error("Cannot dec lhs in Unary Expr"); }
 	inline void rhsInc(size_type i)  noexcept { it += i; }
 	inline void rhsDec(size_type i)  noexcept { it -= i; }
+
+	inline static constexpr size_type getOp()  { return Op::type; }
+
 
 	inline size_type lhsRows() const noexcept { return op.lhsRows(); }
 	
@@ -437,7 +441,9 @@ public:
 	inline const Num* operator->() const noexcept { return &num; }
 };
 
-// Binary expressions involving numerical values wrapped in 
+//
+// Binary expressions involving numerical values wrapped in NumericIteratorWrapper
+//
 
 template<class Type>
 class MatrixAddNumericOp : public MatrixOpBase
@@ -503,7 +509,9 @@ public:
 	}
 };
 
+//
 // Types of Unary Expressions
+//
 
 template<class Type>
 class MatrixTransposeOp : public MatrixOpBase

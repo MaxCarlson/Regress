@@ -680,6 +680,44 @@ inline MatrixExpr<MatBinExpr<
 		MatrixOpBase::NUMERICAL_DIV };
 }
 
+// All the equality operation combinations that make sense
+// (Except for MatrixExpr on MatrixExpr which I might add later)
+template<class Type, class Iter>
+inline Matrix<Type>& operator+=(Matrix<Type>& lhs, const Matrix<Type>& rhs) noexcept
+{
+	auto rit = rhs.begin();
+	for (auto lit = std::begin(lhs); lit != std::end(lhs); ++lit, ++rit)
+		*lit += *rit;
+	return lhs;
+}
+
+template<class Type, class Iter>
+inline Matrix<Type>& operator+=(Matrix<Type>& lhs, const MatrixExpr<Iter, Type>& rhs) noexcept
+{
+	auto rit = rhs.begin();
+	for (auto lit = std::begin(lhs); lit != std::end(lhs); ++lit, ++rit)
+		*lit += *rit;
+	return lhs;
+}
+
+template<class Type, class Iter>
+inline Matrix<Type>& operator-=(Matrix<Type>& lhs, const Matrix<Type>& rhs) noexcept
+{
+	auto rit = rhs.begin();
+	for (auto lit = std::begin(lhs); lit != std::end(lhs); ++lit, ++rit)
+		*lit -= *rit;
+	return lhs;
+}
+
+template<class Type, class Iter>
+inline Matrix<Type>& operator-=(Matrix<Type>& lhs, const MatrixExpr<Iter, Type>& rhs) noexcept
+{
+	auto rit = rhs.begin();
+	for (auto lit = std::begin(lhs); lit != std::end(lhs); ++lit, ++rit)
+		*lit -= *rit;
+	return lhs;
+}
+
 template<class Type>
 inline Matrix<Type>& operator*=(Matrix<Type>& lhs, const Matrix<Type>& rhs) noexcept
 {
@@ -688,3 +726,33 @@ inline Matrix<Type>& operator*=(Matrix<Type>& lhs, const Matrix<Type>& rhs) noex
 		*lit *= *rit;
 	return lhs;
 }
+
+template<class Type, class Iter>
+inline Matrix<Type>& operator*=(Matrix<Type>& lhs, const MatrixExpr<Iter, Type>& rhs) noexcept
+{
+	auto rit = rhs.begin();
+	for (auto lit = std::begin(lhs); lit != std::end(lhs); ++lit, ++rit)
+		*lit *= *rit;
+	return lhs;
+}
+
+/* 
+// NOT IMPLEMENTED OR DEFINED
+template<class Type>
+inline Matrix<Type>& operator/=(Matrix<Type>& lhs, const Matrix<Type>& rhs) noexcept
+{
+	auto rit = rhs.begin();
+	for (auto lit = std::begin(lhs); lit != std::end(lhs); ++lit, ++rit)
+		*lit /= *rit;
+	return lhs;
+}
+
+template<class Type, class Iter>
+inline Matrix<Type>& operator/=(Matrix<Type>& lhs, const MatrixExpr<Iter, Type>& rhs) noexcept
+{
+	auto rit = rhs.begin();
+	for (auto lit = std::begin(lhs); lit != std::end(lhs); ++lit, ++rit)
+		*lit /= *rit;
+	return lhs;
+}
+*/

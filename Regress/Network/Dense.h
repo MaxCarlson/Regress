@@ -48,6 +48,7 @@ public:
 
 	void		calcDeltasOutput(Matrix<T>& target, ErrorFunction errorFunc, double lr);
 	void		calcDeltas(Matrix<T>& outWeights, Matrix<T>& outErrors, Matrix<T>& outActPrime, double lr);
+	void updateWeights(double lr);
 };
 
 #include <random>
@@ -119,8 +120,8 @@ inline void Dense<T>::calcDeltasOutput(Matrix<T>& target, ErrorFunction errorFun
 	for (auto& in : this->inputs)
 		in->calcDeltas(weights, errors, actPrime, lr);
 
-	// Update weights. Should probably be done somewhere else of function renamed
-	weights = weights - deltas * lr;
+	//weights = weights - deltas * lr;
+	updateWeights(lr);
 }
 
 
@@ -130,18 +131,36 @@ inline void Dense<T>::calcDeltas(Matrix<T>& outWeights, Matrix<T>& outErrors, Ma
 {
 	// Instead of error (like it is in output node) 
 	// this is actually the partial derivative of Etotal with respect to (output)s
+	
+	/*
 	errors = outErrors * outWeights.transpose();
-
 	deltas = errors.cwiseProduct(actPrime);
-
 	auto& inNet = *this->inputs[0]->getNet();
 	deltas = deltas.transpose() * inNet;
 	deltas = deltas.transpose();
+	*/
+	
+	const auto& inNet = *this->inputs[0]->getNet();
+
+	errors = outErrors * ~outWeights;
+	deltas = errors.cwiseProduct(actPrime);
+
+	// TODO: Get transpose operator working with expressions
+	deltas = deltas.transpose() * inNet;	
+	deltas = deltas.transpose();
+	
 
 	for (auto& in : this->inputs)
 		in->calcDeltas(weights, errors, actPrime, lr);
 
-	weights = weights - deltas * lr;
+	//weights = weights - deltas * lr;
+	updateWeights(lr);
+}
+
+template<class T>
+inline void Dense<T>::updateWeights(double lr)
+{
+	weights -= deltas * lr;
 }
 
 
