@@ -399,6 +399,11 @@ public:
 	}
 };
 
+
+//
+// Binary Expressions not handled by operators
+//
+
 // This expression is handled by calling the cwiseProduct() function
 // from a matrix instance itself since rest of operators are unclear
 // ex Matrix m, n; m.cwiseProduct(n);
@@ -417,16 +422,22 @@ public:
 	}
 };
 
+//
+// Binary expressions involving numerical values wrapped in NumericIteratorWrapper
+//
 // A wrapper class for numerical operations so we can conform to
 // the binary expressions interface
+
 template<class Num>
 class NumericIteratorWrapper
 {
 	const Num& num;
-	static_assert(std::is_arithmetic_v<Num>);
+
+	// TODO: Potentially change? Maybe we want to allow anything that has overloaded Matrix operators?
+	static_assert(std::is_arithmetic_v<Num>); 
 public:
 	using size_type = typename MatrixOpBase::size_type;
-	using ThisType = NumericIteratorWrapper<Num>;
+	using ThisType	= NumericIteratorWrapper<Num>;
 
 	inline NumericIteratorWrapper(const Num& num) :
 		num{ num }
@@ -440,10 +451,6 @@ public:
 	inline const Num& operator*()  const noexcept { return num; }
 	inline const Num* operator->() const noexcept { return &num; }
 };
-
-//
-// Binary expressions involving numerical values wrapped in NumericIteratorWrapper
-//
 
 template<class Type>
 class MatrixAddNumericOp : public MatrixOpBase

@@ -15,9 +15,11 @@ template<class Type>
 class MatrixCwiseProductOp;
 
 // TODO: Add a storage abstraction so we can have multiple things point to the same memory, such as view slices
+// TODO: Add template param for using Column Major Order
+
 // without duplications
 template<class Type>
-class Matrix : public MatrixBase<Type>
+class Matrix 
 {
 public:
 	using Storage			= std::vector<Type>;

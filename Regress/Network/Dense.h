@@ -107,20 +107,12 @@ inline void Dense<T>::calcDeltasOutput(Matrix<T>& target, ErrorFunction errorFun
 {
 	errorPrime(errors, target, output, errorFunc); 
 	
-	/*
-	deltas = errors;
-	deltas = deltas.cwiseProduct(actPrime);
-	Matrix<T>& prevOutput = *this->inputs[0]->getOutput();
-	deltas = prevOutput.transpose() * deltas;
-	*/
-
 	const auto& prevOutput = *this->inputs[0]->getOutput();
 	deltas = ~prevOutput * errors.cwiseProduct(actPrime);
 
 	for (auto& in : this->inputs)
 		in->calcDeltas(weights, errors, actPrime, lr);
 
-	//weights = weights - deltas * lr;
 	updateWeights(lr);
 }
 
@@ -132,13 +124,11 @@ inline void Dense<T>::calcDeltas(Matrix<T>& outWeights, Matrix<T>& outErrors, Ma
 	// Instead of error (like it is in output node) 
 	// this is actually the partial derivative of Etotal with respect to (output)s
 	
-	/*
-	errors = outErrors * outWeights.transpose();
-	deltas = errors.cwiseProduct(actPrime);
-	auto& inNet = *this->inputs[0]->getNet();
-	deltas = deltas.transpose() * inNet;
-	deltas = deltas.transpose();
-	*/
+	// In order to get the deltas here we do
+	// dEtotal/dout * dout/dnet * dnet/dout
+	// where
+	// dEtotal/dout = dE_o1/out_h1 + dE_o2/out_h1 + ... dE_on/out_h1
+	// TODO: Not done commenting
 	
 	const auto& inNet = *this->inputs[0]->getNet();
 
@@ -153,7 +143,6 @@ inline void Dense<T>::calcDeltas(Matrix<T>& outWeights, Matrix<T>& outErrors, Ma
 	for (auto& in : this->inputs)
 		in->calcDeltas(weights, errors, actPrime, lr);
 
-	//weights = weights - deltas * lr;
 	updateWeights(lr);
 }
 
