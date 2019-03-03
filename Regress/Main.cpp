@@ -35,11 +35,8 @@ int main()
 	auto exp = (lhs * ((rhs - rhs) + rhs) * (lhs * (rhs + rhs))) - lhs * rhs;
 	exVal = exp;
 
-	auto vv = exVal.transpose();
-	Matrix<int> vvv = lhs.cwiseProduct(~rhs);
-
-	//auto ex = (lhs * rhs) * (ihs * rhs); 
-	//exVal = ex;
+	auto llhs = lhs;
+	lhs = 2 * ~llhs * 2;
 
 
 	Matrix<float> input = {

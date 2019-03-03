@@ -113,14 +113,14 @@ public:
 
 	inline ThisType& operator++()			noexcept { return *this; }
 	inline ThisType& operator--()			noexcept { return *this; }
-	inline ThisType& operator++()			noexcept { return *this; }
 	inline ThisType& operator+=(size_type)	noexcept { return *this; }
 	inline ThisType& operator-=(size_type)	noexcept { return *this; }
 
 	inline const Num& operator*()  const noexcept { return num; }
 	inline const Num* operator->() const noexcept { return &num; }
-
 };
+
+// Binary expressions involving constants
 
 template<class Type>
 class MatrixMulConstantOp : public MatrixOpBase
@@ -130,10 +130,11 @@ public:
 
 	inline MatrixMulConstantOp(size_type) {}
 
+	// In this case one of LIt/RIt is going to be a ConstantIteratorWrapper
 	template<class LIt, class RIt>
 	inline Type operator()(LIt lit, RIt rit, size_type, size_type) const noexcept
 	{
-		return *it * *rit;
+		return *lit * *rit;
 	}
 };
 
@@ -424,7 +425,7 @@ public:
 		it{ it },
 		op{ ncols },
 		nrows{ nrows },
-		ncols{ ncols },
+		ncols{ ncols }
 	{}
 
 	inline void lhsInc(size_type)  { throw std::runtime_error("Cannot inc lhs in Unary Expr"); }

@@ -56,9 +56,6 @@ public:
 	bool operator==(const Matrix& other) const;
 	bool operator!=(const Matrix& other) const;
 
-	template<class Num, class = typename std::enable_if<std::is_arithmetic<Num>::value, Num>::type>
-	inline Matrix operator*(const Num & num) const;
-
 	iterator		begin()		  noexcept { return vals.begin(); }
 	iterator		end()		  noexcept { return vals.end(); }
 	const_iterator	begin() const noexcept { return vals.cbegin(); }
@@ -396,16 +393,6 @@ inline MatrixExpr<MatBinExpr<
 		MatrixOpBase::Op::CWISE_PRODUCT};
 }
 
-template<class Type>
-template<class Num, class>
-inline Matrix<Type> Matrix<Type>::operator*(const Num & num) const
-{
-	Matrix<Type> m;
-	m.resize(nrows, ncols);
-	for (int i = 0; i < vals.size(); ++i)
-		m.vals[i] = num * vals[i];
-	return m;
-}
 
 
 

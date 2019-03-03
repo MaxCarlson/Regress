@@ -272,8 +272,10 @@ inline MatrixExpr<MatBinExpr<
 		MatrixOpBase::Op::MULTIPLY };
 }
 
+//class = typename std::enable_if<std::is_arithmetic<Num>::value, Num>::type >
+
 // Binary Constant Expressions
-template<class Type, class Iter, class Num>
+template<class Type, class Num>
 inline MatrixExpr<MatBinExpr<
 	typename Matrix<Type>::const_iterator,
 	ConstantIteratorWrapper<Num>,
@@ -288,10 +290,76 @@ inline MatrixExpr<MatBinExpr<
 		Type>;
 	return MatrixExpr<ExprType, Type>{ExprType{
 		lhs.begin(),
-		MatrixMulConstantOp<Type>{num},
+		ConstantIteratorWrapper<Num>{ num },
 		lhs.rows(),
 		lhs.rows(),
 		lhs.cols() },
+		MatrixOpBase::MUL_CONSTANT };
+}
+
+template<class Type, class Num>
+inline MatrixExpr<MatBinExpr<
+	ConstantIteratorWrapper<Num>,
+	typename Matrix<Type>::const_iterator,
+	MatrixMulConstantOp<Type>,
+	Type>, Type>
+	operator*(const Num& num, const Matrix<Type>& rhs) noexcept
+{
+	using ExprType = MatBinExpr<
+		ConstantIteratorWrapper<Num>,
+		typename Matrix<Type>::const_iterator,
+		MatrixMulConstantOp<Type>,
+		Type>;
+	return MatrixExpr<ExprType, Type>{ExprType{
+		ConstantIteratorWrapper<Num>{ num },
+		rhs.begin(),
+		rhs.rows(),
+		rhs.rows(),
+		rhs.cols() },
+		MatrixOpBase::MUL_CONSTANT };
+}
+
+template<class Type, class Iter, class Num>
+inline MatrixExpr<MatBinExpr<
+	MatrixExpr<Iter, Type>,
+	ConstantIteratorWrapper<Num>,
+	MatrixMulConstantOp<Type>,
+	Type>, Type>
+	operator*(const MatrixExpr<Iter, Type>& lhs, const Num& num) noexcept
+{
+	using ExprType = MatBinExpr<
+		MatrixExpr<Iter, Type>,
+		ConstantIteratorWrapper<Num>,
+		MatrixMulConstantOp<Type>,
+		Type>;
+	return MatrixExpr<ExprType, Type>{ExprType{
+		lhs,
+		ConstantIteratorWrapper<Num>{ num },
+		lhs.lhsRows(),
+		lhs.lhsRows(),
+		lhs.rhsCols() },
+		MatrixOpBase::MUL_CONSTANT };
+}
+
+template<class Type, class Iter, class Num>
+inline MatrixExpr<MatBinExpr<
+	ConstantIteratorWrapper<Num>,
+	MatrixExpr<Iter, Type>,
+	MatrixMulConstantOp<Type>,
+	Type>, Type>
+	operator*(const Num& num, const MatrixExpr<Iter, Type>& rhs) noexcept
+{
+	using ExprType = MatBinExpr<
+		ConstantIteratorWrapper<Num>,
+		MatrixExpr<Iter, Type>,
+		MatrixMulConstantOp<Type>,
+		Type>;
+	return MatrixExpr<ExprType, Type>{ExprType{
+		ConstantIteratorWrapper<Num>{ num },
+		rhs,
+		rhs.lhsRows(),
+		rhs.lhsRows(),
+		rhs.rhsCols() },
 		MatrixOpBase::MUL_CONSTANT };
 }
 
