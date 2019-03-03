@@ -99,18 +99,18 @@ public:
 	}
 };
 
-// A wrapper class for numerical constants so we can conform to
+// A wrapper class for numerical operations so we can conform to
 // the binary expressions interface
 template<class Num>
-class ConstantIteratorWrapper
+class NumericIteratorWrapper
 {
-	Num num;
+	const Num& num;
 	static_assert(std::is_arithmetic_v<Num>);
 public:
 	using size_type = typename MatrixOpBase::size_type;
-	using ThisType	= ConstantIteratorWrapper<Num>;
+	using ThisType	= NumericIteratorWrapper<Num>;
 
-	inline ConstantIteratorWrapper(Num num) :
+	inline NumericIteratorWrapper(const Num& num) :
 		num{ num }
 	{}
 
@@ -123,15 +123,15 @@ public:
 	inline const Num* operator->() const noexcept { return &num; }
 };
 
-// Binary expressions involving constants
+// Binary expressions involving numerical values wrapped in 
 
 template<class Type>
-class MatrixAddConstantOp : public MatrixOpBase
+class MatrixAddNumericOp : public MatrixOpBase
 {
 public:
 	static constexpr Op type = NUMERICAL_ADD;
 
-	inline MatrixAddConstantOp(size_type) {}
+	inline MatrixAddNumericOp(size_type) {}
 
 	// In this case one of LIt/RIt is going to be a ConstantIteratorWrapper
 	template<class LIt, class RIt>
@@ -142,12 +142,12 @@ public:
 };
 
 template<class Type>
-class MatrixSubConstantOp : public MatrixOpBase
+class MatrixSubNumericOp : public MatrixOpBase
 {
 public:
 	static constexpr Op type = NUMERICAL_SUB;
 
-	inline MatrixSubConstantOp(size_type) {}
+	inline MatrixSubNumericOp(size_type) {}
 
 	// In this case one of LIt/RIt is going to be a ConstantIteratorWrapper
 	template<class LIt, class RIt>
@@ -158,12 +158,12 @@ public:
 };
 
 template<class Type>
-class MatrixMulConstantOp : public MatrixOpBase
+class MatrixMulNumericOp : public MatrixOpBase
 {
 public:
 	static constexpr Op type = NUMERICAL_MUL;
 
-	inline MatrixMulConstantOp(size_type) {}
+	inline MatrixMulNumericOp(size_type) {}
 
 	// In this case one of LIt/RIt is going to be a ConstantIteratorWrapper
 	template<class LIt, class RIt>
@@ -174,12 +174,12 @@ public:
 };
 
 template<class Type>
-class MatrixDivConstantOp : public MatrixOpBase
+class MatrixDivNumericOp : public MatrixOpBase
 {
 public:
 	static constexpr Op type = NUMERICAL_DIV;
 
-	inline MatrixDivConstantOp(size_type) {}
+	inline MatrixDivNumericOp(size_type) {}
 
 	// In this case one of LIt/RIt is going to be a ConstantIteratorWrapper
 	template<class LIt, class RIt>
