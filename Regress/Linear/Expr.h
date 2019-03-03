@@ -81,6 +81,9 @@ public:
 	}
 };
 
+// This expression is handled by calling the cwiseProduct() function
+// from a matrix instance itself since rest of operators are unclear
+// ex Matrix m, n; m.cwiseProduct(n);
 template<class Type>
 class MatrixCwiseProductOp : public MatrixOpBase
 {
@@ -123,6 +126,38 @@ public:
 // Binary expressions involving constants
 
 template<class Type>
+class MatrixAddConstantOp : public MatrixOpBase
+{
+public:
+	static constexpr Op type = ADD_CONSTANT;
+
+	inline MatrixAddConstantOp(size_type) {}
+
+	// In this case one of LIt/RIt is going to be a ConstantIteratorWrapper
+	template<class LIt, class RIt>
+	inline Type operator()(LIt lit, RIt rit, size_type, size_type) const noexcept
+	{
+		return *lit + *rit;
+	}
+};
+
+template<class Type>
+class MatrixSubConstantOp : public MatrixOpBase
+{
+public:
+	static constexpr Op type = SUB_CONSTANT;
+
+	inline MatrixSubConstantOp(size_type) {}
+
+	// In this case one of LIt/RIt is going to be a ConstantIteratorWrapper
+	template<class LIt, class RIt>
+	inline Type operator()(LIt lit, RIt rit, size_type, size_type) const noexcept
+	{
+		return *lit - *rit;
+	}
+};
+
+template<class Type>
 class MatrixMulConstantOp : public MatrixOpBase
 {
 public:
@@ -135,6 +170,22 @@ public:
 	inline Type operator()(LIt lit, RIt rit, size_type, size_type) const noexcept
 	{
 		return *lit * *rit;
+	}
+};
+
+template<class Type>
+class MatrixDivConstantOp : public MatrixOpBase
+{
+public:
+	static constexpr Op type = DIV_CONSTANT;
+
+	inline MatrixDivConstantOp(size_type) {}
+
+	// In this case one of LIt/RIt is going to be a ConstantIteratorWrapper
+	template<class LIt, class RIt>
+	inline Type operator()(LIt lit, RIt rit, size_type, size_type) const noexcept
+	{
+		return *lit / *rit;
 	}
 };
 

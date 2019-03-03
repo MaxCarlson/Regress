@@ -1,7 +1,55 @@
 #pragma once
 #include "Matrix.h"
 
+//
+// Unary Expressions
+//
+
+// Transpose operators
+
+template<class Type>
+inline MatrixExpr<MatUnaExpr<
+	typename Matrix<Type>::col_const_iterator,
+	MatrixTransposeOp<Type>,
+	Type>, Type>
+	operator~(const Matrix<Type>& it) noexcept
+{
+	using ExprType = MatUnaExpr<
+		typename Matrix<Type>::col_const_iterator,
+		MatrixTransposeOp<Type>,
+		Type>;
+	return MatrixExpr<ExprType, Type>{ ExprType{
+		it.ccol_begin(),
+		it.rows(),
+		it.cols() },
+		MatrixOpBase::Op::TRANSPOSE };
+}
+
+/*
+// TODO: NOT working!
+template<class Type, class Iter>
+inline MatrixExpr<MatUnaExpr<
+	MatrixExpr<Iter, Type>,
+	MatrixTransposeOp<Type>,
+	Type>, Type>
+	operator~(const MatrixExpr<Iter, Type>& it) noexcept
+{
+	using ExprType = MatUnaExpr<
+		MatrixExpr<Iter, Type>,
+		MatrixTransposeOp<Type>,
+		Type>;
+	return MatrixExpr<ExprType, Type>{ ExprType{
+		it,
+		it.rhsRows(),
+		it.rhsCols() },
+		MatrixOpBase::Op::TRANSPOSE };
+}
+*/
+
+//
 // Binary Expressions
+//
+
 // Addition operators
 
 template<class Type>
@@ -272,9 +320,102 @@ inline MatrixExpr<MatBinExpr<
 		MatrixOpBase::Op::MULTIPLY };
 }
 
+//
+// Binary Constant Expressions
+//
+
+// TODO: Use ?
 //class = typename std::enable_if<std::is_arithmetic<Num>::value, Num>::type >
 
-// Binary Constant Expressions
+
+template<class Type, class Num>
+inline MatrixExpr<MatBinExpr<
+	typename Matrix<Type>::const_iterator,
+	ConstantIteratorWrapper<Num>,
+	MatrixAddConstantOp<Type>,
+	Type>, Type>
+	operator+(const Matrix<Type>& lhs, const Num& num) noexcept
+{
+	using ExprType = MatBinExpr<
+		typename Matrix<Type>::const_iterator,
+		ConstantIteratorWrapper<Num>,
+		MatrixAddConstantOp<Type>,
+		Type>;
+	return MatrixExpr<ExprType, Type>{ExprType{
+		lhs.begin(),
+		ConstantIteratorWrapper<Num>{ num },
+		lhs.rows(),
+		lhs.rows(),
+		lhs.cols() },
+		MatrixOpBase::ADD_CONSTANT };
+}
+
+template<class Type, class Num>
+inline MatrixExpr<MatBinExpr<
+	ConstantIteratorWrapper<Num>,
+	typename Matrix<Type>::const_iterator,
+	MatrixAddConstantOp<Type>,
+	Type>, Type>
+	operator+(const Num& num, const Matrix<Type>& rhs) noexcept
+{
+	using ExprType = MatBinExpr<
+		ConstantIteratorWrapper<Num>,
+		typename Matrix<Type>::const_iterator,
+		MatrixAddConstantOp<Type>,
+		Type>;
+	return MatrixExpr<ExprType, Type>{ExprType{
+		ConstantIteratorWrapper<Num>{ num },
+		rhs.begin(),
+		rhs.rows(),
+		rhs.rows(),
+		rhs.cols() },
+		MatrixOpBase::ADD_CONSTANT };
+}
+
+template<class Type, class Iter, class Num>
+inline MatrixExpr<MatBinExpr<
+	MatrixExpr<Iter, Type>,
+	ConstantIteratorWrapper<Num>,
+	MatrixAddConstantOp<Type>,
+	Type>, Type>
+	operator+(const MatrixExpr<Iter, Type>& lhs, const Num& num) noexcept
+{
+	using ExprType = MatBinExpr<
+		MatrixExpr<Iter, Type>,
+		ConstantIteratorWrapper<Num>,
+		MatrixAddConstantOp<Type>,
+		Type>;
+	return MatrixExpr<ExprType, Type>{ExprType{
+		lhs,
+		ConstantIteratorWrapper<Num>{ num },
+		lhs.lhsRows(),
+		lhs.lhsRows(),
+		lhs.rhsCols() },
+		MatrixOpBase::ADD_CONSTANT };
+}
+
+template<class Type, class Iter, class Num>
+inline MatrixExpr<MatBinExpr<
+	ConstantIteratorWrapper<Num>,
+	MatrixExpr<Iter, Type>,
+	MatrixAddConstantOp<Type>,
+	Type>, Type>
+	operator+(const Num& num, const MatrixExpr<Iter, Type>& rhs) noexcept
+{
+	using ExprType = MatBinExpr<
+		ConstantIteratorWrapper<Num>,
+		MatrixExpr<Iter, Type>,
+		MatrixAddConstantOp<Type>,
+		Type>;
+	return MatrixExpr<ExprType, Type>{ExprType{
+		ConstantIteratorWrapper<Num>{ num },
+		rhs,
+		rhs.lhsRows(),
+		rhs.lhsRows(),
+		rhs.rhsCols() },
+		MatrixOpBase::ADD_CONSTANT };
+}
+
 template<class Type, class Num>
 inline MatrixExpr<MatBinExpr<
 	typename Matrix<Type>::const_iterator,
@@ -362,45 +503,3 @@ inline MatrixExpr<MatBinExpr<
 		rhs.rhsCols() },
 		MatrixOpBase::MUL_CONSTANT };
 }
-
-// Unary Expressions
-// Transpose operators
-
-template<class Type>
-inline MatrixExpr<MatUnaExpr<
-	typename Matrix<Type>::col_const_iterator,
-	MatrixTransposeOp<Type>,
-	Type>, Type>
-	operator~(const Matrix<Type>& it) noexcept
-{
-	using ExprType = MatUnaExpr<
-		typename Matrix<Type>::col_const_iterator,
-		MatrixTransposeOp<Type>,
-		Type>;
-	return MatrixExpr<ExprType, Type>{ ExprType{
-		it.ccol_begin(),
-		it.rows(),
-		it.cols() },
-		MatrixOpBase::Op::TRANSPOSE };
-}
-
-/*
-// TODO: NOT working!
-template<class Type, class Iter>
-inline MatrixExpr<MatUnaExpr<
-	MatrixExpr<Iter, Type>,
-	MatrixTransposeOp<Type>,
-	Type>, Type>
-	operator~(const MatrixExpr<Iter, Type>& it) noexcept
-{
-	using ExprType = MatUnaExpr<
-		MatrixExpr<Iter, Type>,
-		MatrixTransposeOp<Type>,
-		Type>;
-	return MatrixExpr<ExprType, Type>{ ExprType{
-		it,
-		it.rhsRows(),
-		it.rhsCols() },
-		MatrixOpBase::Op::TRANSPOSE };
-}
-*/
