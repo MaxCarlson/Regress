@@ -36,7 +36,7 @@ int main()
 	exVal = exp;
 
 	auto llhs = lhs;
-	lhs = 2 + llhs + 2;
+	lhs = 2 / llhs;
 
 
 	Matrix<float> input = {

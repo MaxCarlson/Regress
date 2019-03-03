@@ -327,7 +327,7 @@ inline MatrixExpr<MatBinExpr<
 // TODO: Use ?
 //class = typename std::enable_if<std::is_arithmetic<Num>::value, Num>::type >
 
-// Addition numerical constant operators
+// Numerical addition operators
 template<class Type, class Num>
 inline MatrixExpr<MatBinExpr<
 	typename Matrix<Type>::const_iterator,
@@ -347,7 +347,7 @@ inline MatrixExpr<MatBinExpr<
 		lhs.rows(),
 		lhs.rows(),
 		lhs.cols() },
-		MatrixOpBase::ADD_CONSTANT };
+		MatrixOpBase::NUMERICAL_ADD };
 }
 
 template<class Type, class Num>
@@ -369,7 +369,7 @@ inline MatrixExpr<MatBinExpr<
 		rhs.rows(),
 		rhs.rows(),
 		rhs.cols() },
-		MatrixOpBase::ADD_CONSTANT };
+		MatrixOpBase::NUMERICAL_ADD };
 }
 
 template<class Type, class Iter, class Num>
@@ -391,7 +391,7 @@ inline MatrixExpr<MatBinExpr<
 		lhs.lhsRows(),
 		lhs.lhsRows(),
 		lhs.rhsCols() },
-		MatrixOpBase::ADD_CONSTANT };
+		MatrixOpBase::NUMERICAL_ADD };
 }
 
 template<class Type, class Iter, class Num>
@@ -413,10 +413,10 @@ inline MatrixExpr<MatBinExpr<
 		rhs.lhsRows(),
 		rhs.lhsRows(),
 		rhs.rhsCols() },
-		MatrixOpBase::ADD_CONSTANT };
+		MatrixOpBase::NUMERICAL_ADD };
 }
 
-// Subtraction numerical constant operators
+// Numerical subtraction operators
 template<class Type, class Num>
 inline MatrixExpr<MatBinExpr<
 	typename Matrix<Type>::const_iterator,
@@ -436,7 +436,7 @@ inline MatrixExpr<MatBinExpr<
 		lhs.rows(),
 		lhs.rows(),
 		lhs.cols() },
-		MatrixOpBase::SUB_CONSTANT };
+		MatrixOpBase::NUMERICAL_SUB };
 }
 
 template<class Type, class Num>
@@ -458,7 +458,7 @@ inline MatrixExpr<MatBinExpr<
 		rhs.rows(),
 		rhs.rows(),
 		rhs.cols() },
-		MatrixOpBase::SUB_CONSTANT };
+		MatrixOpBase::NUMERICAL_SUB };
 }
 
 template<class Type, class Iter, class Num>
@@ -480,7 +480,7 @@ inline MatrixExpr<MatBinExpr<
 		lhs.lhsRows(),
 		lhs.lhsRows(),
 		lhs.rhsCols() },
-		MatrixOpBase::SUB_CONSTANT };
+		MatrixOpBase::NUMERICAL_SUB };
 }
 
 template<class Type, class Iter, class Num>
@@ -502,10 +502,10 @@ inline MatrixExpr<MatBinExpr<
 		rhs.lhsRows(),
 		rhs.lhsRows(),
 		rhs.rhsCols() },
-		MatrixOpBase::SUB_CONSTANT };
+		MatrixOpBase::NUMERICAL_SUB };
 }
 
-
+// Numerical multiplication operators
 template<class Type, class Num>
 inline MatrixExpr<MatBinExpr<
 	typename Matrix<Type>::const_iterator,
@@ -525,7 +525,7 @@ inline MatrixExpr<MatBinExpr<
 		lhs.rows(),
 		lhs.rows(),
 		lhs.cols() },
-		MatrixOpBase::MUL_CONSTANT };
+		MatrixOpBase::NUMERICAL_MUL };
 }
 
 template<class Type, class Num>
@@ -547,7 +547,7 @@ inline MatrixExpr<MatBinExpr<
 		rhs.rows(),
 		rhs.rows(),
 		rhs.cols() },
-		MatrixOpBase::MUL_CONSTANT };
+		MatrixOpBase::NUMERICAL_MUL };
 }
 
 template<class Type, class Iter, class Num>
@@ -569,7 +569,7 @@ inline MatrixExpr<MatBinExpr<
 		lhs.lhsRows(),
 		lhs.lhsRows(),
 		lhs.rhsCols() },
-		MatrixOpBase::MUL_CONSTANT };
+		MatrixOpBase::NUMERICAL_MUL };
 }
 
 template<class Type, class Iter, class Num>
@@ -591,5 +591,94 @@ inline MatrixExpr<MatBinExpr<
 		rhs.lhsRows(),
 		rhs.lhsRows(),
 		rhs.rhsCols() },
-		MatrixOpBase::MUL_CONSTANT };
+		MatrixOpBase::NUMERICAL_MUL };
+}
+
+// Numerical division operators
+template<class Type, class Num>
+inline MatrixExpr<MatBinExpr<
+	typename Matrix<Type>::const_iterator,
+	ConstantIteratorWrapper<Num>,
+	MatrixDivConstantOp<Type>,
+	Type>, Type>
+	operator/(const Matrix<Type>& lhs, const Num& num) noexcept
+{
+	using ExprType = MatBinExpr<
+		typename Matrix<Type>::const_iterator,
+		ConstantIteratorWrapper<Num>,
+		MatrixDivConstantOp<Type>,
+		Type>;
+	return MatrixExpr<ExprType, Type>{ExprType{
+		lhs.begin(),
+		ConstantIteratorWrapper<Num>{ num },
+		lhs.rows(),
+		lhs.rows(),
+		lhs.cols() },
+		MatrixOpBase::NUMERICAL_DIV };
+}
+
+template<class Type, class Num>
+inline MatrixExpr<MatBinExpr<
+	ConstantIteratorWrapper<Num>,
+	typename Matrix<Type>::const_iterator,
+	MatrixDivConstantOp<Type>,
+	Type>, Type>
+	operator/(const Num& num, const Matrix<Type>& rhs) noexcept
+{
+	using ExprType = MatBinExpr<
+		ConstantIteratorWrapper<Num>,
+		typename Matrix<Type>::const_iterator,
+		MatrixDivConstantOp<Type>,
+		Type>;
+	return MatrixExpr<ExprType, Type>{ExprType{
+		ConstantIteratorWrapper<Num>{ num },
+		rhs.begin(),
+		rhs.rows(),
+		rhs.rows(),
+		rhs.cols() },
+		MatrixOpBase::NUMERICAL_DIV };
+}
+
+template<class Type, class Iter, class Num>
+inline MatrixExpr<MatBinExpr<
+	MatrixExpr<Iter, Type>,
+	ConstantIteratorWrapper<Num>,
+	MatrixDivConstantOp<Type>,
+	Type>, Type>
+	operator/(const MatrixExpr<Iter, Type>& lhs, const Num& num) noexcept
+{
+	using ExprType = MatBinExpr<
+		MatrixExpr<Iter, Type>,
+		ConstantIteratorWrapper<Num>,
+		MatrixDivConstantOp<Type>,
+		Type>;
+	return MatrixExpr<ExprType, Type>{ExprType{
+		lhs,
+		ConstantIteratorWrapper<Num>{ num },
+		lhs.lhsRows(),
+		lhs.lhsRows(),
+		lhs.rhsCols() },
+		MatrixOpBase::NUMERICAL_DIV };
+}
+
+template<class Type, class Iter, class Num>
+inline MatrixExpr<MatBinExpr<
+	ConstantIteratorWrapper<Num>,
+	MatrixExpr<Iter, Type>,
+	MatrixDivConstantOp<Type>,
+	Type>, Type>
+	operator/(const Num& num, const MatrixExpr<Iter, Type>& rhs) noexcept
+{
+	using ExprType = MatBinExpr<
+		ConstantIteratorWrapper<Num>,
+		MatrixExpr<Iter, Type>,
+		MatrixDivConstantOp<Type>,
+		Type>;
+	return MatrixExpr<ExprType, Type>{ExprType{
+		ConstantIteratorWrapper<Num>{ num },
+		rhs,
+		rhs.lhsRows(),
+		rhs.lhsRows(),
+		rhs.rhsCols() },
+		MatrixOpBase::NUMERICAL_DIV };
 }

@@ -16,10 +16,10 @@ struct MatrixOpBase
 		MULTIPLY,
 		DIV,
 		CWISE_PRODUCT,
-		ADD_CONSTANT,
-		SUB_CONSTANT,
-		MUL_CONSTANT,
-		DIV_CONSTANT,
+		NUMERICAL_ADD,
+		NUMERICAL_SUB,
+		NUMERICAL_MUL,
+		NUMERICAL_DIV,
 		DOT,
 		TRANSPOSE
 	};
@@ -129,7 +129,7 @@ template<class Type>
 class MatrixAddConstantOp : public MatrixOpBase
 {
 public:
-	static constexpr Op type = ADD_CONSTANT;
+	static constexpr Op type = NUMERICAL_ADD;
 
 	inline MatrixAddConstantOp(size_type) {}
 
@@ -145,7 +145,7 @@ template<class Type>
 class MatrixSubConstantOp : public MatrixOpBase
 {
 public:
-	static constexpr Op type = SUB_CONSTANT;
+	static constexpr Op type = NUMERICAL_SUB;
 
 	inline MatrixSubConstantOp(size_type) {}
 
@@ -161,7 +161,7 @@ template<class Type>
 class MatrixMulConstantOp : public MatrixOpBase
 {
 public:
-	static constexpr Op type = MUL_CONSTANT;
+	static constexpr Op type = NUMERICAL_MUL;
 
 	inline MatrixMulConstantOp(size_type) {}
 
@@ -177,7 +177,7 @@ template<class Type>
 class MatrixDivConstantOp : public MatrixOpBase
 {
 public:
-	static constexpr Op type = DIV_CONSTANT;
+	static constexpr Op type = NUMERICAL_DIV;
 
 	inline MatrixDivConstantOp(size_type) {}
 
