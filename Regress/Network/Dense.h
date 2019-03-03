@@ -106,11 +106,15 @@ inline void Dense<T>::calcDeltasOutput(Matrix<T>& target, ErrorFunction errorFun
 {
 	errorPrime(errors, target, output, errorFunc); 
 	
+	/*
 	deltas = errors;
 	deltas = deltas.cwiseProduct(actPrime);
+	Matrix<T>& prevOutput = *this->inputs[0]->getOutput();
+	deltas = prevOutput.transpose() * deltas;
+	*/
 
-	Matrix<T>* prevOutput = this->inputs[0]->getOutput();
-	deltas = prevOutput->transpose() * deltas;
+	const auto& prevOutput = *this->inputs[0]->getOutput();
+	deltas = ~prevOutput * errors.cwiseProduct(actPrime);
 
 	for (auto& in : this->inputs)
 		in->calcDeltas(weights, errors, actPrime, lr);

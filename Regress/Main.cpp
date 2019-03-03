@@ -2,7 +2,7 @@
 #include "Network\Model.h"
 #include "Network\Dense.h"
 #include "Network\InputLayer.h"
-#include "Linear\ExprOperators.h" // TODO: replace this with Matrix header once implemented
+#include "Linear\Matrix.h"
 #include "Stopwatch.h"
 
 int main()

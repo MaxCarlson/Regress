@@ -25,194 +25,6 @@ struct MatrixOpBase
 	};
 };
 
-// Different Matrix expression operations
-
-// Types of Binary Expressions
-
-template<class Type>
-class MatrixAddOp : public MatrixOpBase
-{
-public:
-	static constexpr Op type = ADD;
-
-	inline MatrixAddOp(size_type) {}
-
-	template<class Lit, class Rit>
-	inline Type operator()(Lit lit, Rit rit, size_type rhsRows, size_type rhsCols) const noexcept
-	{
-		return *lit + *rit;
-	}
-};
-
-template<class Type>
-class MatrixSubOp : public MatrixOpBase
-{
-public:
-	static constexpr Op type = SUB;
-
-	inline MatrixSubOp(size_type) {}
-
-	template<class Lit, class Rit>
-	inline Type operator()(Lit lit, Rit rit, size_type rhsRows, size_type rhsCols) const noexcept
-	{
-		return *lit - *rit;
-	}
-};
-
-template<class Type>
-class MatrixMultOp : public MatrixOpBase
-{
-public:
-	static constexpr Op type = MULTIPLY;
-
-	inline MatrixMultOp(size_type) {}
-
-	template<class Lit, class Rit>
-	inline Type operator()(Lit lit, Rit rit, size_type rhsRows, size_type rhsCols) const noexcept
-	{
-		Type result = 0;
-		for (;; --rhsRows, ++lit, rit += rhsCols) 
-		{
-			result += *lit * *rit;
-			if (rhsRows <= 1)
-				break;
-		}
-		return result;
-	}
-};
-
-// This expression is handled by calling the cwiseProduct() function
-// from a matrix instance itself since rest of operators are unclear
-// ex Matrix m, n; m.cwiseProduct(n);
-template<class Type>
-class MatrixCwiseProductOp : public MatrixOpBase
-{
-public:
-	static constexpr Op type = CWISE_PRODUCT;
-
-	inline MatrixCwiseProductOp(size_type) {}
-
-	template<class LIt, class RIt>
-	inline Type operator()(LIt lit, RIt rit, size_type, size_type) const noexcept
-	{
-		return *lit * *rit;
-	}
-};
-
-// A wrapper class for numerical operations so we can conform to
-// the binary expressions interface
-template<class Num>
-class NumericIteratorWrapper
-{
-	const Num& num;
-	static_assert(std::is_arithmetic_v<Num>);
-public:
-	using size_type = typename MatrixOpBase::size_type;
-	using ThisType	= NumericIteratorWrapper<Num>;
-
-	inline NumericIteratorWrapper(const Num& num) :
-		num{ num }
-	{}
-
-	inline ThisType& operator++()			noexcept { return *this; }
-	inline ThisType& operator--()			noexcept { return *this; }
-	inline ThisType& operator+=(size_type)	noexcept { return *this; }
-	inline ThisType& operator-=(size_type)	noexcept { return *this; }
-
-	inline const Num& operator*()  const noexcept { return num; }
-	inline const Num* operator->() const noexcept { return &num; }
-};
-
-// Binary expressions involving numerical values wrapped in 
-
-template<class Type>
-class MatrixAddNumericOp : public MatrixOpBase
-{
-public:
-	static constexpr Op type = NUMERICAL_ADD;
-
-	inline MatrixAddNumericOp(size_type) {}
-
-	// In this case one of LIt/RIt is going to be a ConstantIteratorWrapper
-	template<class LIt, class RIt>
-	inline Type operator()(LIt lit, RIt rit, size_type, size_type) const noexcept
-	{
-		return *lit + *rit;
-	}
-};
-
-template<class Type>
-class MatrixSubNumericOp : public MatrixOpBase
-{
-public:
-	static constexpr Op type = NUMERICAL_SUB;
-
-	inline MatrixSubNumericOp(size_type) {}
-
-	// In this case one of LIt/RIt is going to be a ConstantIteratorWrapper
-	template<class LIt, class RIt>
-	inline Type operator()(LIt lit, RIt rit, size_type, size_type) const noexcept
-	{
-		return *lit - *rit;
-	}
-};
-
-template<class Type>
-class MatrixMulNumericOp : public MatrixOpBase
-{
-public:
-	static constexpr Op type = NUMERICAL_MUL;
-
-	inline MatrixMulNumericOp(size_type) {}
-
-	// In this case one of LIt/RIt is going to be a ConstantIteratorWrapper
-	template<class LIt, class RIt>
-	inline Type operator()(LIt lit, RIt rit, size_type, size_type) const noexcept
-	{
-		return *lit * *rit;
-	}
-};
-
-template<class Type>
-class MatrixDivNumericOp : public MatrixOpBase
-{
-public:
-	static constexpr Op type = NUMERICAL_DIV;
-
-	inline MatrixDivNumericOp(size_type) {}
-
-	// In this case one of LIt/RIt is going to be a ConstantIteratorWrapper
-	template<class LIt, class RIt>
-	inline Type operator()(LIt lit, RIt rit, size_type, size_type) const noexcept
-	{
-		return *lit / *rit;
-	}
-};
-
-// Types of Unary Expressions
-
-template<class Type>
-class MatrixTransposeOp : public MatrixOpBase
-{
-public:
-	static constexpr Op type = TRANSPOSE;
-private:
-	const size_type nlhsRows;
-public:
-	
-	inline MatrixTransposeOp(size_type nlhsRows) :
-		nlhsRows{ nlhsRows }
-	{}
-
-	inline size_type lhsRows() const noexcept { return nlhsRows; }
-
-	template<class It>
-	inline Type operator()(It it, size_type, size_type) const noexcept
-	{
-		return *it;
-	}
-};
-
 // This is the basic expression that encompasses all other tyes of expressions
 // It is also reasponsible for assigning the final values of expressions to the Matrix
 
@@ -523,5 +335,194 @@ public:
 	{
 		rhsDec(i);
 		return *this;
+	}
+};
+
+
+// Different Matrix expression operations
+
+// Types of Binary Expressions
+
+template<class Type>
+class MatrixAddOp : public MatrixOpBase
+{
+public:
+	static constexpr Op type = ADD;
+
+	inline MatrixAddOp(size_type) {}
+
+	template<class Lit, class Rit>
+	inline Type operator()(Lit lit, Rit rit, size_type rhsRows, size_type rhsCols) const noexcept
+	{
+		return *lit + *rit;
+	}
+};
+
+template<class Type>
+class MatrixSubOp : public MatrixOpBase
+{
+public:
+	static constexpr Op type = SUB;
+
+	inline MatrixSubOp(size_type) {}
+
+	template<class Lit, class Rit>
+	inline Type operator()(Lit lit, Rit rit, size_type rhsRows, size_type rhsCols) const noexcept
+	{
+		return *lit - *rit;
+	}
+};
+
+template<class Type>
+class MatrixMultOp : public MatrixOpBase
+{
+public:
+	static constexpr Op type = MULTIPLY;
+
+	inline MatrixMultOp(size_type) {}
+
+	template<class Lit, class Rit>
+	inline Type operator()(Lit lit, Rit rit, size_type rhsRows, size_type rhsCols) const noexcept
+	{
+		Type result = 0;
+		for (;; --rhsRows, ++lit, rit += rhsCols)
+		{
+			result += *lit * *rit;
+			if (rhsRows <= 1)
+				break;
+		}
+		return result;
+	}
+};
+
+// This expression is handled by calling the cwiseProduct() function
+// from a matrix instance itself since rest of operators are unclear
+// ex Matrix m, n; m.cwiseProduct(n);
+template<class Type>
+class MatrixCwiseProductOp : public MatrixOpBase
+{
+public:
+	static constexpr Op type = CWISE_PRODUCT;
+
+	inline MatrixCwiseProductOp(size_type) {}
+
+	template<class LIt, class RIt>
+	inline Type operator()(LIt lit, RIt rit, size_type, size_type) const noexcept
+	{
+		return *lit * *rit;
+	}
+};
+
+// A wrapper class for numerical operations so we can conform to
+// the binary expressions interface
+template<class Num>
+class NumericIteratorWrapper
+{
+	const Num& num;
+	static_assert(std::is_arithmetic_v<Num>);
+public:
+	using size_type = typename MatrixOpBase::size_type;
+	using ThisType = NumericIteratorWrapper<Num>;
+
+	inline NumericIteratorWrapper(const Num& num) :
+		num{ num }
+	{}
+
+	inline ThisType& operator++()			noexcept { return *this; }
+	inline ThisType& operator--()			noexcept { return *this; }
+	inline ThisType& operator+=(size_type)	noexcept { return *this; }
+	inline ThisType& operator-=(size_type)	noexcept { return *this; }
+
+	inline const Num& operator*()  const noexcept { return num; }
+	inline const Num* operator->() const noexcept { return &num; }
+};
+
+// Binary expressions involving numerical values wrapped in 
+
+template<class Type>
+class MatrixAddNumericOp : public MatrixOpBase
+{
+public:
+	static constexpr Op type = NUMERICAL_ADD;
+
+	inline MatrixAddNumericOp(size_type) {}
+
+	// In this case one of LIt/RIt is going to be a ConstantIteratorWrapper
+	template<class LIt, class RIt>
+	inline Type operator()(LIt lit, RIt rit, size_type, size_type) const noexcept
+	{
+		return *lit + *rit;
+	}
+};
+
+template<class Type>
+class MatrixSubNumericOp : public MatrixOpBase
+{
+public:
+	static constexpr Op type = NUMERICAL_SUB;
+
+	inline MatrixSubNumericOp(size_type) {}
+
+	// In this case one of LIt/RIt is going to be a ConstantIteratorWrapper
+	template<class LIt, class RIt>
+	inline Type operator()(LIt lit, RIt rit, size_type, size_type) const noexcept
+	{
+		return *lit - *rit;
+	}
+};
+
+template<class Type>
+class MatrixMulNumericOp : public MatrixOpBase
+{
+public:
+	static constexpr Op type = NUMERICAL_MUL;
+
+	inline MatrixMulNumericOp(size_type) {}
+
+	// In this case one of LIt/RIt is going to be a ConstantIteratorWrapper
+	template<class LIt, class RIt>
+	inline Type operator()(LIt lit, RIt rit, size_type, size_type) const noexcept
+	{
+		return *lit * *rit;
+	}
+};
+
+template<class Type>
+class MatrixDivNumericOp : public MatrixOpBase
+{
+public:
+	static constexpr Op type = NUMERICAL_DIV;
+
+	inline MatrixDivNumericOp(size_type) {}
+
+	// In this case one of LIt/RIt is going to be a ConstantIteratorWrapper
+	template<class LIt, class RIt>
+	inline Type operator()(LIt lit, RIt rit, size_type, size_type) const noexcept
+	{
+		return *lit / *rit;
+	}
+};
+
+// Types of Unary Expressions
+
+template<class Type>
+class MatrixTransposeOp : public MatrixOpBase
+{
+public:
+	static constexpr Op type = TRANSPOSE;
+private:
+	const size_type nlhsRows;
+public:
+
+	inline MatrixTransposeOp(size_type nlhsRows) :
+		nlhsRows{ nlhsRows }
+	{}
+
+	inline size_type lhsRows() const noexcept { return nlhsRows; }
+
+	template<class It>
+	inline Type operator()(It it, size_type, size_type) const noexcept
+	{
+		return *it;
 	}
 };

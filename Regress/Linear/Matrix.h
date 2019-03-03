@@ -1,9 +1,10 @@
 #pragma once
 #include <vector>
 #include "Expr.h"
+#include "ExprOperators.h" // Matrix doesn't rely on ExprOperators, it's here to make it easy to use Matrix
 
 template<class E>
-struct MatrixTBase
+struct MatrixBase
 { };
 
 template<class Iter, class Type>
@@ -16,15 +17,13 @@ class MatrixCwiseProductOp;
 // TODO: Add a storage abstraction so we can have multiple things point to the same memory, such as view slices
 // without duplications
 template<class Type>
-class Matrix : public MatrixTBase<Type>
+class Matrix : public MatrixBase<Type>
 {
 public:
 	using Storage			= std::vector<Type>;
 	using iterator			= typename Storage::iterator;
 	using const_iterator	= typename Storage::const_iterator;
 	using size_type			= int;
-
-	
 
 private:
 	size_type	nrows;
@@ -68,12 +67,12 @@ public:
 	col_const_iterator	ccol_begin()	const noexcept { return { 0,		*this }; }
 	col_const_iterator	ccol_end()		const noexcept { return { size(),	*this }; }
 
+	// Apply a function to every member of the Matrix
+	// [](Type& t) { ...do something... return; }
 	template<class Func>
 	void unaryExpr(Func&& func);
 	template<class Func>
 	void unaryExpr(Func&& func) const;
-
-
 	template<class Func>
 	void unaryExprPara(Func&& func);
 	template<class Func>
@@ -83,6 +82,7 @@ public:
 	Matrix<Type> transpose() const;
 	Type sum() const;
 
+	// These return Matrix Expressions so no temporary matricies are created
 	inline MatrixExpr<MatBinExpr<
 		typename Matrix<Type>::const_iterator,
 		typename Matrix<Type>::const_iterator,
@@ -98,6 +98,7 @@ public:
 		Type>, Type>
 		cwiseProduct(const Matrix<Type>& rhs) noexcept;
 
+	// An iterator that iterates through columns instead of rows
 	template<bool isConst>
 	class col_iterator_base
 	{
@@ -392,7 +393,6 @@ inline MatrixExpr<MatBinExpr<
 		rhs.rhsCols() },
 		MatrixOpBase::Op::CWISE_PRODUCT};
 }
-
 
 
 

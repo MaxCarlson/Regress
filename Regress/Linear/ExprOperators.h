@@ -1,12 +1,12 @@
 #pragma once
-#include "Matrix.h"
+#include "Expr.h"
+
 
 //
 // Unary Expressions
 //
 
 // Transpose operators
-
 template<class Type>
 inline MatrixExpr<MatUnaExpr<
 	typename Matrix<Type>::col_const_iterator,
@@ -51,7 +51,6 @@ inline MatrixExpr<MatUnaExpr<
 //
 
 // Addition operators
-
 template<class Type>
 inline MatrixExpr<MatBinExpr<
 	typename Matrix<Type>::const_iterator,
@@ -141,7 +140,6 @@ inline MatrixExpr<MatBinExpr<
 }
 
 // Subtraction operators
-
 template<class Type>
 inline MatrixExpr<MatBinExpr<
 	typename Matrix<Type>::const_iterator,
@@ -231,7 +229,6 @@ inline MatrixExpr<MatBinExpr<
 }
 
 // Multiply operators
-
 template<class Type>
 inline MatrixExpr<MatBinExpr<
 	typename Matrix<Type>::const_iterator,
@@ -681,4 +678,13 @@ inline MatrixExpr<MatBinExpr<
 		rhs.lhsRows(),
 		rhs.rhsCols() },
 		MatrixOpBase::NUMERICAL_DIV };
+}
+
+template<class Type>
+inline Matrix<Type>& operator*=(Matrix<Type>& lhs, const Matrix<Type>& rhs) noexcept
+{
+	auto rit = rhs.begin();
+	for (auto lit = std::begin(lhs); lit != std::end(lhs); ++lit, ++rit)
+		*lit *= *rit;
+	return lhs;
 }

@@ -47,7 +47,7 @@ inline Model<T>::Model(Input<T>& input, Layer<T>* output, double lr, ErrorFuncti
 	error{ 0.0 },
 	errorFunc{ errorFunc },
 	merror{},
-	printer{printer}
+	printer{ printer }
 {
 
 }
