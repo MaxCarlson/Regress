@@ -72,6 +72,25 @@ namespace test
 			Assert::IsTrue(res2 == res2v);
 		}
 
+		TEST_METHOD(Constant)
+		{
+			MatrixT res1 = lhs + 2;
+			MatrixT res2 = rhs + 2 - 3;
+			MatrixT res3 = rhs * 3;
+			MatrixT res4 = 2 + rhs * 3;
+
+			MatrixT res1v = { {3, 4}, {5, 6}, {7, 8} };
+			MatrixT res2v = { {0, 1, 2}, {3, 4, 5} };
+			MatrixT res3v = { {3, 6, 9}, {12, 15, 18} };
+			MatrixT res4v = { {5, 8, 11}, {14, 17, 20} };
+
+			Assert::IsTrue(res1 == res1v);
+			Assert::IsTrue(res2 == res2v);
+			Assert::IsTrue(res3 == res3v);
+			Assert::IsTrue(res4 == res4v);
+		}
+
+
 		TEST_METHOD(Transpose)
 		{
 			MatrixT res1 = ~lhs;
