@@ -287,20 +287,23 @@ public:
 	}
 
 	template<class It>
-	void analyzeSide(It& it)
+	void analyzeSide(ExprAnalyzer<Type>& ea, It& it)
 	{
 		if constexpr (std::is_same_v<MatrixIt, It>)
 		{
 
-			return;
 		}
-		it.analyze(ea);
+		else
+		{
+
+			it.analyze(ea);
+		}
 	}
 
 	void analyze(ExprAnalyzer<Type>& ea)
 	{
-		analyzeSide(lit);
-		analyzeSide(rit);
+		analyzeSide(ea, lit);
+		analyzeSide(ea, rit);
 	}
 };
 
@@ -383,9 +386,13 @@ public:
 	void analyze(ExprAnalyzer<Type>& ea)
 	{
 		if constexpr (std::is_same_v<MatrixIt, It>)
-			return;
-			
-		lit.analyze(ea);
+		{
+
+		}
+		else
+		{
+			it.analyze(ea);
+		}
 	}
 };
 

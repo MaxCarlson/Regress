@@ -103,15 +103,12 @@ public:
 		Type>, Type>
 		cwiseProduct(const Matrix<Type>& rhs) noexcept;
 
-	// An iterator that iterates through columns instead of rows
 	template<bool isConst>
-	class col_iterator_base
+	class IteratorBase
 	{
 	public:
 		using iterator_category = std::random_access_iterator_tag;
-		//using ItType = std::conditional_t<isConst,
-		//	const_iterator,
-		//	iterator>;
+
 		using ContainerType = std::conditional_t<isConst,
 			const ThisType,
 			ThisType>;
@@ -123,6 +120,19 @@ public:
 		using pointer = std::conditional_t<isConst,
 			const Type*,
 			Type*>;
+	};
+
+	// An iterator that iterates through columns instead of rows
+	template<bool isConst>
+	class col_iterator_base : public IteratorBase<isConst>
+	{
+	public:
+		using Base				= IteratorBase<isConst>;
+		using iterator_category = typename Base::iterator_category;
+		using ContainerType		= typename Base::ContainerType;
+		using reference			= typename Base::reference;
+		using pointer			= typename Base::pointer;
+			
 	private:
 		size_type		idx;
 		ContainerType& cont;
@@ -238,6 +248,21 @@ public:
 		col_iterator(size_type idx, ContainerType& cont) :
 			MyBase{ idx, cont }
 		{}
+	};
+
+	template<bool isConst>
+	class arrayOrderIteratorBase : public IteratorBase<isConst>
+	{
+	public:
+		using Base				= IteratorBase<isConst>;
+		using iterator_category = typename Base::iterator_category;
+		using ContainerType		= typename Base::ContainerType;
+		using reference			= typename Base::reference;
+		using pointer			= typename Base::pointer;
+
+
+
+	public:
 	};
 };
 
