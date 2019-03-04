@@ -86,7 +86,27 @@ namespace test
 
 		TEST_METHOD(Mixed)
 		{
+			MatrixT res1 = ~lhs + rhs;
+			MatrixT res2 = ~rhs * ~lhs;
+			MatrixT res3 = (~rhs * ~lhs) * lhs1;
+			MatrixT res4 = (~rhs * ~lhs) - lhs1;
+			MatrixT res5 = ((~rhs * ~lhs) - lhs1) * 2;
+			MatrixT res6 = ((~rhs * ~lhs) - lhs1) + (lhs * rhs - lhs1);
 
+			MatrixT res1v = { {2, 5, 8}, {6, 9, 12} };
+			MatrixT res2v = { {9, 19, 29}, {12, 26, 40}, {15, 33, 51} };
+			MatrixT res3v = { {288, 345, 402}, {396, 474, 552}, {504, 603, 702} };
+			MatrixT res4v = { {8, 17, 26}, {8, 21, 34}, {8, 25, 42} };
+			MatrixT res5v = { {16, 34, 52}, {16, 42, 68}, {16, 50, 84} };
+			MatrixT res6v = { {16, 27, 38}, {23, 42, 61}, {30, 57, 84} };
+
+
+			Assert::IsTrue(res1 == res1v);
+			Assert::IsTrue(res2 == res2v);
+			Assert::IsTrue(res3 == res3v);
+			Assert::IsTrue(res4 == res4v);
+			Assert::IsTrue(res5 == res5v);
+			Assert::IsTrue(res6 == res6v);
 		}
 	};
 }
