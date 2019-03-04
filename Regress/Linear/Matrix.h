@@ -27,6 +27,10 @@ public:
 	using const_iterator	= typename Storage::const_iterator;
 	using size_type			= int;
 
+	//using row_iterator		= iterator;
+	//using const_row_iterator = const_iterator;
+
+
 private:
 	size_type	nrows;
 	size_type	ncols;
@@ -37,7 +41,6 @@ private:
 public:
 	using value_type	= Type;
 	using ThisType		= Matrix<Type>;
-	using SubType		= Type;
 
 	Matrix() = default;
 	Matrix(size_type nrows, size_type ncols);
@@ -45,7 +48,7 @@ public:
 
 	// Handles assignment from expressions
 	template<class Expr>
-	Matrix(const Expr& expr) { expr.assign(*this); }
+	Matrix(Expr expr); // TODO: Look into expense of this copy
 
 	size_type size() const noexcept { return vals.size(); }
 	size_type rows() const noexcept { return nrows; }
@@ -258,6 +261,15 @@ inline Matrix<Type>::Matrix(const std::initializer_list<std::initializer_list<Ty
 	for (auto it = std::begin(m); it != std::end(m); ++it)
 		for (auto jt = std::begin(*it); jt != std::end(*it); ++jt)
 			vals[i++] = *jt;
+}
+
+template<class Type>
+template<class Expr>
+inline Matrix<Type>::Matrix(Expr expr)
+{
+	ExprAnalyzer ea{ *this };
+	expr.analyze(ea);
+	expr.assign(*this);
 }
 
 template<class Type>
