@@ -223,9 +223,9 @@ class MatBinExpr
 	using MatrixType	= Matrix<Type>;
 	//using MatrixIt		= typename MatrixType::const_iterator;
 
-	LIt lit;
-	RIt rit;
-	const Op op;
+	LIt				lit;
+	RIt				rit;
+	const Op		op;
 	const size_type nlhsRows;
 	const size_type nrhsRows;
 	const size_type nrhsCols;
@@ -307,10 +307,6 @@ class MatUnaExpr
 	using size_type		= typename MatrixOpBase::size_type;
 	using ThisType		= MatUnaExpr<It, Op, Type>;
 	using MatrixType	= Matrix<Type>;
-	//using MatrixIt		= std::conditional_t<
-	//	Op::type == MatrixOpBase::TRANSPOSE,
-	//	typename MatrixType::col_const_iterator,
-	//	typename MatrixType::const_iterator>;
 
 	It			it;
 	const Op	op;
@@ -328,14 +324,7 @@ public:
 
 	void analyzeExpr(ExprAnalyzer<Type>& ea)
 	{
-		if constexpr (std::is_same_v<MatrixIt, It>)
-		{
-
-		}
-		else
-		{
-			it.analyze(ea);
-		}
+		it.analyzeExpr(ea);
 	}
 
 	inline void lhsInc(size_type)  { throw std::runtime_error("Cannot inc lhs in Unary Expr"); }
@@ -474,13 +463,13 @@ public:
 // A wrapper class for numerical operations so we can conform to
 // the binary expressions interface
 
-template<class Num>
+// TODO: Potentially change to allow anything with overloaded matrix operators?
+template<class Num, 
+	class = typename std::enable_if<std::is_arithmetic_v<Num>, Num>::type>
 class NumericIteratorWrapper
 {
 	const Num& num;
 
-	// TODO: Potentially change? Maybe we want to allow anything that has overloaded Matrix operators?
-	static_assert(std::is_arithmetic_v<Num>); 
 public:
 	using size_type = typename MatrixOpBase::size_type;
 	using ThisType	= NumericIteratorWrapper<Num>;

@@ -8,7 +8,7 @@ class Dense : public Layer<T>
 	bool bias;
 
 	// Input to a layer looks like so:
-	// Where sn is the sample and in the row are it's features
+	// Where sn is the sample# and in the row are it's features
 	//
 	// s1 { f1, f2, ..., fn }
 	// s2 { f1, f2, ..., fn }
@@ -17,13 +17,13 @@ class Dense : public Layer<T>
 	//
 
 	// Weights are stored like so:
-	// Where Nn is the neuron and it's weights
+	// Where Nn is the neuron and its weights
 	// for inputs 1-n are all in a column
-	//    N1,  N2,  N3,  N4, ...,  Nn 
-	// { wi1, wi1, wi1, wi1, ..., wi1 }
-	// { wi2, wi2, wi2, wi2, ..., wi2 }
-	// { ..., ..., ..., ..., ..., ... }
-	// { win, win, win, win, ..., win }
+	//    N1,  N2,  N3,  N4, ...,  Nn, B(if bias)
+	// { wi1, wi1, wi1, wi1, ..., wi1, b1 }
+	// { wi2, wi2, wi2, wi2, ..., wi2, b2 }
+	// { ..., ..., ..., ..., ..., ...  ...}
+	// { win, win, win, win, ..., win, bn }
 
 	Matrix<T> weights;
 	Matrix<T> net;
@@ -64,12 +64,11 @@ inline Dense<T>::Dense(int neurons, bool bias, Layer<T>* input, Activation activ
 	deltas{},
 	actPrime{}
 {
-	// TODO: Randomize weight init values
 	if (input)
 	{
 		input->outputs.emplace_back(static_cast<Layer<T>*>(this));
 		this->inputs.emplace_back(input);
-		weights.resize(input->numNodes() + bias, neurons);
+		weights.resize(input->numNodes(), neurons + bias);
 	}
 	else
 		throw std::runtime_error("Dense layer needs an input!");

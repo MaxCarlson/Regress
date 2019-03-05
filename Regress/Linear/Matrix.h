@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <iostream>
 #include "Expr.h"
 #include "ExprOperators.h" // Matrix doesn't rely on ExprOperators, it's here to make it easy to use Matrix
 
@@ -22,8 +23,8 @@ template<class Type>
 class Matrix 
 {
 public:
-	using Storage			= std::vector<Type>;
-	using size_type			= int;
+	using Storage				= std::vector<Type>;
+	using size_type				= int;
 
 	template<bool> // TODO: This is all setup so we can use std::conditional with these when
 	class col_iterator_base; // we have a template param for column-major-order vs row
@@ -94,6 +95,8 @@ public:
 	Matrix transpose() const;
 	Type sum() const;
 
+	void addColumn(size_type idx, size_type val = 0);
+
 	// These return Matrix Expressions so no temporary matricies are created
 	inline MatrixExpr<MatBinExpr<
 		typename Matrix<Type>::const_iterator,
@@ -109,6 +112,9 @@ public:
 		MatrixCwiseProductOp<Type>,
 		Type>, Type>
 		cwiseProduct(const Matrix<Type>& rhs) noexcept;
+
+	template<class T>
+	inline friend std::ostream& operator<<(std::ostream& out, const Matrix<T>& m);
 
 	template<bool isConst>
 	class IteratorBase
@@ -245,7 +251,6 @@ public:
 		}
 	};
 
-
 	// A wrapper class so we can get the Matrix from the iterator
 	template<bool isConst>
 	class arrayOrderIteratorBase : public IteratorBase<isConst>
@@ -337,8 +342,6 @@ public:
 			return it <= other.it;
 		}
 	};
-
-	row_iterator rbegin() { return row_iterator{ vals.begin(), this }; }
 };
 
 template<class Type>
@@ -458,6 +461,28 @@ inline Type Matrix<Type>::sum() const
 }
 
 template<class Type>
+inline void Matrix<Type>::addColumn(size_type idx, size_type val)
+{
+	Matrix<Type> tmp(rows(), cols() + 1);
+
+	int i = 0;
+	auto it = std::begin(tmp);
+	for (auto& v : vals)
+	{
+		if (i % idx != 0 || (idx != 0 && i == 0))
+			*it = std::move(v);
+		else
+		{
+			++(*it	= val);
+			*it	= v;
+		}
+		++it; 
+		++i;
+	}
+	*this = std::move(tmp);
+}
+
+template<class Type>
 inline Matrix<Type> Matrix<Type>::transpose() const
 {
 	Matrix<Type> m(ncols, nrows);
@@ -508,5 +533,16 @@ inline MatrixExpr<MatBinExpr<
 		MatrixOpBase::Op::CWISE_PRODUCT};
 }
 
-
-
+template<class Type>
+inline std::ostream & operator<<(std::ostream & out, const Matrix<Type>& m)
+{
+	int i = 0;
+	for (const auto& v : m)
+	{
+		if (i++ % m.cols() == 0)
+			out << '\n';
+		out << v << ' ';
+	}
+	out << '\n';
+	return out;
+}

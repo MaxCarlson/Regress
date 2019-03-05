@@ -30,11 +30,6 @@ int main()
 
 	using MatrixT = Matrix<int>;
 
-	auto tit = lhs.rbegin();
-	++tit;
-
-	auto p = tit.matPtr();
-
 	//   lhs
 	// {1, 2}		  rhs*2			{18, 24,  30}
 	// {3, 4}   { {1, 2, 3} * 2 } = {38, 52,  66}
@@ -53,6 +48,11 @@ int main()
 		{0, 1},
 		{1, 0},
 	};
+
+	std::cout << input;
+	input.addColumn(2);
+	std::cout << input;
+
 
 	Input<float>  in(&input);
 	Dense<float>  d1(2,  false, &in, Activation::Relu);
