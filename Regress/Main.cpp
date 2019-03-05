@@ -50,7 +50,7 @@ int main()
 	};
 
 	std::cout << input;
-	input.addColumn(2, 2);
+	input.addColumn(0);
 	std::cout << input;
 
 

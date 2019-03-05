@@ -10,13 +10,15 @@ TEST_CLASS(MatrixTest)
 {
 public:
 
-	Matrix<int> lhs = {
+	using MatrixT = Matrix<int>;
+
+	MatrixT lhs = {
 		{1, 2},
 		{3, 4},
 		{5, 6},
 	};
 
-	Matrix<int> rhs = {
+	MatrixT rhs = {
 		{1, 2, 3},
 		{4, 5, 6}
 	};
@@ -49,6 +51,20 @@ public:
 	TEST_METHOD(Iterators)
 	{
 		
+	}
+
+	TEST_METHOD(AddColumn)
+	{
+		auto v1 = lhs;
+		v1.addColumn(2, 3); // TODO: Issue here
+		MatrixT v1r = { {1, 2, 3}, {3, 4, 3}, {5, 6, 3} };
+
+		auto v2 = rhs;
+		v2.addColumn(0);
+		MatrixT v2r = { {0, 1, 2, 3}, {0, 4, 5, 6} };
+
+		Assert::IsTrue(v1 == v1r);
+		Assert::IsTrue(v2 == v2r);
 	}
 };
 

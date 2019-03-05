@@ -8,12 +8,14 @@ template<class E>
 struct MatrixBase
 { };
 
+/*
 template<class Iter, class Type>
 class MatrixExpr;
 template<class LIt, class RIt, class Op, class Type>
 class MatBinExpr;
 template<class Type>
 class MatrixCwiseProductOp;
+*/
 
 // TODO: Add a storage abstraction so we can have multiple things point to the same memory, such as view slices
 // TODO: Add template param for using Column Major Order
@@ -95,7 +97,7 @@ public:
 	Matrix transpose() const;
 	Type sum() const;
 
-	void addColumn(size_type idx, size_type val = 0);
+	void addColumn(size_type idx, Type val = {});
 
 	// These return Matrix Expressions so no temporary matricies are created
 	inline MatrixExpr<MatBinExpr<
@@ -460,12 +462,16 @@ inline Type Matrix<Type>::sum() const
 	return sum;
 }
 
+// TODO: This will need split code when we have columnMajorOrder template param
 template<class Type>
-inline void Matrix<Type>::addColumn(size_type idx, size_type val)
+inline void Matrix<Type>::addColumn(size_type idx, Type val)
 {
-	Matrix<Type> tmp(rows(), cols() + 1);
+	Matrix<Type> tmp(nrows, ncols + 1);
 
-	int i = 0;
+	if (val > ncols + 1 || val < 0)
+		throw std::runtime_error("Invalid column coordinate");
+
+	int i	= 0;
 	auto it = std::begin(tmp);
 	for (auto v = std::begin(vals); v <= std::end(vals);)
 	{
