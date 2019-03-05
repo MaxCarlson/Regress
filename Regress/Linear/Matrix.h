@@ -467,17 +467,19 @@ inline void Matrix<Type>::addColumn(size_type idx, size_type val)
 
 	int i = 0;
 	auto it = std::begin(tmp);
-	for (auto& v : vals)
+	for (auto v = std::begin(vals); v <= std::end(vals);)
 	{
-		if (i % idx != 0 || (idx != 0 && i == 0))
-			*it = std::move(v);
+		if(i == idx)
+			*it = val;
 		else
 		{
-			++(*it	= val);
-			*it	= v;
+			*it = *v;
+			++v;
 		}
-		++it; 
-		++i;
+	
+		if (i++ >= ncols)
+			i = 0;
+		++it;
 	}
 	*this = std::move(tmp);
 }
