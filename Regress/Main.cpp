@@ -25,6 +25,16 @@ int main()
 
 	//lhs = lhs * rhs;
 
+	std::vector<int>::const_iterator it;
+	Matrix<int>::col_iterator cit;
+
+	using MatrixT = Matrix<int>;
+
+	auto tit = lhs.rbegin();
+	++tit;
+
+	auto p = tit.matPtr();
+
 	//   lhs
 	// {1, 2}		  rhs*2			{18, 24,  30}
 	// {3, 4}   { {1, 2, 3} * 2 } = {38, 52,  66}

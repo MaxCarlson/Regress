@@ -23,13 +23,18 @@ class Matrix
 {
 public:
 	using Storage			= std::vector<Type>;
-	using iterator			= typename Storage::iterator;
-	using const_iterator	= typename Storage::const_iterator;
 	using size_type			= int;
 
-	//using row_iterator		= iterator;
-	//using const_row_iterator = const_iterator;
-
+	template<bool> // TODO: This is all setup so we can use std::conditional with these when
+	class col_iterator_base; // we have a template param for column-major-order vs row
+	using col_iterator			= col_iterator_base<false>;
+	using col_const_iterator	= col_iterator_base<true>;
+	template<bool>
+	class arrayOrderIteratorBase;
+	using row_iterator			= arrayOrderIteratorBase<false>;
+	using row_const_iterator	= arrayOrderIteratorBase<true>;
+	using iterator				= row_iterator;
+	using const_iterator		= row_const_iterator;
 
 private:
 	size_type	nrows;
@@ -65,12 +70,10 @@ public:
 	const_iterator	begin() const noexcept { return vals.cbegin(); }
 	const_iterator	end()   const noexcept { return vals.cend(); }
 
-	class col_iterator;
-	class col_const_iterator;
-	col_iterator		col_begin()			  noexcept { return { 0,		*this }; }
-	col_iterator		col_end()			  noexcept { return { size(),	*this }; }
-	col_const_iterator	ccol_begin()	const noexcept { return { 0,		*this }; }
-	col_const_iterator	ccol_end()		const noexcept { return { size(),	*this }; }
+	col_iterator		col_begin()			  noexcept { return { 0,		this }; }
+	col_iterator		col_end()			  noexcept { return { size(),	this }; }
+	col_const_iterator	ccol_begin()	const noexcept { return { 0,		this }; }
+	col_const_iterator	ccol_end()		const noexcept { return { size(),	this }; }
 
 	// Apply a function to every member of the Matrix
 	// [](Type& t) { ...do something... return; }
@@ -110,35 +113,41 @@ public:
 		using iterator_category = std::random_access_iterator_tag;
 
 		using ContainerType = std::conditional_t<isConst,
-			const ThisType,
-			ThisType>;
+			const ThisType, ThisType>;
+
+		using ContainerPtr = std::conditional_t<isConst,
+			const ThisType*, ThisType*>;
 
 		using reference = std::conditional_t<isConst,
-			const Type&,
-			Type&>;
+			const Type&, Type&>;
 
 		using pointer = std::conditional_t<isConst,
-			const Type*,
-			Type*>;
+			const Type*, Type*>;
+
+		using Siterator = std::conditional_t<isConst, 
+			typename Storage::const_iterator,
+			typename Storage::iterator>;
 	};
 
 	// An iterator that iterates through columns instead of rows
 	template<bool isConst>
-	class col_iterator_base : public IteratorBase<isConst>
+	class col_iterator_base 
 	{
 	public:
 		using Base				= IteratorBase<isConst>;
 		using iterator_category = typename Base::iterator_category;
 		using ContainerType		= typename Base::ContainerType;
+		using ContainerPtr		= typename Base::ContainerPtr;
 		using reference			= typename Base::reference;
 		using pointer			= typename Base::pointer;
 			
 	private:
 		size_type		idx;
-		ContainerType& cont;
+		ContainerPtr	cont;
 
 	public:
-		col_iterator_base(size_type idx, ContainerType& cont) :
+		col_iterator_base() = default;
+		col_iterator_base(size_type idx, ContainerPtr cont) :
 			idx{ idx },
 			cont{ cont }
 		{}
@@ -147,12 +156,12 @@ public:
 		// would be much more effeciant
 		col_iterator_base& operator++()
 		{
-			if (idx >= cont.size() - 1)
+			if (idx >= cont->size() - 1)
 				++idx;
-			else if (idx < cont.lastRowIdx)
-				idx += cont.cols();
+			else if (idx < cont->lastRowIdx)
+				idx += cont->cols();
 			else
-				++idx %= cont.cols();
+				++idx %= cont->cols();
 			
 			return *this;
 		}
@@ -167,15 +176,15 @@ public:
 
 		col_iterator_base& operator--()
 		{
-			if (idx <= 0 || idx >= cont.size())
+			if (idx <= 0 || idx >= cont->size())
 				--idx;
-			else if (idx < cont.cols())
+			else if (idx < cont->cols())
 			{
 				--idx;
-				idx += cont.lastRowIdx;
+				idx += cont->lastRowIdx;
 			}
 			else
-				idx -= cont.cols();
+				idx -= cont->cols();
 			return *this;
 		}
 
@@ -189,12 +198,12 @@ public:
 
 		reference operator*() const
 		{
-			return cont.vals[idx];
+			return cont->vals[idx];
 		}
 
 		pointer operator->() const
 		{
-			return &cont.vals[idx];
+			return &cont->vals[idx];
 		}
 
 		bool operator==(const col_iterator_base& other) const
@@ -228,42 +237,100 @@ public:
 		}
 	};
 
-	class col_const_iterator : public col_iterator_base<true>
-	{
-	public:
-		using MyBase		= col_iterator_base<true>;
-		using ContainerType = typename MyBase::ContainerType;
 
-		col_const_iterator(size_type idx, ContainerType& cont) :
-			MyBase{ idx, cont }
-		{}
-	};
-
-	class col_iterator : public col_iterator_base<false>
-	{
-	public:
-		using MyBase		= col_iterator_base<false>;
-		using ContainerType = typename MyBase::ContainerType;
-
-		col_iterator(size_type idx, ContainerType& cont) :
-			MyBase{ idx, cont }
-		{}
-	};
-
+	// A wrapper class so we can get the Matrix from the iterator
 	template<bool isConst>
-	class arrayOrderIteratorBase : public IteratorBase<isConst>
+	class arrayOrderIteratorBase 
 	{
 	public:
 		using Base				= IteratorBase<isConst>;
 		using iterator_category = typename Base::iterator_category;
 		using ContainerType		= typename Base::ContainerType;
+		using ContainerPtr		= typename Base::ContainerPtr;
 		using reference			= typename Base::reference;
 		using pointer			= typename Base::pointer;
-
-
+		using It				= typename Base::Siterator;
+		using ThisType			= arrayOrderIteratorBase<isConst>;
+		
+	private:
+		It				it;
+		ContainerPtr	cont;
 
 	public:
+
+		arrayOrderIteratorBase() = default;
+		arrayOrderIteratorBase(It it, ContainerPtr cont) :
+			it{ it },
+			cont{ cont }
+		{}
+
+		ContainerPtr matPtr() const { return cont; }
+
+		ThisType& operator++()
+		{
+			++it;
+			return *this;
+		}
+
+		ThisType& operator--()
+		{
+			--it;
+			return *this;
+		}
+
+		ThisType& operator+=(size_type i)
+		{
+			it += i;
+			return *this;
+		}
+
+		ThisType& operator-=(size_type i)
+		{
+			it -= i;
+			return *this;
+		}
+		
+		reference operator*() const
+		{
+			return *it;
+		}
+
+		pointer operator->() const
+		{
+			return &(*it);
+		}
+
+		bool operator==(const ThisType& other) const
+		{
+			return it == other.it;
+		}
+
+		bool operator!=(const ThisType& other) const
+		{
+			return it != other.it;
+		}
+
+		bool operator>(const ThisType& other) const
+		{
+			return it > other.it;
+		}
+		bool operator<(const ThisType& other) const
+		{
+			return it < other.it;
+		}
+
+		bool operator>=(const ThisType& other) const
+		{
+			return it >= other.it;
+		}
+
+		bool operator<=(const ThisType& other) const
+		{
+			return it <= other.it;
+		}
 	};
+
+	row_iterator rbegin() { return row_iterator{ vals.begin(), this }; }
 };
 
 template<class Type>
