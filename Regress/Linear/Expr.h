@@ -46,9 +46,9 @@ class MatrixExpr
 	using MatrixType	= Matrix<Type>;
 	using ThisType		= MatrixExpr<Iter, Type>;
 
-	Iter exprOp;
-	const size_type op;		// TODO: This can be removed
-	size_type multiCount;	// Number of times the multiply op has been applied (if applicable)
+	Iter			exprOp;
+	const size_type op;			// TODO: This can be removed
+	size_type		multiCount;	// Number of times the multiply op has been applied (if applicable)
 
 public:
 
@@ -65,9 +65,9 @@ public:
 	inline size_type rhsCols()	const noexcept { return exprOp.rhsCols(); }
 	inline Type operator*()		const noexcept { return *exprOp; }
 
-	void analyze(ExprAnalyzer<Type>& ea)
+	void analyzeExpr(ExprAnalyzer<Type>& ea)
 	{
-		exprOp.analyze(ea);
+		exprOp.analyzeExpr(ea);
 	}
 
 private:
@@ -221,7 +221,7 @@ class MatBinExpr
 	using size_type		= typename MatrixOpBase::size_type;
 	using ThisType		= MatBinExpr<LIt, RIt, Op, Type>;
 	using MatrixType	= Matrix<Type>;
-	using MatrixIt		= typename MatrixType::const_iterator;
+	//using MatrixIt		= typename MatrixType::const_iterator;
 
 	LIt lit;
 	RIt rit;
@@ -241,6 +241,18 @@ public:
 		nrhsRows{ nrhsRows },
 		nrhsCols{ nrhsCols }
 	{}
+
+	template<class It>
+	void analyzeSide(ExprAnalyzer<Type>& ea, It& it)
+	{
+		it.analyzeExpr(ea);
+	}
+
+	void analyzeExpr(ExprAnalyzer<Type>& ea)
+	{
+		analyzeSide(ea, lit);
+		analyzeSide(ea, rit);
+	}
 
 	inline void lhsInc(size_type i)  noexcept { lit += i; }
 	inline void lhsDec(size_type i)  noexcept { lit -= i; }
@@ -285,26 +297,6 @@ public:
 		rhsDec(i);
 		return *this;
 	}
-
-	template<class It>
-	void analyzeSide(ExprAnalyzer<Type>& ea, It& it)
-	{
-		if constexpr (std::is_same_v<MatrixIt, It>)
-		{
-
-		}
-		else
-		{
-
-			it.analyze(ea);
-		}
-	}
-
-	void analyze(ExprAnalyzer<Type>& ea)
-	{
-		analyzeSide(ea, lit);
-		analyzeSide(ea, rit);
-	}
 };
 
 // A Unary expression. Takes an iterator to only one Matrix or Expression
@@ -315,10 +307,10 @@ class MatUnaExpr
 	using size_type		= typename MatrixOpBase::size_type;
 	using ThisType		= MatUnaExpr<It, Op, Type>;
 	using MatrixType	= Matrix<Type>;
-	using MatrixIt		= std::conditional_t<
-		Op::type == MatrixOpBase::TRANSPOSE,
-		typename MatrixType::col_const_iterator,
-		typename MatrixType::const_iterator>;
+	//using MatrixIt		= std::conditional_t<
+	//	Op::type == MatrixOpBase::TRANSPOSE,
+	//	typename MatrixType::col_const_iterator,
+	//	typename MatrixType::const_iterator>;
 
 	It			it;
 	const Op	op;
@@ -333,6 +325,18 @@ public:
 		nrows{ nrows },
 		ncols{ ncols }
 	{}
+
+	void analyzeExpr(ExprAnalyzer<Type>& ea)
+	{
+		if constexpr (std::is_same_v<MatrixIt, It>)
+		{
+
+		}
+		else
+		{
+			it.analyze(ea);
+		}
+	}
 
 	inline void lhsInc(size_type)  { throw std::runtime_error("Cannot inc lhs in Unary Expr"); }
 	inline void lhsDec(size_type)  { throw std::runtime_error("Cannot dec lhs in Unary Expr"); }
@@ -381,18 +385,6 @@ public:
 	{
 		rhsDec(i);
 		return *this;
-	}
-
-	void analyze(ExprAnalyzer<Type>& ea)
-	{
-		if constexpr (std::is_same_v<MatrixIt, It>)
-		{
-
-		}
-		else
-		{
-			it.analyze(ea);
-		}
 	}
 };
 
@@ -504,6 +496,9 @@ public:
 
 	inline const Num& operator*()  const noexcept { return num; }
 	inline const Num* operator->() const noexcept { return &num; }
+
+	template<class Type>
+	inline void analyzeExpr(ExprAnalyzer<Type>& ea) {}
 };
 
 template<class Type>

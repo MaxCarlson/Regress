@@ -65,13 +65,17 @@ public:
 	bool operator==(const Matrix& other) const;
 	bool operator!=(const Matrix& other) const;
 
-	iterator		begin()		  noexcept { return vals.begin(); }
-	iterator		end()		  noexcept { return vals.end(); }
-	const_iterator	begin() const noexcept { return vals.cbegin(); }
-	const_iterator	end()   const noexcept { return vals.cend(); }
+	iterator		begin()			  noexcept { return { vals.begin(),		this }; }
+	iterator		end()			  noexcept { return { vals.end(),		this }; }
+	const_iterator	begin()		const noexcept { return { vals.cbegin(),	this }; }
+	const_iterator	end()		const noexcept { return { vals.cend(),		this }; }
+	const_iterator	cbegin()	const noexcept { return { vals.cbegin(),	this }; }
+	const_iterator	cend()		const noexcept { return { vals.cend(),		this }; }
 
 	col_iterator		col_begin()			  noexcept { return { 0,		this }; }
 	col_iterator		col_end()			  noexcept { return { size(),	this }; }
+	col_const_iterator	col_begin()		const noexcept { return { 0,		this }; }
+	col_const_iterator	col_end()		const noexcept { return { size(),	this }; }
 	col_const_iterator	ccol_begin()	const noexcept { return { 0,		this }; }
 	col_const_iterator	ccol_end()		const noexcept { return { size(),	this }; }
 
@@ -87,7 +91,7 @@ public:
 	void unaryExprPara(Func&& func) const;
 
 	void resize(size_type numRows, size_type numCols);
-	Matrix<Type> transpose() const;
+	Matrix transpose() const;
 	Type sum() const;
 
 	// These return Matrix Expressions so no temporary matricies are created
@@ -127,11 +131,13 @@ public:
 		using Siterator = std::conditional_t<isConst, 
 			typename Storage::const_iterator,
 			typename Storage::iterator>;
+
+		inline void analyzeExpr(ExprAnalyzer<Type>& ea) {}
 	};
 
 	// An iterator that iterates through columns instead of rows
 	template<bool isConst>
-	class col_iterator_base 
+	class col_iterator_base : public IteratorBase<isConst>
 	{
 	public:
 		using Base				= IteratorBase<isConst>;
@@ -151,6 +157,8 @@ public:
 			idx{ idx },
 			cont{ cont }
 		{}
+
+		ContainerPtr matPtr() const { return cont; }
 
 		// TODO: Perhaps iterating shouldn't do these tests, but dereferncing should!
 		// would be much more effeciant
@@ -240,7 +248,7 @@ public:
 
 	// A wrapper class so we can get the Matrix from the iterator
 	template<bool isConst>
-	class arrayOrderIteratorBase 
+	class arrayOrderIteratorBase : public IteratorBase<isConst>
 	{
 	public:
 		using Base				= IteratorBase<isConst>;
@@ -360,7 +368,7 @@ template<class Expr>
 inline Matrix<Type>::Matrix(Expr expr)
 {
 	ExprAnalyzer ea{ *this };
-	expr.analyze(ea);
+	expr.analyzeExpr(ea);
 	expr.assign(*this);
 }
 
@@ -472,7 +480,7 @@ inline MatrixExpr<MatBinExpr<
 		typename Matrix<Type>::const_iterator,
 		MatrixCwiseProductOp<Type>, Type>;
 	return MatrixExpr<ExprType, Type>{ExprType{
-		begin(),
+		cbegin(),
 		rhs.begin(),
 		rows(),
 		rhs.rows(),
@@ -492,7 +500,7 @@ inline MatrixExpr<MatBinExpr<
 		MatrixExpr<Iter, Type>,
 		MatrixCwiseProductOp<Type>, Type>;
 	return MatrixExpr<ExprType, Type>{ExprType{
-		begin(),
+		cbegin(),
 		rhs,
 		rows(),
 		rhs.lhsRows(),
