@@ -64,17 +64,37 @@ public:
 	TEST_METHOD(Indexing)
 	{
 		indexingImpl(lhsR, rhsR);
+		indexingImpl(lhsC, rhsC);
 	}
 
 	template<class T, bool O>
 	void iteratorsImpl(Matrix<T, O>& lhs, Matrix<T, O>& rhs)
 	{
+		using Mat	= Matrix<T, O>;
+		using It	= typename Mat::iterator;
+		using cIt	= typename Mat::col_iterator;
+		using rIt	= typename Mat::row_iterator;
 
+		auto test = [&](const auto& ans, auto s, auto e)
+		{
+			auto aIt = std::begin(ans);
+			for (; s != e; ++s, ++aIt)
+				Assert::IsTrue(*s == *aIt);
+		};
+
+		std::vector<int> co = { 1, 3, 5, 2, 4, 6 };
+		test(co, lhs.col_begin(), lhs.col_end());
+
+		co = { 1, 4, 3, 4, 2, 6 };
+		test(co, rhs.col_begin(), rhs.col_end());
 	}
 
+	// TODO: For this test to compile both row and col iterators
+	// msut take the same init args. Fix tomorrow!
 	TEST_METHOD(Iterators)
 	{
-
+		iteratorsImpl(lhsR, rhsR);
+		iteratorsImpl(lhsC, rhsC);
 	}
 
 	template<class T, bool O>
