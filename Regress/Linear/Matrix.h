@@ -463,22 +463,30 @@ inline Type Matrix<Type>::sum() const
 }
 
 // TODO: This will need split code when we have columnMajorOrder template param
+// TODO: This is a seriously non-optimal algorithm
 template<class Type>
 inline void Matrix<Type>::addColumn(size_type idx, Type val)
 {
 	Matrix<Type> tmp(nrows, ncols + 1);
 
-	if (val > ncols + 1 || val < 0)
+	if (idx > ncols + 1 || idx < 0)
 		throw std::runtime_error("Invalid column coordinate");
 
 	int i	= 0;
 	auto it = std::begin(tmp);
-	for (auto v = std::begin(vals); v <= std::end(vals);)
+	for (auto v = std::begin(vals);;)
 	{
-		if(i == idx)
+		if (i == idx)
+		{
+			if (idx < ncols && v >= std::end(vals))
+				break;
 			*it = val;
+		}
 		else
 		{
+			if (idx >= ncols && v >= std::end(vals))
+				break;
+
 			*it = *v;
 			++v;
 		}
