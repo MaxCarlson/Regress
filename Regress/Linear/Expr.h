@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
 
-template<class Type>
+template<class Type, bool ColOrder = false>
 class Matrix;
 
 template<class Type>
