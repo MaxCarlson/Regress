@@ -28,16 +28,23 @@ public:
 	using Storage				= std::vector<Type>;
 	using size_type				= int;
 
-	template<bool> // TODO: This is all setup so we can use std::conditional with these when
-	class col_iterator_base; // we have a template param for column-major-order vs row
-	using col_iterator			= col_iterator_base<false>;
-	using col_const_iterator	= col_iterator_base<true>;
+	template<bool>				
+	class nonMajorOrderIteratorBase;	// TODO: Both of these names are long
 	template<bool>
 	class arrayOrderIteratorBase;
-	using row_iterator			= arrayOrderIteratorBase<false>;
-	using row_const_iterator	= arrayOrderIteratorBase<true>;
-	using iterator				= row_iterator;
-	using const_iterator		= row_const_iterator;
+
+	using col_iterator			= std::conditional_t<ColOrder, 
+		arrayOrderIteratorBase<false>, nonMajorOrderIteratorBase<false>>;
+	using col_const_iterator	= std::conditional_t<ColOrder,
+		arrayOrderIteratorBase<true>, nonMajorOrderIteratorBase<true>>;
+
+	using row_iterator			= std::conditional_t<ColOrder, 
+		nonMajorOrderIteratorBase<false>, arrayOrderIteratorBase<false>>;
+	using row_const_iterator	= std::conditional_t<ColOrder,
+		nonMajorOrderIteratorBase<true>, arrayOrderIteratorBase<true>>;
+
+	using iterator				= std::conditional_t<ColOrder, col_iterator, row_iterator>;
+	using const_iterator		= std::conditional_t<ColOrder, col_const_iterator, row_const_iterator>;
 
 private:
 	size_type	nrows;
@@ -48,7 +55,7 @@ private:
 
 public:
 	using value_type	= Type;
-	using ThisType		= Matrix<Type>;
+	using ThisType		= Matrix<Type, ColOrder>;
 
 	Matrix() = default;
 	Matrix(size_type nrows, size_type ncols);
@@ -145,7 +152,7 @@ public:
 
 	// An iterator that iterates through columns instead of rows
 	template<bool isConst>
-	class col_iterator_base : public IteratorBase<isConst>
+	class nonMajorOrderIteratorBase : public IteratorBase<isConst>
 	{
 	public:
 		using Base				= IteratorBase<isConst>;
@@ -160,8 +167,8 @@ public:
 		ContainerPtr	cont;
 
 	public:
-		col_iterator_base() = default;
-		col_iterator_base(size_type idx, ContainerPtr cont) :
+		nonMajorOrderIteratorBase() = default;
+		nonMajorOrderIteratorBase(size_type idx, ContainerPtr cont) :
 			idx{ idx },
 			cont{ cont }
 		{}
@@ -170,7 +177,7 @@ public:
 
 		// TODO: Perhaps iterating shouldn't do these tests, but dereferncing should!
 		// would be much more effeciant
-		col_iterator_base& operator++()
+		nonMajorOrderIteratorBase& operator++()
 		{
 			if (idx >= cont->size() - 1)
 				++idx;
@@ -183,14 +190,14 @@ public:
 		}
 
 		// TODO: Revist for optimizations!
-		col_iterator_base& operator+=(size_type i)
+		nonMajorOrderIteratorBase& operator+=(size_type i)
 		{
 			while (i--)
 				++(*this);
 			return *this;
 		}
 
-		col_iterator_base& operator--()
+		nonMajorOrderIteratorBase& operator--()
 		{
 			if (idx <= 0 || idx >= cont->size())
 				--idx;
@@ -205,7 +212,7 @@ public:
 		}
 
 		// TODO: Revist for optimizations!
-		col_iterator_base& operator-=(size_type i)
+		nonMajorOrderIteratorBase& operator-=(size_type i)
 		{
 			while (i--)
 				--(*this);
@@ -222,32 +229,32 @@ public:
 			return &cont->vals[idx];
 		}
 
-		bool operator==(const col_iterator_base& other) const
+		bool operator==(const nonMajorOrderIteratorBase& other) const
 		{
 			return &cont == &other.cont
 				&& idx == other.idx;
 		}
 
-		bool operator!=(const col_iterator_base& other) const
+		bool operator!=(const nonMajorOrderIteratorBase& other) const
 		{
 			return !(*this == other);
 		}
 
-		bool operator>(const col_iterator_base& other) const
+		bool operator>(const nonMajorOrderIteratorBase& other) const
 		{
 			return idx > other.idx;
 		}
-		bool operator<(const col_iterator_base& other) const
+		bool operator<(const nonMajorOrderIteratorBase& other) const
 		{
 			return idx < other.idx;
 		}
 
-		bool operator>=(const col_iterator_base& other) const
+		bool operator>=(const nonMajorOrderIteratorBase& other) const
 		{
 			return idx >= other.idx;
 		}
 
-		bool operator<=(const col_iterator_base& other) const
+		bool operator<=(const nonMajorOrderIteratorBase& other) const
 		{
 			return idx <= other.idx;
 		}

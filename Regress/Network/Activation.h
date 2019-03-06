@@ -8,13 +8,13 @@ enum Activation
 	Sigmoid
 };
 
-template<class, bool = false> 
+template<class, bool> 
 class Matrix;
 
 namespace ActivationImpl
 {
-template<class T>
-inline void reluFunc(Matrix<T>& m)
+template<class T, bool ColOrder>
+inline void reluFunc(Matrix<T, ColOrder>& m)
 {
 	m.unaryExpr([](T& i)
 	{
@@ -23,8 +23,8 @@ inline void reluFunc(Matrix<T>& m)
 
 }
 
-template<class T>
-inline void reluPrime(Matrix<T>& m)
+template<class T, bool ColOrder>
+inline void reluPrime(Matrix<T, ColOrder>& m)
 {
 	m.unaryExpr([](T& i)
 	{
@@ -32,22 +32,22 @@ inline void reluPrime(Matrix<T>& m)
 	});
 }
 
-template<class T>
-inline void sigmoidFunc(Matrix<T>& m)
+template<class T, bool ColOrder>
+inline void sigmoidFunc(Matrix<T, ColOrder>& m)
 {
 
 }
 
-template<class T>
-inline void sigmoidPrime(Matrix<T>& m)
+template<class T, bool ColOrder>
+inline void sigmoidPrime(Matrix<T, ColOrder>& m)
 {
 
 }
 }
 
 
-template<class T>
-inline void activationFunction(Activation act, Matrix<T>& m)
+template<class T, bool ColOrder>
+inline void activationFunction(Activation act, Matrix<T, ColOrder>& m)
 {
 	switch (act)
 	{
@@ -66,8 +66,8 @@ inline void activationFunction(Activation act, Matrix<T>& m)
 	}
 }
 
-template<class T>
-inline void activationPrime(Activation act, Matrix<T>& m)
+template<class T, bool ColOrder>
+inline void activationPrime(Activation act, Matrix<T, ColOrder>& m)
 {
 	switch (act)
 	{
