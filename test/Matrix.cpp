@@ -82,11 +82,11 @@ public:
 	{
 		auto v1 = lhs;
 		v1.addColumn(v1.cols(), 3); // TODO: Issue here
-		MatrixT v1r = { {1, 2, 3}, {3, 4, 3}, {5, 6, 3} };
+		rMM v1r = { {1, 2, 3}, {3, 4, 3}, {5, 6, 3} };
 
 		auto v2 = rhs;
 		v2.addColumn(0);
-		MatrixT v2r = { {0, 1, 2, 3}, {0, 4, 5, 6} };
+		rMM v2r = { {0, 1, 2, 3}, {0, 4, 5, 6} };
 
 		if (O == false)
 		{

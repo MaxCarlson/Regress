@@ -369,10 +369,16 @@ inline Matrix<Type, ColOrder>::Matrix(const std::initializer_list<std::initializ
 	lastRowIdx{ (nrows - 1) * ncols }, 
 	vals(nrows * ncols)
 {
-	int i = 0;
-	for (auto it = std::begin(m); it != std::end(m); ++it)
-		for (auto jt = std::begin(*it); jt != std::end(*it); ++jt)
-			vals[i++] = *jt;
+	auto v = std::begin(vals);
+
+	if(ColOrder)
+		for(int i = 0; i < ncols; ++i)
+			for (auto it = std::begin(m); it != std::end(m); ++it, ++v)
+				*v = *(std::begin(*it) + i);
+	else
+		for (auto it = std::begin(m); it != std::end(m); ++it)
+			for (auto jt = std::begin(*it); jt != std::end(*it); ++jt, ++v)
+				*v = *jt;
 }
 
 template<class Type, bool ColOrder>
@@ -386,15 +392,17 @@ inline Matrix<Type, ColOrder>::Matrix(Expr expr)
 
 template<class Type, bool ColOrder>
 inline Type & Matrix<Type, ColOrder>::operator()(size_type row, size_type col)
-{	// TODO: Changing access methods would allow us to change this to a column major order matrix
-	// (as well as initilizer list init)
-	return vals[row * ncols + col]; 
+{	
+	if (ColOrder)
+		return vals[col * nrows + row];
+	else
+		return vals[row * ncols + col]; 
 }
 
 template<class Type, bool ColOrder>
 inline const Type & Matrix<Type, ColOrder>::operator()(size_type row, size_type col) const
 {
-	return vals[row * ncols + col];
+	return const_cast<Type&>(this->operator()(row, col));
 }
 
 template<class Type, bool ColOrder>
