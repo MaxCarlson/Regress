@@ -10,20 +10,33 @@ TEST_CLASS(MatrixTest)
 {
 public:
 
-	using MatrixT = Matrix<int>;
+	using rMM		= Matrix<int, false>;
+	using cMM		= Matrix<int, true>;
 
-	MatrixT lhs = {
+	rMM lhsR = {
 		{1, 2},
 		{3, 4},
 		{5, 6},
 	};
 
-	MatrixT rhs = {
+	rMM rhsR = {
 		{1, 2, 3},
 		{4, 5, 6}
 	};
 
-	TEST_METHOD(Indexing)
+	cMM lhsC = {
+		{1, 2},
+		{3, 4},
+		{5, 6},
+	};
+
+	cMM rhsC = {
+		{1, 2, 3},
+		{4, 5, 6}
+	};
+
+	template<class T, bool O>
+	void indexingImpl(Matrix<T, O>& lhs, Matrix<T, O>& rhs)
 	{
 		auto v1 = lhs(0, 0);
 		auto v2 = lhs(0, 1);
@@ -48,23 +61,48 @@ public:
 		Assert::IsTrue(rhs.cols() == 3);
 	}
 
-	TEST_METHOD(Iterators)
+	TEST_METHOD(Indexing)
 	{
-		
+		indexingImpl(lhsR, rhsR);
 	}
 
-	TEST_METHOD(AddColumn)
+	template<class T, bool O>
+	void iteratorsImpl(Matrix<T, O>& lhs, Matrix<T, O>& rhs)
+	{
+
+	}
+
+	TEST_METHOD(Iterators)
+	{
+
+	}
+
+	template<class T, bool O>
+	void addColumnImpl(Matrix<T, O>& lhs, Matrix<T, O>& rhs)
 	{
 		auto v1 = lhs;
-		v1.addColumn(2, 3); // TODO: Issue here
+		v1.addColumn(v1.cols(), 3); // TODO: Issue here
 		MatrixT v1r = { {1, 2, 3}, {3, 4, 3}, {5, 6, 3} };
 
 		auto v2 = rhs;
 		v2.addColumn(0);
 		MatrixT v2r = { {0, 1, 2, 3}, {0, 4, 5, 6} };
 
-		Assert::IsTrue(v1 == v1r);
-		Assert::IsTrue(v2 == v2r);
+		if (O == false)
+		{
+			Assert::IsTrue(v1 == v1r);
+			Assert::IsTrue(v2 == v2r);
+		}
+		else
+		{
+			Assert::IsTrue(v1 == ~v1r);
+			Assert::IsTrue(v2 == ~v2r);
+		}
+	}
+
+	TEST_METHOD(AddColumn)
+	{
+		addColumnImpl(lhsR, rhsR);
 	}
 };
 
