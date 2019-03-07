@@ -49,8 +49,8 @@ public:
 private:
 	size_type	nrows;
 	size_type	ncols;
-	size_type	lastRowIdx;
-	Storage		vals;			// TODO: This should really be a column-order matrix 
+	size_type	lastRowIdx;		// TODO: Get rid of this
+	Storage		vals;			
 
 
 public:
@@ -75,12 +75,14 @@ public:
 	bool operator==(const Matrix& other) const;
 	bool operator!=(const Matrix& other) const;
 
-	iterator		begin()			  noexcept { return { vals.begin(),		this }; }
-	iterator		end()			  noexcept { return { vals.end(),		this }; }
-	const_iterator	begin()		const noexcept { return { vals.cbegin(),	this }; }
-	const_iterator	end()		const noexcept { return { vals.cend(),		this }; }
-	const_iterator	cbegin()	const noexcept { return { vals.cbegin(),	this }; }
-	const_iterator	cend()		const noexcept { return { vals.cend(),		this }; }
+
+
+	iterator		begin()			  noexcept { return { 0,		this }; }
+	iterator		end()			  noexcept { return { size(),	this }; }
+	const_iterator	begin()		const noexcept { return { 0,		this }; }
+	const_iterator	end()		const noexcept { return { size(),	this }; }
+	const_iterator	cbegin()	const noexcept { return { 0,		this }; }
+	const_iterator	cend()		const noexcept { return { size(),	this }; }
 
 	col_iterator		col_begin()			  noexcept { return { 0,		this }; }
 	col_iterator		col_end()			  noexcept { return { size(),	this }; }
@@ -179,54 +181,47 @@ public:
 		// would be much more effeciant
 		nonMajorOrderIteratorBase& operator++()
 		{
-			if (idx >= cont->size() - 1)
-				++idx;
-			else if (idx < cont->lastRowIdx)
-				idx += cont->cols();
-			else
-				++idx %= cont->cols();
-			
+			++idx;
 			return *this;
 		}
 
 		// TODO: Revist for optimizations!
 		nonMajorOrderIteratorBase& operator+=(size_type i)
 		{
-			while (i--)
-				++(*this);
+			idx += i;
 			return *this;
 		}
 
 		nonMajorOrderIteratorBase& operator--()
 		{
-			if (idx <= 0 || idx >= cont->size())
-				--idx;
-			else if (idx < cont->cols())
-			{
-				--idx;
-				idx += cont->lastRowIdx;
-			}
-			else
-				idx -= cont->cols();
+			++idx;
 			return *this;
 		}
 
 		// TODO: Revist for optimizations!
 		nonMajorOrderIteratorBase& operator-=(size_type i)
 		{
-			while (i--)
-				--(*this);
+			idx += i;
 			return *this;
 		}
 
+	private:
+		reference index() const noexcept
+		{
+			if (ColOrder)
+				return cont->operator()(idx / cont->ncols, idx % cont->ncols);
+			else
+				return cont->operator()(idx % cont->nrows, idx / cont->nrows);
+		}
+	public:
 		reference operator*() const
 		{
-			return cont->vals[idx];
+			return index();
 		}
 
 		pointer operator->() const
 		{
-			return &cont->vals[idx];
+			return &index();
 		}
 
 		bool operator==(const nonMajorOrderIteratorBase& other) const
@@ -281,8 +276,8 @@ public:
 	public:
 
 		arrayOrderIteratorBase() = default;
-		arrayOrderIteratorBase(It it, ContainerPtr cont) :
-			it{ it },
+		arrayOrderIteratorBase(size_type idx, ContainerPtr cont) :
+			it{ cont->vals.begin() + idx },
 			cont{ cont }
 		{}
 

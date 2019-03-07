@@ -53,6 +53,18 @@ int main()
 	input.addColumn(0);
 	std::cout << input;
 
+	Matrix<int, true> rhsr = {
+		{1, 2, 3},
+		{4, 5, 6}
+	};
+
+	Matrix<int, true>::row_iterator rit{ 0, &rhsr };
+	for (int i = 0; i < 6; ++i, ++rit)
+	{
+		int j = *rit;
+		int a = 5;
+	}
+
 
 	Input<float>  in(&input);
 	Dense<float>  d1(2,  false, &in, Activation::Relu);
