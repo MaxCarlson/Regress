@@ -43,15 +43,17 @@ public:
 	using row_const_iterator	= std::conditional_t<MajorOrder,
 		nonMajorOrderIteratorBase<true>, arrayOrderIteratorBase<true>>;
 
-	using iterator					= std::conditional_t<MajorOrder, 
+	using iterator				= std::conditional_t<MajorOrder, 
 		col_iterator, row_iterator>;
-	using const_iterator			= std::conditional_t<MajorOrder, 
+	using const_iterator		= std::conditional_t<MajorOrder, 
 		col_const_iterator, row_const_iterator>;
 
 	using minor_iterator		= std::conditional_t<MajorOrder, 
 		row_iterator, col_iterator>;
 	using const_minor_iterator	= std::conditional_t<MajorOrder, 
 		row_const_iterator, col_const_iterator>;
+
+	static constexpr bool MajorOrder = MajorOrder;
 
 private:
 	size_type	nrows;
@@ -135,22 +137,20 @@ public:
 
 	// These return Matrix Expressions so no temporary matricies are created
 	inline MatrixExpr<MatBinExpr<
-		typename Matrix<Type>::const_iterator,
-		typename Matrix<Type>::const_iterator,
-		MatrixCwiseProductOp<Type>,
-		Type>, Type>
-		cwiseProduct(const Matrix<Type>& rhs) noexcept;
+		typename Matrix<Type, MajorOrder>::const_iterator,
+		typename Matrix<Type, MajorOrder>::const_iterator,
+		MatrixCwiseProductOp<Type>, Type>, Type>
+		cwiseProduct(const Matrix<Type, MajorOrder>& rhs) noexcept;
 
 	template<class Iter>
 	inline MatrixExpr<MatBinExpr<
-		typename Matrix<Type>::const_iterator,
+		typename Matrix<Type, MajorOrder>::const_iterator,
 		MatrixExpr<Iter, Type>,
-		MatrixCwiseProductOp<Type>,
-		Type>, Type>
-		cwiseProduct(const Matrix<Type>& rhs) noexcept;
+		MatrixCwiseProductOp<Type>, Type>, Type>
+		cwiseProduct(const Matrix<Type, MajorOrder>& rhs) noexcept;
 
 	template<class T, bool MajorOrder>
-	inline friend std::ostream& operator<<(std::ostream& out, const Matrix<T>& m);
+	inline friend std::ostream& operator<<(std::ostream& out, const Matrix& m);
 
 	template<bool isConst>
 	class IteratorBase
@@ -567,13 +567,14 @@ inline Matrix<Type, MajorOrder> Matrix<Type, MajorOrder>::transpose() const
 
 template<class Type, bool MajorOrder>
 inline MatrixExpr<MatBinExpr<
-	typename Matrix<Type>::const_iterator,
-	typename Matrix<Type>::const_iterator,
-	MatrixCwiseProductOp<Type>, Type>, Type> Matrix<Type, MajorOrder>::cwiseProduct(const Matrix<Type>& rhs) noexcept
+	typename Matrix<Type, MajorOrder>::const_iterator,
+	typename Matrix<Type, MajorOrder>::const_iterator,
+	MatrixCwiseProductOp<Type>, Type>, Type> 
+	Matrix<Type, MajorOrder>::cwiseProduct(const Matrix<Type, MajorOrder>& rhs) noexcept
 {
 	using ExprType = MatBinExpr<
-		typename Matrix<Type>::const_iterator,
-		typename Matrix<Type>::const_iterator,
+		typename Matrix<Type, MajorOrder>::const_iterator,
+		typename Matrix<Type, MajorOrder>::const_iterator,
 		MatrixCwiseProductOp<Type>, Type>;
 	return MatrixExpr<ExprType, Type>{ExprType{
 		cbegin(),
@@ -587,12 +588,13 @@ inline MatrixExpr<MatBinExpr<
 template<class Type, bool MajorOrder>
 template<class Iter>
 inline MatrixExpr<MatBinExpr<
-	typename Matrix<Type>::const_iterator,
+	typename Matrix<Type, MajorOrder>::const_iterator,
 	MatrixExpr<Iter, Type>,
-	MatrixCwiseProductOp<Type>, Type>, Type> Matrix<Type, MajorOrder>::cwiseProduct(const Matrix<Type>& rhs) noexcept
+	MatrixCwiseProductOp<Type>, Type>, Type>
+	Matrix<Type, MajorOrder>::cwiseProduct(const Matrix<Type, MajorOrder>& rhs) noexcept
 {
 	using ExprType = MatBinExpr<
-		typename Matrix<Type>::const_iterator,
+		typename Matrix<Type, MajorOrder>::const_iterator,
 		MatrixExpr<Iter, Type>,
 		MatrixCwiseProductOp<Type>, Type>;
 	return MatrixExpr<ExprType, Type>{ExprType{
