@@ -1,15 +1,15 @@
 #pragma once
 #include <vector>
 
-template<class Type, bool ColOrder>
+template<class Type, bool MOrder>
 class Matrix;
 
-template<class Type, bool ColOrder>
+template<class Type, bool MOrder>
 class ExprAnalyzer
 {
-	const Matrix<Type, ColOrder>& assigned;
+	const Matrix<Type, MOrder>& assigned;
 public:
-	ExprAnalyzer(const Matrix<Type, ColOrder>& assigned) :
+	ExprAnalyzer(const Matrix<Type, MOrder>& assigned) :
 		assigned{ assigned }
 	{}
 
@@ -468,7 +468,7 @@ public:
 // the binary expressions interface
 
 // TODO: Potentially change to allow anything with overloaded matrix operators?
-template<class Num, 
+template<class Num, bool MajorOrder,
 	class = typename std::enable_if<std::is_arithmetic_v<Num>, Num>::type>
 class NumericIteratorWrapper
 {
@@ -476,7 +476,8 @@ class NumericIteratorWrapper
 
 public:
 	using size_type = typename MatrixOpBase::size_type;
-	using ThisType	= NumericIteratorWrapper<Num>;
+	using ThisType	= NumericIteratorWrapper<Num, MajorOrder>;
+	static constexpr bool MajorOrder = MajorOrder;
 
 	inline NumericIteratorWrapper(const Num& num) :
 		num{ num }

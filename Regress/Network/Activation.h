@@ -13,8 +13,8 @@ class Matrix;
 
 namespace ActivationImpl
 {
-template<class T, bool ColOrder>
-inline void reluFunc(Matrix<T, ColOrder>& m)
+template<class T, bool MajorOrder>
+inline void reluFunc(Matrix<T, MajorOrder>& m)
 {
 	m.unaryExpr([](T& i)
 	{
@@ -23,8 +23,8 @@ inline void reluFunc(Matrix<T, ColOrder>& m)
 
 }
 
-template<class T, bool ColOrder>
-inline void reluPrime(Matrix<T, ColOrder>& m)
+template<class T, bool MajorOrder>
+inline void reluPrime(Matrix<T, MajorOrder>& m)
 {
 	m.unaryExpr([](T& i)
 	{
@@ -32,22 +32,22 @@ inline void reluPrime(Matrix<T, ColOrder>& m)
 	});
 }
 
-template<class T, bool ColOrder>
-inline void sigmoidFunc(Matrix<T, ColOrder>& m)
+template<class T, bool MajorOrder>
+inline void sigmoidFunc(Matrix<T, MajorOrder>& m)
 {
 
 }
 
-template<class T, bool ColOrder>
-inline void sigmoidPrime(Matrix<T, ColOrder>& m)
+template<class T, bool MajorOrder>
+inline void sigmoidPrime(Matrix<T, MajorOrder>& m)
 {
 
 }
 }
 
 
-template<class T, bool ColOrder>
-inline void activationFunction(Activation act, Matrix<T, ColOrder>& m)
+template<class T, bool MajorOrder>
+inline void activationFunction(Activation act, Matrix<T, MajorOrder>& m)
 {
 	switch (act)
 	{
@@ -66,8 +66,8 @@ inline void activationFunction(Activation act, Matrix<T, ColOrder>& m)
 	}
 }
 
-template<class T, bool ColOrder>
-inline void activationPrime(Activation act, Matrix<T, ColOrder>& m)
+template<class T, bool MajorOrder>
+inline void activationPrime(Activation act, Matrix<T, MajorOrder>& m)
 {
 	switch (act)
 	{

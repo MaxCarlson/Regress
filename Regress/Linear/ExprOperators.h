@@ -7,15 +7,15 @@
 //
 
 // Transpose operators
-template<class Type, bool ColOrder>
+template<class Type, bool MOrder>
 inline MatrixExpr<MatUnaExpr<
-	typename Matrix<Type, ColOrder>::col_const_iterator,
+	typename Matrix<Type, MOrder>::col_const_iterator,
 	MatrixTransposeOp<Type>,
 	Type>, Type>
-	operator~(const Matrix<Type, ColOrder>& it) noexcept
+	operator~(const Matrix<Type, MOrder>& it) noexcept
 {
 	using ExprType = MatUnaExpr<
-		typename Matrix<Type, ColOrder>::col_const_iterator,
+		typename Matrix<Type, MOrder>::col_const_iterator,
 		MatrixTransposeOp<Type>,
 		Type>;
 	return MatrixExpr<ExprType, Type>{ ExprType{
@@ -51,17 +51,17 @@ inline MatrixExpr<MatUnaExpr<
 //
 
 // Addition operators
-template<class Type, bool ColOrder>
+template<class Type, bool MOrder>
 inline MatrixExpr<MatBinExpr<
-	typename Matrix<Type, ColOrder>::const_iterator,
-	typename Matrix<Type, ColOrder>::const_iterator,
+	typename Matrix<Type, MOrder>::const_iterator,
+	typename Matrix<Type, MOrder>::const_iterator,
 	MatrixAddOp<Type>,
 	Type>, Type>
-	operator+(const Matrix<Type, ColOrder>& lhs, const Matrix<Type, ColOrder>& rhs) noexcept
+	operator+(const Matrix<Type, MOrder>& lhs, const Matrix<Type, MOrder>& rhs) noexcept
 {
 	using ExprType = MatBinExpr<
-		typename Matrix<Type, ColOrder>::const_iterator,
-		typename Matrix<Type, ColOrder>::const_iterator,
+		typename Matrix<Type, MOrder>::const_iterator,
+		typename Matrix<Type, MOrder>::const_iterator,
 		MatrixAddOp<Type>,
 		Type>;
 	return MatrixExpr<ExprType, Type>{ ExprType{
@@ -73,17 +73,17 @@ inline MatrixExpr<MatBinExpr<
 		MatrixOpBase::Op::ADD };
 }
 
-template<class Type, bool ColOrder, class Iter>
+template<class Type, bool MOrder, class Iter>
 inline MatrixExpr<MatBinExpr<
 	MatrixExpr<Iter, Type>,
-	typename Matrix<Type, ColOrder>::const_iterator,
+	typename Matrix<Type, MOrder>::const_iterator,
 	MatrixAddOp<Type>,
 	Type>, Type>
-	operator+(const MatrixExpr<Iter, Type>& lhs, const Matrix<Type, ColOrder>& rhs) noexcept
+	operator+(const MatrixExpr<Iter, Type>& lhs, const Matrix<Type, MOrder>& rhs) noexcept
 {
 	using ExprType = MatBinExpr<
 		MatrixExpr<Iter, Type>,
-		typename Matrix<Type, ColOrder>::const_iterator,
+		typename Matrix<Type, MOrder>::const_iterator,
 		MatrixAddOp<Type>,
 		Type>;
 	return MatrixExpr<ExprType, Type>{ ExprType{
@@ -95,16 +95,16 @@ inline MatrixExpr<MatBinExpr<
 		MatrixOpBase::Op::ADD };
 }
 
-template<class Type, bool ColOrder, class Iter>
+template<class Type, bool MOrder, class Iter>
 inline MatrixExpr<MatBinExpr<
-	typename Matrix<Type, ColOrder>::const_iterator,
+	typename Matrix<Type, MOrder>::const_iterator,
 	MatrixExpr<Iter, Type>,
 	MatrixAddOp<Type>,
 	Type>, Type>
-	operator+(const Matrix<Type, ColOrder>& lhs, const MatrixExpr<Iter, Type>& rhs) noexcept
+	operator+(const Matrix<Type, MOrder>& lhs, const MatrixExpr<Iter, Type>& rhs) noexcept
 {
 	using ExprType = MatBinExpr<
-		typename Matrix<Type, ColOrder>::const_iterator,
+		typename Matrix<Type, MOrder>::const_iterator,
 		MatrixExpr<Iter, Type>,
 		MatrixAddOp<Type>,
 		Type>;
@@ -140,17 +140,17 @@ inline MatrixExpr<MatBinExpr<
 }
 
 // Subtraction operators
-template<class Type, bool ColOrder>
+template<class Type, bool MOrder>
 inline MatrixExpr<MatBinExpr<
-	typename Matrix<Type, ColOrder>::const_iterator,
-	typename Matrix<Type, ColOrder>::const_iterator,
+	typename Matrix<Type, MOrder>::const_iterator,
+	typename Matrix<Type, MOrder>::const_iterator,
 	MatrixSubOp<Type>,
 	Type>, Type>
-	operator-(const Matrix<Type, ColOrder>& lhs, const Matrix<Type, ColOrder>& rhs) noexcept
+	operator-(const Matrix<Type, MOrder>& lhs, const Matrix<Type, MOrder>& rhs) noexcept
 {
 	using ExprType = MatBinExpr<
-		typename Matrix<Type, ColOrder>::const_iterator,
-		typename Matrix<Type, ColOrder>::const_iterator,
+		typename Matrix<Type, MOrder>::const_iterator,
+		typename Matrix<Type, MOrder>::const_iterator,
 		MatrixSubOp<Type>,
 		Type>;
 	return MatrixExpr<ExprType, Type>{ ExprType{
@@ -162,17 +162,17 @@ inline MatrixExpr<MatBinExpr<
 		MatrixOpBase::Op::SUB };
 }
 
-template<class Type, bool ColOrder, class Iter>
+template<class Type, bool MOrder, class Iter>
 inline MatrixExpr<MatBinExpr<
 	MatrixExpr<Iter, Type>,
-	typename Matrix<Type, ColOrder>::const_iterator,
+	typename Matrix<Type, MOrder>::const_iterator,
 	MatrixSubOp<Type>,
 	Type>, Type>
-	operator-(const MatrixExpr<Iter, Type>& lhs, const Matrix<Type, ColOrder>& rhs) noexcept
+	operator-(const MatrixExpr<Iter, Type>& lhs, const Matrix<Type, MOrder>& rhs) noexcept
 {
 	using ExprType = MatBinExpr<
 		MatrixExpr<Iter, Type>,
-		typename Matrix<Type, ColOrder>::const_iterator,
+		typename Matrix<Type, MOrder>::const_iterator,
 		MatrixSubOp<Type>,
 		Type>;
 	return MatrixExpr<ExprType, Type>{ ExprType{
@@ -184,16 +184,16 @@ inline MatrixExpr<MatBinExpr<
 		MatrixOpBase::Op::SUB };
 }
 
-template<class Type, bool ColOrder, class Iter>
+template<class Type, bool MOrder, class Iter>
 inline MatrixExpr<MatBinExpr<
-	typename Matrix<Type, ColOrder>::const_iterator,
+	typename Matrix<Type, MOrder>::const_iterator,
 	MatrixExpr<Iter, Type>,
 	MatrixSubOp<Type>,
 	Type>, Type>
-	operator-(const Matrix<Type, ColOrder>& lhs, const MatrixExpr<Iter, Type>& rhs) noexcept
+	operator-(const Matrix<Type, MOrder>& lhs, const MatrixExpr<Iter, Type>& rhs) noexcept
 {
 	using ExprType = MatBinExpr<
-		typename Matrix<Type, ColOrder>::const_iterator,
+		typename Matrix<Type, MOrder>::const_iterator,
 		MatrixExpr<Iter, Type>,
 		MatrixSubOp<Type>,
 		Type>;
@@ -229,17 +229,17 @@ inline MatrixExpr<MatBinExpr<
 }
 
 // Multiply operators
-template<class Type, bool ColOrder>
+template<class Type, bool MOrder>
 inline MatrixExpr<MatBinExpr<
-	typename Matrix<Type, ColOrder>::const_iterator,
-	typename Matrix<Type, ColOrder>::const_iterator,
+	typename Matrix<Type, MOrder>::const_iterator,
+	typename Matrix<Type, MOrder>::const_iterator,
 	MatrixMultOp<Type>,
 	Type>, Type>
-	operator*(const Matrix<Type, ColOrder>& lhs, const Matrix<Type, ColOrder>& rhs) noexcept
+	operator*(const Matrix<Type, MOrder>& lhs, const Matrix<Type, MOrder>& rhs) noexcept
 {
 	using ExprType = MatBinExpr<
-		typename Matrix<Type, ColOrder>::const_iterator,
-		typename Matrix<Type, ColOrder>::const_iterator,
+		typename Matrix<Type, MOrder>::const_iterator,
+		typename Matrix<Type, MOrder>::const_iterator,
 		MatrixMultOp<Type>,
 		Type>;
 	return MatrixExpr<ExprType, Type>{ ExprType{
@@ -251,17 +251,17 @@ inline MatrixExpr<MatBinExpr<
 		MatrixOpBase::Op::MULTIPLY };
 }
 
-template<class Type, bool ColOrder, class Iter>
+template<class Type, bool MOrder, class Iter>
 inline MatrixExpr<MatBinExpr<
 	MatrixExpr<Iter, Type>,
-	typename Matrix<Type, ColOrder>::const_iterator,
+	typename Matrix<Type, MOrder>::const_iterator,
 	MatrixMultOp<Type>,
 	Type>, Type>
-	operator*(const MatrixExpr<Iter, Type>& lhs, const Matrix<Type, ColOrder>& rhs) noexcept
+	operator*(const MatrixExpr<Iter, Type>& lhs, const Matrix<Type, MOrder>& rhs) noexcept
 {
 	using ExprType = MatBinExpr<
 		MatrixExpr<Iter, Type>,
-		typename Matrix<Type, ColOrder>::const_iterator,
+		typename Matrix<Type, MOrder>::const_iterator,
 		MatrixMultOp<Type>,
 		Type>;
 	return MatrixExpr<ExprType, Type>{ ExprType{
@@ -273,16 +273,16 @@ inline MatrixExpr<MatBinExpr<
 		MatrixOpBase::Op::MULTIPLY };
 }
 
-template<class Type, bool ColOrder, class Iter>
+template<class Type, bool MOrder, class Iter>
 inline MatrixExpr<MatBinExpr<
-	typename Matrix<Type, ColOrder>::const_iterator,
+	typename Matrix<Type, MOrder>::const_iterator,
 	MatrixExpr<Iter, Type>,
 	MatrixMultOp<Type>,
 	Type>, Type>
-	operator*(const Matrix<Type, ColOrder>& lhs, const MatrixExpr<Iter, Type>& rhs) noexcept
+	operator*(const Matrix<Type, MOrder>& lhs, const MatrixExpr<Iter, Type>& rhs) noexcept
 {
 	using ExprType = MatBinExpr<
-		typename Matrix<Type, ColOrder>::const_iterator,
+		typename Matrix<Type, MOrder>::const_iterator,
 		MatrixExpr<Iter, Type>,
 		MatrixMultOp<Type>,
 		Type>;
@@ -325,43 +325,43 @@ inline MatrixExpr<MatBinExpr<
 //class = typename std::enable_if<std::is_arithmetic<Num>::value, Num>::type >
 
 // Numerical addition operators
-template<class Type, bool ColOrder, class Num>
+template<class Type, bool MOrder, class Num>
 inline MatrixExpr<MatBinExpr<
-	typename Matrix<Type, ColOrder>::const_iterator,
-	NumericIteratorWrapper<Num>,
+	typename Matrix<Type, MOrder>::const_iterator,
+	NumericIteratorWrapper<Num, MOrder>,
 	MatrixAddNumericOp<Type>,
 	Type>, Type>
-	operator+(const Matrix<Type, ColOrder>& lhs, const Num& num) noexcept
+	operator+(const Matrix<Type, MOrder>& lhs, const Num& num) noexcept
 {
 	using ExprType = MatBinExpr<
-		typename Matrix<Type, ColOrder>::const_iterator,
-		NumericIteratorWrapper<Num>,
+		typename Matrix<Type, MOrder>::const_iterator,
+		NumericIteratorWrapper<Num, MOrder>,
 		MatrixAddNumericOp<Type>,
 		Type>;
 	return MatrixExpr<ExprType, Type>{ExprType{
 		lhs.begin(),
-		NumericIteratorWrapper<Num>{ num },
+		NumericIteratorWrapper<Num, MOrder>{ num },
 		lhs.rows(),
 		lhs.rows(),
 		lhs.cols() },
 		MatrixOpBase::NUMERICAL_ADD };
 }
 
-template<class Type, bool ColOrder, class Num>
+template<class Type, bool MOrder, class Num>
 inline MatrixExpr<MatBinExpr<
-	NumericIteratorWrapper<Num>,
-	typename Matrix<Type, ColOrder>::const_iterator,
+	NumericIteratorWrapper<Num, MOrder>,
+	typename Matrix<Type, MOrder>::const_iterator,
 	MatrixAddNumericOp<Type>,
 	Type>, Type>
-	operator+(const Num& num, const Matrix<Type, ColOrder>& rhs) noexcept
+	operator+(const Num& num, const Matrix<Type, MOrder>& rhs) noexcept
 {
 	using ExprType = MatBinExpr<
-		NumericIteratorWrapper<Num>,
-		typename Matrix<Type, ColOrder>::const_iterator,
+		NumericIteratorWrapper<Num, MOrder>,
+		typename Matrix<Type, MOrder>::const_iterator,
 		MatrixAddNumericOp<Type>,
 		Type>;
 	return MatrixExpr<ExprType, Type>{ExprType{
-		NumericIteratorWrapper<Num>{ num },
+		NumericIteratorWrapper<Num, MOrder>{ num },
 		rhs.begin(),
 		rhs.rows(),
 		rhs.rows(),
@@ -372,19 +372,19 @@ inline MatrixExpr<MatBinExpr<
 template<class Type, class Iter, class Num>
 inline MatrixExpr<MatBinExpr<
 	MatrixExpr<Iter, Type>,
-	NumericIteratorWrapper<Num>,
+	NumericIteratorWrapper<Num, Iter::MajorOrder>,
 	MatrixAddNumericOp<Type>,
 	Type>, Type>
 	operator+(const MatrixExpr<Iter, Type>& lhs, const Num& num) noexcept
 {
 	using ExprType = MatBinExpr<
 		MatrixExpr<Iter, Type>,
-		NumericIteratorWrapper<Num>,
+		NumericIteratorWrapper<Num, Iter::MajorOrder>,
 		MatrixAddNumericOp<Type>,
 		Type>;
 	return MatrixExpr<ExprType, Type>{ExprType{
 		lhs,
-		NumericIteratorWrapper<Num>{ num },
+		NumericIteratorWrapper<Num, Iter::MajorOrder>{ num },
 		lhs.lhsRows(),
 		lhs.lhsRows(),
 		lhs.rhsCols() },
@@ -393,19 +393,19 @@ inline MatrixExpr<MatBinExpr<
 
 template<class Type, class Iter, class Num>
 inline MatrixExpr<MatBinExpr<
-	NumericIteratorWrapper<Num>,
+	NumericIteratorWrapper<Num, Iter::MajorOrder>,
 	MatrixExpr<Iter, Type>,
 	MatrixAddNumericOp<Type>,
 	Type>, Type>
 	operator+(const Num& num, const MatrixExpr<Iter, Type>& rhs) noexcept
 {
 	using ExprType = MatBinExpr<
-		NumericIteratorWrapper<Num>,
+		NumericIteratorWrapper<Num, Iter::MajorOrder>,
 		MatrixExpr<Iter, Type>,
 		MatrixAddNumericOp<Type>,
 		Type>;
 	return MatrixExpr<ExprType, Type>{ExprType{
-		NumericIteratorWrapper<Num>{ num },
+		NumericIteratorWrapper<Num, Iter::MajorOrder>{ num },
 		rhs,
 		rhs.lhsRows(),
 		rhs.lhsRows(),
@@ -414,43 +414,43 @@ inline MatrixExpr<MatBinExpr<
 }
 
 // Numerical subtraction operators
-template<class Type, bool ColOrder, class Num>
+template<class Type, bool MOrder, class Num>
 inline MatrixExpr<MatBinExpr<
-	typename Matrix<Type, ColOrder>::const_iterator,
-	NumericIteratorWrapper<Num>,
+	typename Matrix<Type, MOrder>::const_iterator,
+	NumericIteratorWrapper<Num, MOrder>,
 	MatrixSubNumericOp<Type>,
 	Type>, Type>
-	operator-(const Matrix<Type, ColOrder>& lhs, const Num& num) noexcept
+	operator-(const Matrix<Type, MOrder>& lhs, const Num& num) noexcept
 {
 	using ExprType = MatBinExpr<
-		typename Matrix<Type, ColOrder>::const_iterator,
-		NumericIteratorWrapper<Num>,
+		typename Matrix<Type, MOrder>::const_iterator,
+		NumericIteratorWrapper<Num, MOrder>,
 		MatrixSubNumericOp<Type>,
 		Type>;
 	return MatrixExpr<ExprType, Type>{ExprType{
 		lhs.begin(),
-		NumericIteratorWrapper<Num>{ num },
+		NumericIteratorWrapper<Num, MOrder>{ num },
 		lhs.rows(),
 		lhs.rows(),
 		lhs.cols() },
 		MatrixOpBase::NUMERICAL_SUB };
 }
 
-template<class Type, bool ColOrder, class Num>
+template<class Type, bool MOrder, class Num>
 inline MatrixExpr<MatBinExpr<
-	NumericIteratorWrapper<Num>,
-	typename Matrix<Type, ColOrder>::const_iterator,
+	NumericIteratorWrapper<Num, MOrder>,
+	typename Matrix<Type, MOrder>::const_iterator,
 	MatrixSubNumericOp<Type>,
 	Type>, Type>
-	operator-(const Num& num, const Matrix<Type, ColOrder>& rhs) noexcept
+	operator-(const Num& num, const Matrix<Type, MOrder>& rhs) noexcept
 {
 	using ExprType = MatBinExpr<
-		NumericIteratorWrapper<Num>,
-		typename Matrix<Type, ColOrder>::const_iterator,
+		NumericIteratorWrapper<Num, MOrder>,
+		typename Matrix<Type, MOrder>::const_iterator,
 		MatrixSubNumericOp<Type>,
 		Type>;
 	return MatrixExpr<ExprType, Type>{ExprType{
-		NumericIteratorWrapper<Num>{ num },
+		NumericIteratorWrapper<Num, MOrder>{ num },
 		rhs.begin(),
 		rhs.rows(),
 		rhs.rows(),
@@ -461,19 +461,19 @@ inline MatrixExpr<MatBinExpr<
 template<class Type, class Iter, class Num>
 inline MatrixExpr<MatBinExpr<
 	MatrixExpr<Iter, Type>,
-	NumericIteratorWrapper<Num>,
+	NumericIteratorWrapper<Num, Iter::MajorOrder>,
 	MatrixSubNumericOp<Type>,
 	Type>, Type>
 	operator-(const MatrixExpr<Iter, Type>& lhs, const Num& num) noexcept
 {
 	using ExprType = MatBinExpr<
 		MatrixExpr<Iter, Type>,
-		NumericIteratorWrapper<Num>,
+		NumericIteratorWrapper<Num, Iter::MajorOrder>,
 		MatrixSubNumericOp<Type>,
 		Type>;
 	return MatrixExpr<ExprType, Type>{ExprType{
 		lhs,
-		NumericIteratorWrapper<Num>{ num },
+		NumericIteratorWrapper<Num, Iter::MajorOrder>{ num },
 		lhs.lhsRows(),
 		lhs.lhsRows(),
 		lhs.rhsCols() },
@@ -482,19 +482,19 @@ inline MatrixExpr<MatBinExpr<
 
 template<class Type, class Iter, class Num>
 inline MatrixExpr<MatBinExpr<
-	NumericIteratorWrapper<Num>,
+	NumericIteratorWrapper<Num, Iter::MajorOrder>,
 	MatrixExpr<Iter, Type>,
 	MatrixSubNumericOp<Type>,
 	Type>, Type>
 	operator-(const Num& num, const MatrixExpr<Iter, Type>& rhs) noexcept
 {
 	using ExprType = MatBinExpr<
-		NumericIteratorWrapper<Num>,
+		NumericIteratorWrapper<Num, Iter::MajorOrder>,
 		MatrixExpr<Iter, Type>,
 		MatrixSubNumericOp<Type>,
 		Type>;
 	return MatrixExpr<ExprType, Type>{ExprType{
-		NumericIteratorWrapper<Num>{ num },
+		NumericIteratorWrapper<Num, Iter::MajorOrder>{ num },
 		rhs,
 		rhs.lhsRows(),
 		rhs.lhsRows(),
@@ -503,43 +503,43 @@ inline MatrixExpr<MatBinExpr<
 }
 
 // Numerical multiplication operators
-template<class Type, bool ColOrder, class Num>
+template<class Type, bool MOrder, class Num>
 inline MatrixExpr<MatBinExpr<
-	typename Matrix<Type, ColOrder>::const_iterator,
-	NumericIteratorWrapper<Num>,
+	typename Matrix<Type, MOrder>::const_iterator,
+	NumericIteratorWrapper<Num, MOrder>,
 	MatrixMulNumericOp<Type>,
 	Type>, Type>
-	operator*(const Matrix<Type, ColOrder>& lhs, const Num& num) noexcept
+	operator*(const Matrix<Type, MOrder>& lhs, const Num& num) noexcept
 {
 	using ExprType = MatBinExpr<
-		typename Matrix<Type, ColOrder>::const_iterator,
-		NumericIteratorWrapper<Num>,
+		typename Matrix<Type, MOrder>::const_iterator,
+		NumericIteratorWrapper<Num, MOrder>,
 		MatrixMulNumericOp<Type>,
 		Type>;
 	return MatrixExpr<ExprType, Type>{ExprType{
 		lhs.begin(),
-		NumericIteratorWrapper<Num>{ num },
+		NumericIteratorWrapper<Num, MOrder>{ num },
 		lhs.rows(),
 		lhs.rows(),
 		lhs.cols() },
 		MatrixOpBase::NUMERICAL_MUL };
 }
 
-template<class Type, bool ColOrder, class Num>
+template<class Type, bool MOrder, class Num>
 inline MatrixExpr<MatBinExpr<
-	NumericIteratorWrapper<Num>,
-	typename Matrix<Type, ColOrder>::const_iterator,
+	NumericIteratorWrapper<Num, MOrder>,
+	typename Matrix<Type, MOrder>::const_iterator,
 	MatrixMulNumericOp<Type>,
 	Type>, Type>
-	operator*(const Num& num, const Matrix<Type, ColOrder>& rhs) noexcept
+	operator*(const Num& num, const Matrix<Type, MOrder>& rhs) noexcept
 {
 	using ExprType = MatBinExpr<
-		NumericIteratorWrapper<Num>,
-		typename Matrix<Type, ColOrder>::const_iterator,
+		NumericIteratorWrapper<Num, MOrder>,
+		typename Matrix<Type, MOrder>::const_iterator,
 		MatrixMulNumericOp<Type>,
 		Type>;
 	return MatrixExpr<ExprType, Type>{ExprType{
-		NumericIteratorWrapper<Num>{ num },
+		NumericIteratorWrapper<Num, MOrder>{ num },
 		rhs.begin(),
 		rhs.rows(),
 		rhs.rows(),
@@ -550,19 +550,19 @@ inline MatrixExpr<MatBinExpr<
 template<class Type, class Iter, class Num>
 inline MatrixExpr<MatBinExpr<
 	MatrixExpr<Iter, Type>,
-	NumericIteratorWrapper<Num>,
+	NumericIteratorWrapper<Num, Iter::MajorOrder>,
 	MatrixMulNumericOp<Type>,
 	Type>, Type>
 	operator*(const MatrixExpr<Iter, Type>& lhs, const Num& num) noexcept
 {
 	using ExprType = MatBinExpr<
 		MatrixExpr<Iter, Type>,
-		NumericIteratorWrapper<Num>,
+		NumericIteratorWrapper<Num, Iter::MajorOrder>,
 		MatrixMulNumericOp<Type>,
 		Type>;
 	return MatrixExpr<ExprType, Type>{ExprType{
 		lhs,
-		NumericIteratorWrapper<Num>{ num },
+		NumericIteratorWrapper<Num, Iter::MajorOrder>{ num },
 		lhs.lhsRows(),
 		lhs.lhsRows(),
 		lhs.rhsCols() },
@@ -571,19 +571,19 @@ inline MatrixExpr<MatBinExpr<
 
 template<class Type, class Iter, class Num>
 inline MatrixExpr<MatBinExpr<
-	NumericIteratorWrapper<Num>,
+	NumericIteratorWrapper<Num, Iter::MajorOrder>,
 	MatrixExpr<Iter, Type>,
 	MatrixMulNumericOp<Type>,
 	Type>, Type>
 	operator*(const Num& num, const MatrixExpr<Iter, Type>& rhs) noexcept
 {
 	using ExprType = MatBinExpr<
-		NumericIteratorWrapper<Num>,
+		NumericIteratorWrapper<Num, Iter::MajorOrder>,
 		MatrixExpr<Iter, Type>,
 		MatrixMulNumericOp<Type>,
 		Type>;
 	return MatrixExpr<ExprType, Type>{ExprType{
-		NumericIteratorWrapper<Num>{ num },
+		NumericIteratorWrapper<Num, Iter::MajorOrder>{ num },
 		rhs,
 		rhs.lhsRows(),
 		rhs.lhsRows(),
@@ -592,43 +592,43 @@ inline MatrixExpr<MatBinExpr<
 }
 
 // Numerical division operators
-template<class Type, bool ColOrder, class Num>
+template<class Type, bool MOrder, class Num>
 inline MatrixExpr<MatBinExpr<
-	typename Matrix<Type, ColOrder>::const_iterator,
-	NumericIteratorWrapper<Num>,
+	typename Matrix<Type, MOrder>::const_iterator,
+	NumericIteratorWrapper<Num, MOrder>,
 	MatrixDivNumericOp<Type>,
 	Type>, Type>
-	operator/(const Matrix<Type, ColOrder>& lhs, const Num& num) noexcept
+	operator/(const Matrix<Type, MOrder>& lhs, const Num& num) noexcept
 {
 	using ExprType = MatBinExpr<
-		typename Matrix<Type, ColOrder>::const_iterator,
-		NumericIteratorWrapper<Num>,
+		typename Matrix<Type, MOrder>::const_iterator,
+		NumericIteratorWrapper<Num, MOrder>,
 		MatrixDivNumericOp<Type>,
 		Type>;
 	return MatrixExpr<ExprType, Type>{ExprType{
 		lhs.begin(),
-		NumericIteratorWrapper<Num>{ num },
+		NumericIteratorWrapper<Num, MOrder>{ num },
 		lhs.rows(),
 		lhs.rows(),
 		lhs.cols() },
 		MatrixOpBase::NUMERICAL_DIV };
 }
 
-template<class Type, bool ColOrder, class Num>
+template<class Type, bool MOrder, class Num>
 inline MatrixExpr<MatBinExpr<
-	NumericIteratorWrapper<Num>,
-	typename Matrix<Type, ColOrder>::const_iterator,
+	NumericIteratorWrapper<Num, MOrder>,
+	typename Matrix<Type, MOrder>::const_iterator,
 	MatrixDivNumericOp<Type>,
 	Type>, Type>
-	operator/(const Num& num, const Matrix<Type, ColOrder>& rhs) noexcept
+	operator/(const Num& num, const Matrix<Type, MOrder>& rhs) noexcept
 {
 	using ExprType = MatBinExpr<
-		NumericIteratorWrapper<Num>,
-		typename Matrix<Type, ColOrder>::const_iterator,
+		NumericIteratorWrapper<Num, MOrder>,
+		typename Matrix<Type, MOrder>::const_iterator,
 		MatrixDivNumericOp<Type>,
 		Type>;
 	return MatrixExpr<ExprType, Type>{ExprType{
-		NumericIteratorWrapper<Num>{ num },
+		NumericIteratorWrapper<Num, MOrder>{ num },
 		rhs.begin(),
 		rhs.rows(),
 		rhs.rows(),
@@ -639,19 +639,19 @@ inline MatrixExpr<MatBinExpr<
 template<class Type, class Iter, class Num>
 inline MatrixExpr<MatBinExpr<
 	MatrixExpr<Iter, Type>,
-	NumericIteratorWrapper<Num>,
+	NumericIteratorWrapper<Num, Iter::MajorOrder>,
 	MatrixDivNumericOp<Type>,
 	Type>, Type>
 	operator/(const MatrixExpr<Iter, Type>& lhs, const Num& num) noexcept
 {
 	using ExprType = MatBinExpr<
 		MatrixExpr<Iter, Type>,
-		NumericIteratorWrapper<Num>,
+		NumericIteratorWrapper<Num, Iter::MajorOrder>,
 		MatrixDivNumericOp<Type>,
 		Type>;
 	return MatrixExpr<ExprType, Type>{ExprType{
 		lhs,
-		NumericIteratorWrapper<Num>{ num },
+		NumericIteratorWrapper<Num, Iter::MajorOrder>{ num },
 		lhs.lhsRows(),
 		lhs.lhsRows(),
 		lhs.rhsCols() },
@@ -660,19 +660,19 @@ inline MatrixExpr<MatBinExpr<
 
 template<class Type, class Iter, class Num>
 inline MatrixExpr<MatBinExpr<
-	NumericIteratorWrapper<Num>,
+	NumericIteratorWrapper<Num, Iter::MajorOrder>,
 	MatrixExpr<Iter, Type>,
 	MatrixDivNumericOp<Type>,
 	Type>, Type>
 	operator/(const Num& num, const MatrixExpr<Iter, Type>& rhs) noexcept
 {
 	using ExprType = MatBinExpr<
-		NumericIteratorWrapper<Num>,
+		NumericIteratorWrapper<Num, Iter::MajorOrder>,
 		MatrixExpr<Iter, Type>,
 		MatrixDivNumericOp<Type>,
 		Type>;
 	return MatrixExpr<ExprType, Type>{ExprType{
-		NumericIteratorWrapper<Num>{ num },
+		NumericIteratorWrapper<Num, Iter::MajorOrder>{ num },
 		rhs,
 		rhs.lhsRows(),
 		rhs.lhsRows(),
@@ -682,8 +682,8 @@ inline MatrixExpr<MatBinExpr<
 
 // All the equality operation combinations that make sense
 // (Except for MatrixExpr on MatrixExpr which I might add later)
-template<class Type, bool ColOrder>
-inline Matrix<Type, ColOrder>& operator+=(Matrix<Type, ColOrder>& lhs, const Matrix<Type, ColOrder>& rhs) noexcept
+template<class Type, bool MOrder>
+inline Matrix<Type, MOrder>& operator+=(Matrix<Type, MOrder>& lhs, const Matrix<Type, MOrder>& rhs) noexcept
 {
 	auto rit = rhs.begin();
 	for (auto lit = std::begin(lhs); lit != std::end(lhs); ++lit, ++rit)
@@ -691,8 +691,8 @@ inline Matrix<Type, ColOrder>& operator+=(Matrix<Type, ColOrder>& lhs, const Mat
 	return lhs;
 }
 
-template<class Type, bool ColOrder, class Iter>
-inline Matrix<Type, ColOrder>& operator+=(Matrix<Type, ColOrder>& lhs, const MatrixExpr<Iter, Type>& rhs) noexcept
+template<class Type, bool MOrder, class Iter>
+inline Matrix<Type, MOrder>& operator+=(Matrix<Type, MOrder>& lhs, const MatrixExpr<Iter, Type>& rhs) noexcept
 {
 	auto rit = rhs.begin();
 	for (auto lit = std::begin(lhs); lit != std::end(lhs); ++lit, ++rit)
@@ -700,8 +700,8 @@ inline Matrix<Type, ColOrder>& operator+=(Matrix<Type, ColOrder>& lhs, const Mat
 	return lhs;
 }
 
-template<class Type, bool ColOrder>
-inline Matrix<Type, ColOrder>& operator-=(Matrix<Type, ColOrder>& lhs, const Matrix<Type, ColOrder>& rhs) noexcept
+template<class Type, bool MOrder>
+inline Matrix<Type, MOrder>& operator-=(Matrix<Type, MOrder>& lhs, const Matrix<Type, MOrder>& rhs) noexcept
 {
 	auto rit = rhs.begin();
 	for (auto lit = std::begin(lhs); lit != std::end(lhs); ++lit, ++rit)
@@ -709,8 +709,8 @@ inline Matrix<Type, ColOrder>& operator-=(Matrix<Type, ColOrder>& lhs, const Mat
 	return lhs;
 }
 
-template<class Type, bool ColOrder, class Iter>
-inline Matrix<Type, ColOrder>& operator-=(Matrix<Type, ColOrder>& lhs, const MatrixExpr<Iter, Type>& rhs) noexcept
+template<class Type, bool MOrder, class Iter>
+inline Matrix<Type, MOrder>& operator-=(Matrix<Type, MOrder>& lhs, const MatrixExpr<Iter, Type>& rhs) noexcept
 {
 	auto rit = rhs.begin();
 	for (auto lit = std::begin(lhs); lit != std::end(lhs); ++lit, ++rit)
@@ -718,8 +718,8 @@ inline Matrix<Type, ColOrder>& operator-=(Matrix<Type, ColOrder>& lhs, const Mat
 	return lhs;
 }
 
-template<class Type, bool ColOrder>
-inline Matrix<Type, ColOrder>& operator*=(Matrix<Type, ColOrder>& lhs, const Matrix<Type, ColOrder>& rhs) noexcept
+template<class Type, bool MOrder>
+inline Matrix<Type, MOrder>& operator*=(Matrix<Type, MOrder>& lhs, const Matrix<Type, MOrder>& rhs) noexcept
 {
 	auto rit = rhs.begin();
 	for (auto lit = std::begin(lhs); lit != std::end(lhs); ++lit, ++rit)
@@ -727,8 +727,8 @@ inline Matrix<Type, ColOrder>& operator*=(Matrix<Type, ColOrder>& lhs, const Mat
 	return lhs;
 }
 
-template<class Type, bool ColOrder, class Iter>
-inline Matrix<Type, ColOrder>& operator*=(Matrix<Type, ColOrder>& lhs, const MatrixExpr<Iter, Type>& rhs) noexcept
+template<class Type, bool MOrder, class Iter>
+inline Matrix<Type, MOrder>& operator*=(Matrix<Type, MOrder>& lhs, const MatrixExpr<Iter, Type>& rhs) noexcept
 {
 	auto rit = rhs.begin();
 	for (auto lit = std::begin(lhs); lit != std::end(lhs); ++lit, ++rit)
@@ -747,7 +747,7 @@ inline Matrix<Type>& operator/=(Matrix<Type>& lhs, const Matrix<Type>& rhs) noex
 	return lhs;
 }
 
-template<class Type, bool ColOrder, class Iter>
+template<class Type, bool MOrder, class Iter>
 inline Matrix<Type>& operator/=(Matrix<Type>& lhs, const MatrixExpr<Iter, Type>& rhs) noexcept
 {
 	auto rit = rhs.begin();

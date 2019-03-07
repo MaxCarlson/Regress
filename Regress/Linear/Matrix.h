@@ -21,7 +21,7 @@ class MatrixCwiseProductOp;
 // TODO: Add template param for using Column Major Order
 
 // without duplications
-template<class Type, bool ColOrder = false>
+template<class Type, bool MajorOrder = false>
 class Matrix 
 {
 public:
@@ -33,24 +33,24 @@ public:
 	template<bool>
 	class arrayOrderIteratorBase;
 
-	using col_iterator			= std::conditional_t<ColOrder, 
+	using col_iterator			= std::conditional_t<MajorOrder, 
 		arrayOrderIteratorBase<false>, nonMajorOrderIteratorBase<false>>;
-	using col_const_iterator	= std::conditional_t<ColOrder,
+	using col_const_iterator	= std::conditional_t<MajorOrder,
 		arrayOrderIteratorBase<true>, nonMajorOrderIteratorBase<true>>;
 
-	using row_iterator			= std::conditional_t<ColOrder, 
+	using row_iterator			= std::conditional_t<MajorOrder, 
 		nonMajorOrderIteratorBase<false>, arrayOrderIteratorBase<false>>;
-	using row_const_iterator	= std::conditional_t<ColOrder,
+	using row_const_iterator	= std::conditional_t<MajorOrder,
 		nonMajorOrderIteratorBase<true>, arrayOrderIteratorBase<true>>;
 
-	using iterator					= std::conditional_t<ColOrder, 
+	using iterator					= std::conditional_t<MajorOrder, 
 		col_iterator, row_iterator>;
-	using const_iterator			= std::conditional_t<ColOrder, 
+	using const_iterator			= std::conditional_t<MajorOrder, 
 		col_const_iterator, row_const_iterator>;
 
-	using minor_iterator		= std::conditional_t<ColOrder, 
+	using minor_iterator		= std::conditional_t<MajorOrder, 
 		row_iterator, col_iterator>;
-	using const_minor_iterator	= std::conditional_t<ColOrder, 
+	using const_minor_iterator	= std::conditional_t<MajorOrder, 
 		row_const_iterator, col_const_iterator>;
 
 private:
@@ -62,7 +62,7 @@ private:
 
 public:
 	using value_type	= Type;
-	using ThisType		= Matrix<Type, ColOrder>;
+	using ThisType		= Matrix<Type, MajorOrder>;
 
 	Matrix() = default;
 	Matrix(size_type nrows, size_type ncols);
@@ -149,14 +149,14 @@ public:
 		Type>, Type>
 		cwiseProduct(const Matrix<Type>& rhs) noexcept;
 
-	template<class T, bool ColOrder>
+	template<class T, bool MajorOrder>
 	inline friend std::ostream& operator<<(std::ostream& out, const Matrix<T>& m);
 
 	template<bool isConst>
 	class IteratorBase
 	{
 	public:
-		static constexpr bool MajorOrder = ColOrder;
+		static constexpr bool MajorOrder = MajorOrder;
 
 		using iterator_category = std::random_access_iterator_tag;
 
@@ -176,7 +176,7 @@ public:
 			typename Storage::const_iterator,
 			typename Storage::iterator>;
 
-		inline void analyzeExpr(ExprAnalyzer<Type, ColOrder>& ea) {}
+		inline void analyzeExpr(ExprAnalyzer<Type, MajorOrder>& ea) {}
 	};
 
 	// An iterator that iterates through columns instead of rows
@@ -247,7 +247,7 @@ public:
 	private:
 		reference index() const noexcept
 		{
-			if (ColOrder)
+			if (MajorOrder)
 				return cont->operator()(idx / cont->ncols, idx % cont->ncols);
 			
 			return cont->operator()(idx % cont->nrows, idx / cont->nrows);
@@ -398,8 +398,8 @@ public:
 	};
 };
 
-template<class Type, bool ColOrder>
-inline Matrix<Type, ColOrder>::Matrix(size_type nrows, size_type ncols) :
+template<class Type, bool MajorOrder>
+inline Matrix<Type, MajorOrder>::Matrix(size_type nrows, size_type ncols) :
 	nrows{ nrows },
 	ncols{ ncols },
 	lastRowIdx{ (nrows - 1) * ncols },
@@ -407,8 +407,8 @@ inline Matrix<Type, ColOrder>::Matrix(size_type nrows, size_type ncols) :
 {
 }
 
-template<class Type, bool ColOrder>
-inline Matrix<Type, ColOrder>::Matrix(const std::initializer_list<std::initializer_list<Type>>& m) :
+template<class Type, bool MajorOrder>
+inline Matrix<Type, MajorOrder>::Matrix(const std::initializer_list<std::initializer_list<Type>>& m) :
 	nrows{ static_cast<size_type>(m.size()) },
 	ncols{ static_cast<size_type>(m.begin()->size()) },
 	lastRowIdx{ (nrows - 1) * ncols }, 
@@ -416,7 +416,7 @@ inline Matrix<Type, ColOrder>::Matrix(const std::initializer_list<std::initializ
 {
 	auto v = std::begin(vals);
 
-	if(ColOrder)
+	if(MajorOrder)
 		for(int i = 0; i < ncols; ++i)
 			for (auto it = std::begin(m); it != std::end(m); ++it, ++v)
 				*v = *(std::begin(*it) + i);
@@ -426,29 +426,29 @@ inline Matrix<Type, ColOrder>::Matrix(const std::initializer_list<std::initializ
 				*v = *jt;
 }
 
-template<class Type, bool ColOrder>
+template<class Type, bool MajorOrder>
 template<class Expr>
-inline Matrix<Type, ColOrder>::Matrix(Expr expr)
+inline Matrix<Type, MajorOrder>::Matrix(Expr expr)
 {
 	ExprAnalyzer ea{ *this };
 	expr.analyzeExpr(ea);
 	expr.assign(*this);
 }
 
-template<class Type, bool ColOrder>
-inline Type & Matrix<Type, ColOrder>::operator()(size_type row, size_type col)
+template<class Type, bool MajorOrder>
+inline Type & Matrix<Type, MajorOrder>::operator()(size_type row, size_type col)
 {	
-	return ColOrder ? vals[col * nrows + row] : vals[row * ncols + col];
+	return MajorOrder ? vals[col * nrows + row] : vals[row * ncols + col];
 }
 
-template<class Type, bool ColOrder>
-inline const Type & Matrix<Type, ColOrder>::operator()(size_type row, size_type col) const
+template<class Type, bool MajorOrder>
+inline const Type & Matrix<Type, MajorOrder>::operator()(size_type row, size_type col) const
 {
-	return ColOrder ? vals[col * nrows + row] : vals[row * ncols + col];
+	return MajorOrder ? vals[col * nrows + row] : vals[row * ncols + col];
 }
 
-template<class Type, bool ColOrder>
-inline bool Matrix<Type, ColOrder>::operator==(const Matrix& other) const
+template<class Type, bool MajorOrder>
+inline bool Matrix<Type, MajorOrder>::operator==(const Matrix& other) const
 {
 	if (rows() != other.rows()
 		|| cols() != other.cols())
@@ -461,48 +461,48 @@ inline bool Matrix<Type, ColOrder>::operator==(const Matrix& other) const
 	return true;
 }
 
-template<class Type, bool ColOrder>
-inline bool Matrix<Type, ColOrder>::operator!=(const Matrix & other) const
+template<class Type, bool MajorOrder>
+inline bool Matrix<Type, MajorOrder>::operator!=(const Matrix & other) const
 {
 	return !(*this == other);
 }
 
-template<class Type, bool ColOrder>
+template<class Type, bool MajorOrder>
 template<class Func>
-inline void Matrix<Type, ColOrder>::unaryExpr(Func && func)
+inline void Matrix<Type, MajorOrder>::unaryExpr(Func && func)
 {
 	for (int i = 0; i < size(); ++i)
 		func(vals[i]);
 }
 
-template<class Type, bool ColOrder>
+template<class Type, bool MajorOrder>
 template<class Func>
-inline void Matrix<Type, ColOrder>::unaryExpr(Func && func) const
+inline void Matrix<Type, MajorOrder>::unaryExpr(Func && func) const
 {
 	for (int i = 0; i < size(); ++i)
 		func(vals[i]);
 }
 
-template<class Type, bool ColOrder>
+template<class Type, bool MajorOrder>
 template<class Func>
-inline void Matrix<Type, ColOrder>::unaryExprPara(Func && func)
-{
-#pragma omp parallel for
-	for (int i = 0; i < size(); ++i)
-		func(vals[i]);
-}
-
-template<class Type, bool ColOrder>
-template<class Func>
-inline void Matrix<Type, ColOrder>::unaryExprPara(Func && func) const
+inline void Matrix<Type, MajorOrder>::unaryExprPara(Func && func)
 {
 #pragma omp parallel for
 	for (int i = 0; i < size(); ++i)
 		func(vals[i]);
 }
 
-template<class Type, bool ColOrder>
-inline void Matrix<Type, ColOrder>::resize(size_type numRows, size_type numCols) 
+template<class Type, bool MajorOrder>
+template<class Func>
+inline void Matrix<Type, MajorOrder>::unaryExprPara(Func && func) const
+{
+#pragma omp parallel for
+	for (int i = 0; i < size(); ++i)
+		func(vals[i]);
+}
+
+template<class Type, bool MajorOrder>
+inline void Matrix<Type, MajorOrder>::resize(size_type numRows, size_type numCols) 
 {
 	nrows = numRows;
 	ncols = numCols;
@@ -510,8 +510,8 @@ inline void Matrix<Type, ColOrder>::resize(size_type numRows, size_type numCols)
 	vals.resize(numRows * numCols);
 }
 
-template<class Type, bool ColOrder>
-inline Type Matrix<Type, ColOrder>::sum() const
+template<class Type, bool MajorOrder>
+inline Type Matrix<Type, MajorOrder>::sum() const
 {	// TODO: Test unrolling
 	Type sum = 0;
 	for (int i = 0; i < size(); ++i)
@@ -521,8 +521,8 @@ inline Type Matrix<Type, ColOrder>::sum() const
 
 // TODO: This will need split code when we have columnMajorOrder template param
 // TODO: This is a seriously non-optimal algorithm
-template<class Type, bool ColOrder>
-inline void Matrix<Type, ColOrder>::addColumn(size_type idx, Type val)
+template<class Type, bool MajorOrder>
+inline void Matrix<Type, MajorOrder>::addColumn(size_type idx, Type val)
 {
 	Matrix<Type> tmp(nrows, ncols + 1);
 
@@ -555,8 +555,8 @@ inline void Matrix<Type, ColOrder>::addColumn(size_type idx, Type val)
 	*this = std::move(tmp);
 }
 
-template<class Type, bool ColOrder>
-inline Matrix<Type, ColOrder> Matrix<Type, ColOrder>::transpose() const
+template<class Type, bool MajorOrder>
+inline Matrix<Type, MajorOrder> Matrix<Type, MajorOrder>::transpose() const
 {
 	return Matrix<Type>{ ~(*this) };
 }
@@ -565,11 +565,11 @@ inline Matrix<Type, ColOrder> Matrix<Type, ColOrder>::transpose() const
 // (only Expressions that can't be handled outside are here,
 // the rest are in ExprOperators)
 
-template<class Type, bool ColOrder>
+template<class Type, bool MajorOrder>
 inline MatrixExpr<MatBinExpr<
 	typename Matrix<Type>::const_iterator,
 	typename Matrix<Type>::const_iterator,
-	MatrixCwiseProductOp<Type>, Type>, Type> Matrix<Type, ColOrder>::cwiseProduct(const Matrix<Type>& rhs) noexcept
+	MatrixCwiseProductOp<Type>, Type>, Type> Matrix<Type, MajorOrder>::cwiseProduct(const Matrix<Type>& rhs) noexcept
 {
 	using ExprType = MatBinExpr<
 		typename Matrix<Type>::const_iterator,
@@ -584,12 +584,12 @@ inline MatrixExpr<MatBinExpr<
 		MatrixOpBase::Op::CWISE_PRODUCT};
 }
 
-template<class Type, bool ColOrder>
+template<class Type, bool MajorOrder>
 template<class Iter>
 inline MatrixExpr<MatBinExpr<
 	typename Matrix<Type>::const_iterator,
 	MatrixExpr<Iter, Type>,
-	MatrixCwiseProductOp<Type>, Type>, Type> Matrix<Type, ColOrder>::cwiseProduct(const Matrix<Type>& rhs) noexcept
+	MatrixCwiseProductOp<Type>, Type>, Type> Matrix<Type, MajorOrder>::cwiseProduct(const Matrix<Type>& rhs) noexcept
 {
 	using ExprType = MatBinExpr<
 		typename Matrix<Type>::const_iterator,
@@ -604,8 +604,8 @@ inline MatrixExpr<MatBinExpr<
 		MatrixOpBase::Op::CWISE_PRODUCT};
 }
 
-template<class Type, bool ColOrder>
-inline std::ostream & operator<<(std::ostream & out, const Matrix<Type, ColOrder>& m)
+template<class Type, bool MajorOrder>
+inline std::ostream & operator<<(std::ostream & out, const Matrix<Type, MajorOrder>& m)
 {
 	int i = 0;
 	for (const auto& v : m)
