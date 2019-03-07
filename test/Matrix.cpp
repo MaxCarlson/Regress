@@ -78,15 +78,25 @@ public:
 		auto test = [&](const auto& ans, auto s, auto e)
 		{
 			auto aIt = std::begin(ans);
-			for (; s != e; ++s, ++aIt)
-				Assert::IsTrue(*s == *aIt);
+			for (auto sv = s; sv != e; ++sv, ++aIt)
+				Assert::IsTrue(*sv == *aIt);
+
+			--aIt;
+			for(auto sv = e - 1; sv > s; --sv, --aIt)
+				Assert::IsTrue(*sv == *aIt);
 		};
 
-		std::vector<int> co = { 1, 3, 5, 2, 4, 6 };
-		test(co, lhs.col_begin(), lhs.col_end());
+		// Test row iterators
+		std::vector<int> co = { 1, 2, 3, 4, 5, 6 };
+		test(co, lhs.row_begin(), lhs.row_end());
+		test(co, rhs.row_begin(), rhs.row_end());
 
-		co = { 1, 4, 3, 4, 2, 6 };
+		// And column iterators
+		co = { 1, 3, 5, 2, 4, 6 };
+		test(co, lhs.col_begin(), lhs.col_end());
+		co = { 1, 4, 2, 5, 3, 6 };
 		test(co, rhs.col_begin(), rhs.col_end());
+
 	}
 
 	// TODO: For this test to compile both row and col iterators

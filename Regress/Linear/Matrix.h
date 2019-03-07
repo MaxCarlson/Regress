@@ -91,6 +91,13 @@ public:
 	col_const_iterator	ccol_begin()	const noexcept { return { 0,		this }; }
 	col_const_iterator	ccol_end()		const noexcept { return { size(),	this }; }
 
+	row_iterator		row_begin()			  noexcept { return { 0,		this }; }
+	row_iterator		row_end()			  noexcept { return { size(),	this }; }
+	row_const_iterator	row_begin()		const noexcept { return { 0,		this }; }
+	row_const_iterator	row_end()		const noexcept { return { size(),	this }; }
+	row_const_iterator	crow_begin()	const noexcept { return { 0,		this }; }
+	row_const_iterator	crow_end()		const noexcept { return { size(),	this }; }
+
 	// Apply a function to every member of the Matrix
 	// [](Type& t) { ...do something... return; }
 	template<class Func>
@@ -192,6 +199,12 @@ public:
 			return *this;
 		}
 
+		nonMajorOrderIteratorBase& operator+(size_type i)
+		{
+			idx += i;
+			return *this;
+		}
+
 		nonMajorOrderIteratorBase& operator--()
 		{
 			--idx;
@@ -200,6 +213,12 @@ public:
 
 		// TODO: Revist for optimizations!
 		nonMajorOrderIteratorBase& operator-=(size_type i)
+		{
+			idx -= i;
+			return *this;
+		}
+
+		nonMajorOrderIteratorBase& operator-(size_type i)
 		{
 			idx -= i;
 			return *this;
@@ -226,8 +245,7 @@ public:
 
 		bool operator==(const nonMajorOrderIteratorBase& other) const
 		{
-			return &cont == &other.cont
-				&& idx == other.idx;
+			return idx == other.idx;
 		}
 
 		bool operator!=(const nonMajorOrderIteratorBase& other) const
@@ -289,19 +307,31 @@ public:
 			return *this;
 		}
 
-		ThisType& operator--()
-		{
-			--it;
-			return *this;
-		}
-
 		ThisType& operator+=(size_type i)
 		{
 			it += i;
 			return *this;
 		}
 
+		ThisType& operator+(size_type i)
+		{
+			it += i;
+			return *this;
+		}
+
+		ThisType& operator--()
+		{
+			--it;
+			return *this;
+		}
+
 		ThisType& operator-=(size_type i)
+		{
+			it -= i;
+			return *this;
+		}
+
+		ThisType& operator-(size_type i)
 		{
 			it -= i;
 			return *this;
