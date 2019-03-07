@@ -194,14 +194,14 @@ public:
 
 		nonMajorOrderIteratorBase& operator--()
 		{
-			++idx;
+			--idx;
 			return *this;
 		}
 
 		// TODO: Revist for optimizations!
 		nonMajorOrderIteratorBase& operator-=(size_type i)
 		{
-			idx += i;
+			idx -= i;
 			return *this;
 		}
 
@@ -210,8 +210,8 @@ public:
 		{
 			if (ColOrder)
 				return cont->operator()(idx / cont->ncols, idx % cont->ncols);
-			else
-				return cont->operator()(idx % cont->nrows, idx / cont->nrows);
+			
+			return cont->operator()(idx % cont->nrows, idx / cont->nrows);
 		}
 	public:
 		reference operator*() const
@@ -388,16 +388,13 @@ inline Matrix<Type, ColOrder>::Matrix(Expr expr)
 template<class Type, bool ColOrder>
 inline Type & Matrix<Type, ColOrder>::operator()(size_type row, size_type col)
 {	
-	if (ColOrder)
-		return vals[col * nrows + row];
-	else
-		return vals[row * ncols + col]; 
+	return ColOrder ? vals[col * nrows + row] : vals[row * ncols + col];
 }
 
 template<class Type, bool ColOrder>
 inline const Type & Matrix<Type, ColOrder>::operator()(size_type row, size_type col) const
 {
-	return const_cast<Type&>(this->operator()(row, col));
+	return ColOrder ? vals[col * nrows + row] : vals[row * ncols + col];
 }
 
 template<class Type, bool ColOrder>
