@@ -1,15 +1,15 @@
 #pragma once
 #include <vector>
 
-template<class Type, bool ColOrder = false>
+template<class Type, bool ColOrder>
 class Matrix;
 
-template<class Type>
+template<class Type, bool ColOrder>
 class ExprAnalyzer
 {
-	const Matrix<Type>& assigned;
+	const Matrix<Type, ColOrder>& assigned;
 public:
-	ExprAnalyzer(const Matrix<Type>& assigned) :
+	ExprAnalyzer(const Matrix<Type, ColOrder>& assigned) :
 		assigned{ assigned }
 	{}
 
@@ -43,14 +43,15 @@ template<class Iter, class Type>
 class MatrixExpr
 {
 	using size_type		= typename MatrixOpBase::size_type;
-	using MatrixType	= Matrix<Type>;
+	using MatrixType	= Matrix<Type, Iter::MajorOrder>;
 	using ThisType		= MatrixExpr<Iter, Type>;
 
 	Iter			exprOp;
 	const size_type op;			// TODO: This can be removed
 	size_type		multiCount;	// Number of times the multiply op has been applied (if applicable)
-
 public:
+	static constexpr bool MajorOrder = Iter::MajorOrder;
+
 
 	inline MatrixExpr(const Iter& exprOp, size_type op) noexcept :
 		exprOp{ exprOp },
@@ -65,7 +66,7 @@ public:
 	inline size_type rhsCols()	const noexcept { return exprOp.rhsCols(); }
 	inline Type operator*()		const noexcept { return *exprOp; }
 
-	void analyzeExpr(ExprAnalyzer<Type>& ea)
+	void analyzeExpr(ExprAnalyzer<Type, MajorOrder>& ea)
 	{
 		exprOp.analyzeExpr(ea);
 	}
@@ -220,7 +221,7 @@ class MatBinExpr
 {
 	using size_type		= typename MatrixOpBase::size_type;
 	using ThisType		= MatBinExpr<LIt, RIt, Op, Type>;
-	using MatrixType	= Matrix<Type>;
+	using MatrixType	= Matrix<Type, LIt::MajorOrder>;
 	//using MatrixIt		= typename MatrixType::const_iterator;
 
 	LIt				lit;
@@ -231,6 +232,7 @@ class MatBinExpr
 	const size_type nrhsCols;
 
 public:
+	static constexpr bool MajorOrder = LIt::MajorOrder;
 
 
 	MatBinExpr(LIt lit, RIt rit, size_type nlhsRows, size_type nrhsRows, size_type nrhsCols) noexcept :
@@ -243,12 +245,12 @@ public:
 	{}
 
 	template<class It>
-	void analyzeSide(ExprAnalyzer<Type>& ea, It& it)
+	void analyzeSide(ExprAnalyzer<Type, MajorOrder>& ea, It& it)
 	{
 		it.analyzeExpr(ea);
 	}
 
-	void analyzeExpr(ExprAnalyzer<Type>& ea)
+	void analyzeExpr(ExprAnalyzer<Type, MajorOrder>& ea)
 	{
 		analyzeSide(ea, lit);
 		analyzeSide(ea, rit);
@@ -306,7 +308,7 @@ class MatUnaExpr
 {
 	using size_type		= typename MatrixOpBase::size_type;
 	using ThisType		= MatUnaExpr<It, Op, Type>;
-	using MatrixType	= Matrix<Type>;
+	using MatrixType	= Matrix<Type, It::MajorOrder>;
 
 	It			it;
 	const Op	op;
@@ -314,6 +316,8 @@ class MatUnaExpr
 	size_type	ncols;
 
 public:
+	static constexpr bool MajorOrder = It::MajorOrder;
+
 
 	MatUnaExpr(It it, size_type nrows, size_type ncols) noexcept :
 		it{ it },
@@ -322,7 +326,7 @@ public:
 		ncols{ ncols }
 	{}
 
-	void analyzeExpr(ExprAnalyzer<Type>& ea)
+	void analyzeExpr(ExprAnalyzer<Type, It::MajorOrder>& ea)
 	{
 		it.analyzeExpr(ea);
 	}
@@ -486,8 +490,8 @@ public:
 	inline const Num& operator*()  const noexcept { return num; }
 	inline const Num* operator->() const noexcept { return &num; }
 
-	template<class Type>
-	inline void analyzeExpr(ExprAnalyzer<Type>& ea) {}
+	template<class Type, bool MajorOrder>
+	inline void analyzeExpr(ExprAnalyzer<Type, MajorOrder>& ea) {}
 };
 
 template<class Type>

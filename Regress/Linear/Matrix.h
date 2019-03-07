@@ -43,8 +43,15 @@ public:
 	using row_const_iterator	= std::conditional_t<ColOrder,
 		nonMajorOrderIteratorBase<true>, arrayOrderIteratorBase<true>>;
 
-	using iterator				= std::conditional_t<ColOrder, col_iterator, row_iterator>;
-	using const_iterator		= std::conditional_t<ColOrder, col_const_iterator, row_const_iterator>;
+	using iterator					= std::conditional_t<ColOrder, 
+		col_iterator, row_iterator>;
+	using const_iterator			= std::conditional_t<ColOrder, 
+		col_const_iterator, row_const_iterator>;
+
+	using minor_iterator		= std::conditional_t<ColOrder, 
+		row_iterator, col_iterator>;
+	using const_minor_iterator	= std::conditional_t<ColOrder, 
+		row_const_iterator, col_const_iterator>;
 
 private:
 	size_type	nrows;
@@ -76,13 +83,24 @@ public:
 	bool operator!=(const Matrix& other) const;
 
 
-
+	// iterator will follow the array order of the container, i.e. the 
+	// fastest way to iterate the matrix
 	iterator		begin()			  noexcept { return { 0,		this }; }
 	iterator		end()			  noexcept { return { size(),	this }; }
 	const_iterator	begin()		const noexcept { return { 0,		this }; }
 	const_iterator	end()		const noexcept { return { size(),	this }; }
 	const_iterator	cbegin()	const noexcept { return { 0,		this }; }
 	const_iterator	cend()		const noexcept { return { size(),	this }; }
+
+	// This iterator follows the opposite major order iteration
+	// compared to iterator. 
+	// EX: if this is a row major order matrix, minor_iterator is a column iterator
+	minor_iterator			nm_begin()			  noexcept { return { 0,		this }; }
+	minor_iterator			nm_end()			  noexcept { return { size(),	this }; }
+	const_minor_iterator	nm_begin()		const noexcept { return { 0,		this }; }
+	const_minor_iterator	nm_end()		const noexcept { return { size(),	this }; }
+	const_minor_iterator	cnm_begin()		const noexcept { return { 0,		this }; }
+	const_minor_iterator	cnm_end()		const noexcept { return { size(),	this }; }
 
 	col_iterator		col_begin()			  noexcept { return { 0,		this }; }
 	col_iterator		col_end()			  noexcept { return { size(),	this }; }
@@ -138,25 +156,27 @@ public:
 	class IteratorBase
 	{
 	public:
+		static constexpr bool MajorOrder = ColOrder;
+
 		using iterator_category = std::random_access_iterator_tag;
 
-		using ContainerType = std::conditional_t<isConst,
+		using ContainerType		= std::conditional_t<isConst,
 			const ThisType, ThisType>;
 
-		using ContainerPtr = std::conditional_t<isConst,
+		using ContainerPtr		= std::conditional_t<isConst,
 			const ThisType*, ThisType*>;
 
-		using reference = std::conditional_t<isConst,
+		using reference			= std::conditional_t<isConst,
 			const Type&, Type&>;
 
-		using pointer = std::conditional_t<isConst,
+		using pointer			= std::conditional_t<isConst,
 			const Type*, Type*>;
 
-		using Siterator = std::conditional_t<isConst, 
+		using Siterator			= std::conditional_t<isConst, 
 			typename Storage::const_iterator,
 			typename Storage::iterator>;
 
-		inline void analyzeExpr(ExprAnalyzer<Type>& ea) {}
+		inline void analyzeExpr(ExprAnalyzer<Type, ColOrder>& ea) {}
 	};
 
 	// An iterator that iterates through columns instead of rows

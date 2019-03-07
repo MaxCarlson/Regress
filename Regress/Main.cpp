@@ -7,6 +7,7 @@
 
 int main()
 {
+	/*
 	Matrix<int> lhs = { 
 		{1, 2},
 		{3, 4},
@@ -17,23 +18,7 @@ int main()
 		{1, 2, 3},
 		{4, 5, 6}
 	};
-
-	//				  lhs*rhs
-	//				{9,  12, 15}	{134, 184, 234}
-	// {1, 2, 3} *	{19, 26, 33} =	{305, 418, 531}
-	// {4, 5, 6}	{29, 40, 51}
-
-	//lhs = lhs * rhs;
-
-	std::vector<int>::const_iterator it;
-	Matrix<int>::col_iterator cit;
-
-	using MatrixT = Matrix<int>;
-
-	//   lhs
-	// {1, 2}		  rhs*2			{18, 24,  30}
-	// {3, 4}   { {1, 2, 3} * 2 } = {38, 52,  66}
-	// {5, 6} * { {4, 5, 6}     }   {58, 80, 102}
+	*/
 
 	Matrix<float> input = {
 		{0, 1},
@@ -48,22 +33,6 @@ int main()
 		{0, 1},
 		{1, 0},
 	};
-
-	std::cout << input;
-	input.addColumn(0);
-	std::cout << input;
-
-	Matrix<int, true> rhsr = {
-		{1, 2, 3},
-		{4, 5, 6}
-	};
-
-	Matrix<int, true>::row_iterator rit{ 0, &rhsr };
-	for (int i = 0; i < 6; ++i, ++rit)
-	{
-		int j = *rit;
-		int a = 5;
-	}
 
 
 	Input<float>  in(&input);
