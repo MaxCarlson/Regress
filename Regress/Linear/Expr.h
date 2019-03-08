@@ -82,29 +82,30 @@ private:
 			return;
 		}
 
-		size_type idx			= std::abs(i);
-		const size_type sign	= (0 < i) - (i < 0);
-
-		if(MajorOrder)
+		if (MajorOrder)
 			exprOp.lhsInc(i);
 		else
 			exprOp.rhsInc(i);
+
+		size_type idx			= std::abs(i);
+		const size_type sign	= (0 < i) - (i < 0);
+		const size_type modVal	= MajorOrder ? lhsRows() : rhsCols();
 
 		while (idx--)
 		{
 			multiCount += sign;
 
-			if (multiCount % rhsCols() == 0)
+			if (multiCount % modVal == 0)
 			{
 				if (MajorOrder)
 				{
 					exprOp.lhsDec(lhsRows() * sign);
-					exprOp.rhsInc(rhsRows() * sign); // Same as lhsCols
+					exprOp.rhsInc(rhsRows() * sign); 
 				}
 				else
 				{
 					exprOp.rhsDec(rhsCols() * sign);
-					exprOp.lhsInc(rhsRows() * sign);
+					exprOp.lhsInc(rhsRows() * sign); // Same as lhsCols(TODO: Make lhsCols() {return rhsRows}
 				}
 				break;
 			}
@@ -209,7 +210,7 @@ public:
 					if (++multiCount % expr->rhsCols() == 0)
 					{
 						exprOp.rhsDec(expr->rhsCols());
-						exprOp.lhsInc(expr->rhsRows());
+						exprOp.lhsInc(expr->rhsRows()); // Same as lhsCols
 					}
 				}
 			}
@@ -278,7 +279,7 @@ public:
 
 	Type operator*() const noexcept
 	{
-		return op(lit, rit, nrhsRows, nrhsCols);
+		return op(lit, rit, nlhsRows, nrhsRows, nrhsCols);
 	}
 
 	ThisType& operator++() noexcept
@@ -404,7 +405,7 @@ public:
 	inline MatrixAddOp(size_type) {}
 
 	template<class Lit, class Rit>
-	inline Type operator()(Lit lit, Rit rit, size_type rhsRows, size_type rhsCols) const noexcept
+	inline Type operator()(Lit lit, Rit rit, size_type, size_type, size_type) const noexcept
 	{
 		return *lit + *rit;
 	}
@@ -419,7 +420,7 @@ public:
 	inline MatrixSubOp(size_type) {}
 
 	template<class Lit, class Rit>
-	inline Type operator()(Lit lit, Rit rit, size_type rhsRows, size_type rhsCols) const noexcept
+	inline Type operator()(Lit lit, Rit rit, size_type, size_type, size_type) const noexcept
 	{
 		return *lit - *rit;
 	}
@@ -457,7 +458,7 @@ public:
 	inline MatrixMultOp(size_type) {}
 
 	template<class Lit, class Rit>
-	inline Type operator()(Lit lit, Rit rit, size_type rhsRows, size_type rhsCols) const noexcept
+	inline Type operator()(Lit lit, Rit rit, size_type lhsRows, size_type rhsRows, size_type rhsCols) const noexcept
 	{
 		Type result = 0;
 		for(;;--rhsRows)
@@ -468,7 +469,7 @@ public:
 
 			if (Lit::MajorOrder)
 			{
-				lit += rhsCols;
+				lit += lhsRows;
 				++rit;
 			}
 			else
@@ -499,7 +500,7 @@ public:
 	inline MatrixCwiseProductOp(size_type) {}
 
 	template<class LIt, class RIt>
-	inline Type operator()(LIt lit, RIt rit, size_type, size_type) const noexcept
+	inline Type operator()(LIt lit, RIt rit, size_type, size_type, size_type) const noexcept
 	{
 		return *lit * *rit;
 	}
@@ -549,7 +550,7 @@ public:
 
 	// In this case one of LIt/RIt is going to be a ConstantIteratorWrapper
 	template<class LIt, class RIt>
-	inline Type operator()(LIt lit, RIt rit, size_type, size_type) const noexcept
+	inline Type operator()(LIt lit, RIt rit, size_type, size_type, size_type) const noexcept
 	{
 		return *lit + *rit;
 	}
@@ -565,7 +566,7 @@ public:
 
 	// In this case one of LIt/RIt is going to be a ConstantIteratorWrapper
 	template<class LIt, class RIt>
-	inline Type operator()(LIt lit, RIt rit, size_type, size_type) const noexcept
+	inline Type operator()(LIt lit, RIt rit, size_type, size_type, size_type) const noexcept
 	{
 		return *lit - *rit;
 	}
@@ -581,7 +582,7 @@ public:
 
 	// In this case one of LIt/RIt is going to be a ConstantIteratorWrapper
 	template<class LIt, class RIt>
-	inline Type operator()(LIt lit, RIt rit, size_type, size_type) const noexcept
+	inline Type operator()(LIt lit, RIt rit, size_type, size_type, size_type) const noexcept
 	{
 		return *lit * *rit;
 	}
@@ -597,7 +598,7 @@ public:
 
 	// In this case one of LIt/RIt is going to be a ConstantIteratorWrapper
 	template<class LIt, class RIt>
-	inline Type operator()(LIt lit, RIt rit, size_type, size_type) const noexcept
+	inline Type operator()(LIt lit, RIt rit, size_type, size_type, size_type) const noexcept
 	{
 		return *lit / *rit;
 	}

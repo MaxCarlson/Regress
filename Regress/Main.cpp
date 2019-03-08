@@ -31,8 +31,8 @@ int main()
 		{4, 5, 6}
 	};
 
-	Matrix<int>			val1 = lhs * rhs;
-	Matrix<int, true>	val2 = lhsr * rhsr;
+	Matrix<int>			val1 = lhs * rhs * lhs;
+	Matrix<int, true>	val2 = lhsr * rhsr *lhsr;
 	
 
 	Matrix<float> input = {
