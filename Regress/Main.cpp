@@ -31,9 +31,9 @@ int main()
 		{4, 5, 6}
 	};
 
-	Matrix<int>			val1 = lhs * rhs * lhs;
-	Matrix<int, true>	val2 = lhsr * rhsr *lhsr;
-	
+	std::cout << lhsr << '\n';
+	lhsr.addColumn(2, 1);
+	std::cout << lhsr << '\n';
 
 	Matrix<float> input = {
 		{0, 1},

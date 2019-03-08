@@ -32,6 +32,11 @@ public:
 	class nonMajorOrderIteratorBase;	// TODO: Both of these names are long
 	template<bool>
 	class arrayOrderIteratorBase;
+	template<bool>
+	class inOrderIterator;
+
+	using inorder_iterator			= inOrderIterator<false>; 
+	using inorder_const_iterator	= inOrderIterator<true>;
 
 	using col_iterator			= std::conditional_t<MajorOrder, 
 		arrayOrderIteratorBase<false>, nonMajorOrderIteratorBase<false>>;
@@ -52,6 +57,8 @@ public:
 		row_iterator, col_iterator>;
 	using minor_const_iterator	= std::conditional_t<MajorOrder,
 		row_const_iterator, col_const_iterator>;
+
+
 
 	static constexpr bool MajorOrder = MajorOrder;
 
@@ -116,6 +123,13 @@ public:
 	row_const_iterator	row_end()		const noexcept { return { size(),	this }; }
 	row_const_iterator	crow_begin()	const noexcept { return { 0,		this }; }
 	row_const_iterator	crow_end()		const noexcept { return { size(),	this }; }
+
+	inorder_iterator		ino_begin()			  noexcept { return { 0,		this }; }
+	inorder_iterator		ino_end()			  noexcept { return { size(),	this }; }
+	inorder_const_iterator	ino_begin()		const noexcept { return { 0,		this }; }
+	inorder_const_iterator	ino_end()		const noexcept { return { size(),	this }; }
+	inorder_const_iterator	cino_begin()	const noexcept { return { 0,		this }; }
+	inorder_const_iterator	cino_end()		const noexcept { return { size(),	this }; }
 
 	// Apply a function to every member of the Matrix
 	// [](Type& t) { ...do something... return; }
@@ -422,6 +436,26 @@ public:
 			return it <= other.it;
 		}
 	};
+
+	// An iterator that always traverses the Matrix left-right, top-bottom
+	template<bool isConst>
+	class inOrderIterator : public std::conditional_t<MajorOrder, 
+		nonMajorOrderIteratorBase<isConst>, 
+		arrayOrderIteratorBase<isConst>>
+	{
+	public:
+		using Base				= std::conditional_t<MajorOrder,
+			nonMajorOrderIteratorBase<isConst>,
+			arrayOrderIteratorBase<isConst>>;
+
+		using iterator_category = typename Base::iterator_category;
+		using ContainerPtr		= typename Base::ContainerPtr;
+
+
+		inOrderIterator(size_type idx, ContainerPtr ptr) :
+			Base{ idx, ptr }
+		{}
+	};
 };
 
 template<class Type, bool MajorOrder>
@@ -546,10 +580,18 @@ inline Type Matrix<Type, MajorOrder>::sum() const
 template<class Type, bool MajorOrder>
 inline void Matrix<Type, MajorOrder>::addColumn(size_type idx, Type val)
 {
-	Matrix<Type> tmp(nrows, ncols + 1);
-
-	if (idx > ncols + 1 || idx < 0)
+	if (idx > ncols + 1 || idx < 0) // TODO: Test only on debug
 		throw std::runtime_error("Invalid column coordinate");
+
+	Matrix<Type, MajorOrder> tmp(nrows, ncols + 1);
+
+	if (MajorOrder)
+	{
+		std::copy(vals.begin(), vals.begin() + (nrows * idx), tmp.begin());
+
+		std::copy(vals.begin() + (nrows * idx), vals.end(), tmp.begin() + (nrows * idx + nrows));
+		return;
+	}
 
 	int i	= 0;
 	auto it = std::begin(tmp);
@@ -566,7 +608,7 @@ inline void Matrix<Type, MajorOrder>::addColumn(size_type idx, Type val)
 			if (idx >= ncols && v >= std::end(vals))
 				break;
 
-			*it = *v;
+			*it = std::move(*v);
 			++v;
 		}
 	
@@ -635,13 +677,16 @@ inline MatrixExpr<MatBinExpr<
 template<class Type, bool MajorOrder>
 inline std::ostream & operator<<(std::ostream & out, const Matrix<Type, MajorOrder>& m)
 {
+	using Mat	= Matrix<Type, MajorOrder>;
+	using It	= typename Mat::inorder_const_iterator;
+
 	int i = 0;
-	for (const auto& v : m)
+	for (It it = m.cino_begin(); it != m.cino_end(); ++it)
 	{
 		if (i++ % m.cols() == 0)
 			out << '\n';
-		out << v << ' ';
+		out << *it << ' ';
 	}
-	out << '\n';
+
 	return out;
 }
