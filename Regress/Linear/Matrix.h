@@ -216,6 +216,8 @@ public:
 			typename Storage::const_iterator,
 			typename Storage::iterator>;
 
+		using value_type = Type;
+
 		inline void analyzeExpr(ExprAnalyzer<Type, MajorOrder>& ea) {}
 	};
 
@@ -228,6 +230,7 @@ public:
 		using iterator_category = typename Base::iterator_category;
 		using ContainerType		= typename Base::ContainerType;
 		using ContainerPtr		= typename Base::ContainerPtr;
+		using value_type		= typename Base::value_type;
 		using reference			= typename Base::reference;
 		using pointer			= typename Base::pointer;
 			
@@ -342,6 +345,7 @@ public:
 		using iterator_category = typename Base::iterator_category;
 		using ContainerType		= typename Base::ContainerType;
 		using ContainerPtr		= typename Base::ContainerPtr;
+		using value_type		= typename Base::value_type;
 		using reference			= typename Base::reference;
 		using pointer			= typename Base::pointer;
 		using It				= typename Base::Siterator;
@@ -450,7 +454,7 @@ public:
 
 		using iterator_category = typename Base::iterator_category;
 		using ContainerPtr		= typename Base::ContainerPtr;
-
+		using value_type		= typename Base::value_type;
 
 		inOrderIterator(size_type idx, ContainerPtr ptr) :
 			Base{ idx, ptr }
@@ -587,9 +591,14 @@ inline void Matrix<Type, MajorOrder>::addColumn(size_type idx, Type val)
 
 	if (MajorOrder)
 	{
-		std::copy(vals.begin(), vals.begin() + (nrows * idx), tmp.begin());
+		size_type ffill = idx * nrows;
+		auto fit = std::begin(vals) + ffill;
 
-		std::copy(vals.begin() + (nrows * idx), vals.end(), tmp.begin() + (nrows * idx + nrows));
+		std::move(vals.begin(), fit, tmp.begin());
+		std::fill(tmp.vals.begin() + ffill, tmp.vals.begin() + (ffill + nrows), val);
+		std::move(fit, vals.end(), tmp.begin() + (ffill + nrows));
+
+		*this = std::move(tmp);
 		return;
 	}
 

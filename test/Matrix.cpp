@@ -110,29 +110,25 @@ public:
 	template<class T, bool O>
 	void addColumnImpl(Matrix<T, O>& lhs, Matrix<T, O>& rhs)
 	{
+		using Mat = Matrix<T, O>;
+
 		auto v1 = lhs;
 		v1.addColumn(v1.cols(), 3); // TODO: Issue here
-		rMM v1r = { {1, 2, 3}, {3, 4, 3}, {5, 6, 3} };
+		Mat v1r = { {1, 2, 3}, {3, 4, 3}, {5, 6, 3} };
 
 		auto v2 = rhs;
 		v2.addColumn(0);
-		rMM v2r = { {0, 1, 2, 3}, {0, 4, 5, 6} };
+		Mat v2r = { {0, 1, 2, 3}, {0, 4, 5, 6} };
 
-		if (O == false)
-		{
-			Assert::IsTrue(v1 == v1r);
-			Assert::IsTrue(v2 == v2r);
-		}
-		else
-		{
-			Assert::IsTrue(v1 == ~v1r);
-			Assert::IsTrue(v2 == ~v2r);
-		}
+	
+		Assert::IsTrue(v1 == v1r);
+		Assert::IsTrue(v2 == v2r);
 	}
 
 	TEST_METHOD(AddColumn)
 	{
 		addColumnImpl(lhsR, rhsR);
+		addColumnImpl(lhsC, rhsC);
 	}
 };
 
