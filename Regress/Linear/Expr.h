@@ -78,68 +78,33 @@ private:
 	{
 		if (exprOp.getOp() != MatrixOpBase::MULTIPLY)
 		{
-			if constexpr (Inc)
-				exprOp += i;
-			else
-				exprOp -= i;
+			exprOp += i;
 			return;
 		}
 
-		if (MajorOrder)
-		{
-			if constexpr (Inc)
-				exprOp.lhsInc(i);
-			else
-				exprOp.lhsDec(i);
+		size_type idx			= std::abs(i);
+		const size_type sign	= (0 < i) - (i < 0);
 
-			while (i--)
-			{
-				if constexpr (Inc)
-					++multiCount;
-				else
-					--multiCount;
-
-				if (multiCount % lhsRows() == 0)
-				{
-					if constexpr (Inc)
-					{
-						exprOp.lhsDec(lhsRows());
-						exprOp.rhsInc(rhsRows()); // Same as lhsCols
-					}
-					else
-					{
-						exprOp.lhsInc(lhsRows());
-						exprOp.rhsDec(rhsRows());
-					}
-					break;
-				}
-			}
-			return;
-		}
-
-		if constexpr (Inc)
-			exprOp.rhsInc(i);
+		if(MajorOrder)
+			exprOp.lhsInc(i);
 		else
-			exprOp.rhsDec(i);
+			exprOp.rhsInc(i);
 
-		while (i--)
+		while (idx--)
 		{
-			if constexpr (Inc)
-				++multiCount;
-			else
-				--multiCount;
+			multiCount += sign;
 
 			if (multiCount % rhsCols() == 0)
 			{
-				if constexpr (Inc)
+				if (MajorOrder)
 				{
-					exprOp.rhsDec(rhsCols());
-					exprOp.lhsInc(rhsRows()); // Same as lhsCols
+					exprOp.lhsDec(lhsRows() * sign);
+					exprOp.rhsInc(rhsRows() * sign); // Same as lhsCols
 				}
 				else
 				{
-					exprOp.rhsInc(rhsCols());
-					exprOp.lhsDec(rhsRows());
+					exprOp.rhsDec(rhsCols() * sign);
+					exprOp.lhsInc(rhsRows() * sign);
 				}
 				break;
 			}
@@ -162,13 +127,13 @@ public:
 
 	inline MatrixExpr& operator--() noexcept
 	{
-		incrementSelf<false>(1);
+		incrementSelf<false>(-1);
 		return *this;
 	}
 
 	inline MatrixExpr& operator-=(size_type i) noexcept
 	{
-		incrementSelf<false>(i);
+		incrementSelf<false>(-i);
 		return *this;
 	}
 
@@ -495,21 +460,24 @@ public:
 	inline Type operator()(Lit lit, Rit rit, size_type rhsRows, size_type rhsCols) const noexcept
 	{
 		Type result = 0;
-	
-		if(Lit::MajorOrder)
-			for (;; --rhsRows, lit += rhsCols, ++rit)
+		for(;;--rhsRows)
+		{
+			result += *lit * *rit;
+			if (rhsRows <= 1)
+				break;
+
+			if (Lit::MajorOrder)
 			{
-				result += *lit * *rit;
-				if (rhsRows <= 1)
-					break;
+				lit += rhsCols;
+				++rit;
 			}
-		else
-			for (;; --rhsRows, ++lit, rit += rhsCols)
+			else
 			{
-				result += *lit * *rit;
-				if (rhsRows <= 1)
-					break;
+				++lit;
+				rit += rhsCols;
 			}
+		}
+
 		return result;
 	}
 };
