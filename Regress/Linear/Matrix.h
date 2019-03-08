@@ -50,7 +50,7 @@ public:
 
 	using minor_iterator		= std::conditional_t<MajorOrder, 
 		row_iterator, col_iterator>;
-	using const_minor_iterator	= std::conditional_t<MajorOrder, 
+	using minor_const_iterator	= std::conditional_t<MajorOrder,
 		row_const_iterator, col_const_iterator>;
 
 	static constexpr bool MajorOrder = MajorOrder;
@@ -58,7 +58,6 @@ public:
 private:
 	size_type	nrows;
 	size_type	ncols;
-	size_type	lastRowIdx;		// TODO: Get rid of this
 	Storage		vals;			
 
 
@@ -97,12 +96,12 @@ public:
 	// This iterator follows the opposite major order iteration
 	// compared to iterator. 
 	// EX: if this is a row major order matrix, minor_iterator is a column iterator
-	minor_iterator			nm_begin()			  noexcept { return { 0,		this }; }
-	minor_iterator			nm_end()			  noexcept { return { size(),	this }; }
-	const_minor_iterator	nm_begin()		const noexcept { return { 0,		this }; }
-	const_minor_iterator	nm_end()		const noexcept { return { size(),	this }; }
-	const_minor_iterator	cnm_begin()		const noexcept { return { 0,		this }; }
-	const_minor_iterator	cnm_end()		const noexcept { return { size(),	this }; }
+	minor_iterator			m_begin()		  noexcept { return { 0,		this }; }
+	minor_iterator			m_end()			  noexcept { return { size(),	this }; }
+	minor_const_iterator	m_begin()	const noexcept { return { 0,		this }; }
+	minor_const_iterator	m_end()		const noexcept { return { size(),	this }; }
+	minor_const_iterator	cm_begin()	const noexcept { return { 0,		this }; }
+	minor_const_iterator	cm_end()	const noexcept { return { size(),	this }; }
 
 	col_iterator		col_begin()			  noexcept { return { 0,		this }; }
 	col_iterator		col_end()			  noexcept { return { size(),	this }; }
@@ -429,16 +428,13 @@ template<class Type, bool MajorOrder>
 inline Matrix<Type, MajorOrder>::Matrix(size_type nrows, size_type ncols) :
 	nrows{ nrows },
 	ncols{ ncols },
-	lastRowIdx{ (nrows - 1) * ncols },
 	vals(nrows * ncols)
-{
-}
+{}
 
 template<class Type, bool MajorOrder>
 inline Matrix<Type, MajorOrder>::Matrix(const std::initializer_list<std::initializer_list<Type>>& m) :
 	nrows{ static_cast<size_type>(m.size()) },
 	ncols{ static_cast<size_type>(m.begin()->size()) },
-	lastRowIdx{ (nrows - 1) * ncols }, 
 	vals(nrows * ncols)
 {
 	auto v = std::begin(vals);
@@ -533,7 +529,6 @@ inline void Matrix<Type, MajorOrder>::resize(size_type numRows, size_type numCol
 {
 	nrows = numRows;
 	ncols = numCols;
-	lastRowIdx = (numRows - 1) * numCols;
 	vals.resize(numRows * numCols);
 }
 

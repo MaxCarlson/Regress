@@ -7,7 +7,7 @@
 
 int main()
 {
-	/*
+	///*
 	Matrix<int> lhs = { 
 		{1, 2},
 		{3, 4},
@@ -18,7 +18,22 @@ int main()
 		{1, 2, 3},
 		{4, 5, 6}
 	};
-	*/
+	//*/
+
+	Matrix<int, true> lhsr = {
+		{1, 2},
+		{3, 4},
+		{5, 6},
+	};
+
+	Matrix<int, true> rhsr = {
+		{1, 2, 3},
+		{4, 5, 6}
+	};
+
+	Matrix<int>			val1 = lhs * rhs;
+	Matrix<int, true>	val2 = lhsr * rhsr;
+	
 
 	Matrix<float> input = {
 		{0, 1},

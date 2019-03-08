@@ -9,17 +9,17 @@
 // Transpose operators
 template<class Type, bool MOrder>
 inline MatrixExpr<MatUnaExpr<
-	typename Matrix<Type, MOrder>::col_const_iterator,
+	typename Matrix<Type, MOrder>::minor_const_iterator,
 	MatrixTransposeOp<Type>,
 	Type>, Type>
 	operator~(const Matrix<Type, MOrder>& it) noexcept
 {
 	using ExprType = MatUnaExpr<
-		typename Matrix<Type, MOrder>::col_const_iterator,
+		typename Matrix<Type, MOrder>::minor_const_iterator,
 		MatrixTransposeOp<Type>,
 		Type>;
 	return MatrixExpr<ExprType, Type>{ ExprType{
-		it.ccol_begin(),
+		it.cm_begin(), // Minor iterator
 		it.rows(),
 		it.cols() },
 		MatrixOpBase::Op::TRANSPOSE };

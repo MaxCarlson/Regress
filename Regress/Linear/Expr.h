@@ -85,6 +85,38 @@ private:
 			return;
 		}
 
+		if (MajorOrder)
+		{
+			if constexpr (Inc)
+				exprOp.lhsInc(i);
+			else
+				exprOp.lhsDec(i);
+
+			while (i--)
+			{
+				if constexpr (Inc)
+					++multiCount;
+				else
+					--multiCount;
+
+				if (multiCount % lhsRows() == 0)
+				{
+					if constexpr (Inc)
+					{
+						exprOp.lhsDec(lhsRows());
+						exprOp.rhsInc(rhsRows()); // Same as lhsCols
+					}
+					else
+					{
+						exprOp.lhsInc(lhsRows());
+						exprOp.rhsDec(rhsRows());
+					}
+					break;
+				}
+			}
+			return;
+		}
+
 		if constexpr (Inc)
 			exprOp.rhsInc(i);
 		else
@@ -167,9 +199,9 @@ public:
 	{
 		using MatrixExpr = ThisType;
 
-		const MatrixExpr* expr; // Container class pointer
-		Iter exprOp;			// Expression iterator of expr
-		size_type multiCount;
+		const MatrixExpr*	expr;		// Container class pointer
+		Iter				exprOp;		// Expression iterator of expr
+		size_type			multiCount;
 
 	public:
 		const_iterator(const MatrixExpr* expr) noexcept :
@@ -197,11 +229,23 @@ public:
 		{
 			if (exprOp.getOp() == MatrixOpBase::Op::MULTIPLY)
 			{
-				exprOp.rhsInc(1);
-				if (++multiCount % expr->rhsCols() == 0)
+				if (MajorOrder)
 				{
-					exprOp.rhsDec(expr->rhsCols());
-					exprOp.lhsInc(expr->rhsRows());
+					exprOp.lhsInc(1);
+					if (++multiCount % expr->lhsRows() == 0)
+					{
+						exprOp.lhsDec(expr->lhsRows());
+						exprOp.rhsInc(expr->rhsRows());
+					}
+				}
+				else
+				{
+					exprOp.rhsInc(1);
+					if (++multiCount % expr->rhsCols() == 0)
+					{
+						exprOp.rhsDec(expr->rhsCols());
+						exprOp.lhsInc(expr->rhsRows());
+					}
 				}
 			}
 			else
@@ -416,6 +460,29 @@ public:
 	}
 };
 
+
+//     +---+---+
+//     | A | B |
+//     +---+---+
+// n = | C | D |
+//     +---+---+
+//     | E | F |
+//     +---+---+
+//
+//     +---+---+---+---+
+//     | Z | Y | X | W |
+// m = +---+---+---+---+
+//     | V | U | T | S |
+//     +---+---+---+---+
+//
+//       +---------------+---------------+---------------+---------------+
+//       | (A*Z) + (B*V) | (A*Y) + (B*U) | (A*X) + (B*T) | (A*W) + (B*S) |
+//       +---------------+---------------+---------------+---------------+
+// m*n = | (C*Z) + (D*V) | (C*Y) + (D*U) | (C*X) + (D*T) | (C*W) + (D*S) |
+//       +---------------+---------------+---------------+---------------+
+//       | (E*Z) + (F*V) | (E*Y) + (F*U) | (E*X) + (F*T) | (E*W) + (F*S) |
+//       +---------------+---------------+---------------+---------------+
+//
 template<class Type>
 class MatrixMultOp : public MatrixOpBase
 {
@@ -428,12 +495,21 @@ public:
 	inline Type operator()(Lit lit, Rit rit, size_type rhsRows, size_type rhsCols) const noexcept
 	{
 		Type result = 0;
-		for (;; --rhsRows, ++lit, rit += rhsCols)
-		{
-			result += *lit * *rit;
-			if (rhsRows <= 1)
-				break;
-		}
+	
+		if(Lit::MajorOrder)
+			for (;; --rhsRows, lit += rhsCols, ++rit)
+			{
+				result += *lit * *rit;
+				if (rhsRows <= 1)
+					break;
+			}
+		else
+			for (;; --rhsRows, ++lit, rit += rhsCols)
+			{
+				result += *lit * *rit;
+				if (rhsRows <= 1)
+					break;
+			}
 		return result;
 	}
 };
