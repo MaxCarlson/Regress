@@ -136,18 +136,45 @@ public:
 	void addColumn(size_type idx, Type val = {});
 
 	// These return Matrix Expressions so no temporary matricies are created
+	// TODO: Theres a bug that's not letting these be delcared outside of the class, fix
 	inline MatrixExpr<MatBinExpr<
 		typename Matrix<Type, MajorOrder>::const_iterator,
 		typename Matrix<Type, MajorOrder>::const_iterator,
 		MatrixCwiseProductOp<Type>, Type>, Type>
-		cwiseProduct(const Matrix<Type, MajorOrder>& rhs) noexcept;
+	cwiseProduct(const Matrix<Type, MajorOrder>& rhs) noexcept
+	{
+		using ExprType = MatBinExpr<
+			typename Matrix<Type, MajorOrder>::const_iterator,
+			typename Matrix<Type, MajorOrder>::const_iterator,
+			MatrixCwiseProductOp<Type>, Type>;
+		return MatrixExpr<ExprType, Type>{ExprType{
+			cbegin(),
+			rhs.begin(),
+			rows(),
+			rhs.rows(),
+			rhs.cols() },
+			MatrixOpBase::Op::CWISE_PRODUCT};
+	}	
 
 	template<class Iter>
 	inline MatrixExpr<MatBinExpr<
 		typename Matrix<Type, MajorOrder>::const_iterator,
 		MatrixExpr<Iter, Type>,
 		MatrixCwiseProductOp<Type>, Type>, Type>
-		cwiseProduct(const Matrix<Type, MajorOrder>& rhs) noexcept;
+	cwiseProduct(const Matrix<Type, MajorOrder>& rhs) noexcept
+	{
+		using ExprType = MatBinExpr<
+			typename Matrix<Type, MajorOrder>::const_iterator,
+			MatrixExpr<Iter, Type>,
+			MatrixCwiseProductOp<Type>, Type>;
+		return MatrixExpr<ExprType, Type>{ExprType{
+			cbegin(),
+			rhs,
+			rows(),
+			rhs.lhsRows(),
+			rhs.rhsCols() },
+			MatrixOpBase::Op::CWISE_PRODUCT};
+	}
 
 	template<class T, bool MajorOrder>
 	inline friend std::ostream& operator<<(std::ostream& out, const Matrix& m);
@@ -555,6 +582,7 @@ inline void Matrix<Type, MajorOrder>::addColumn(size_type idx, Type val)
 	*this = std::move(tmp);
 }
 
+
 template<class Type, bool MajorOrder>
 inline Matrix<Type, MajorOrder> Matrix<Type, MajorOrder>::transpose() const
 {
@@ -564,6 +592,8 @@ inline Matrix<Type, MajorOrder> Matrix<Type, MajorOrder>::transpose() const
 // All operations below this point return a Matrix Expression
 // (only Expressions that can't be handled outside are here,
 // the rest are in ExprOperators)
+
+/*
 
 template<class Type, bool MajorOrder>
 inline MatrixExpr<MatBinExpr<
@@ -605,6 +635,7 @@ inline MatrixExpr<MatBinExpr<
 		rhs.rhsCols() },
 		MatrixOpBase::Op::CWISE_PRODUCT};
 }
+*/
 
 template<class Type, bool MajorOrder>
 inline std::ostream & operator<<(std::ostream & out, const Matrix<Type, MajorOrder>& m)
