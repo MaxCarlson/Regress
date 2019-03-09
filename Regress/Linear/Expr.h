@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <memory>
 
 template<class Type, bool MOrder>
 class Matrix;
@@ -52,10 +53,14 @@ class MatrixExpr
 	using size_type		= typename MatrixOpBase::size_type;
 	using MatrixType	= Matrix<Type, Iter::MajorOrder>;
 	using ThisType		= MatrixExpr<Iter, Type>;
+	using MatTmpPtr		= std::shared_ptr<MatrixType>;
 
 	Iter			exprOp;
 	const size_type op;			// TODO: This can be removed
 	size_type		multiCount;	// Number of times the multiply op has been applied (if applicable)
+	MatTmpPtr		tmp;
+	bool			evaluated;
+
 public:
 	static constexpr bool MajorOrder = Iter::MajorOrder;
 
@@ -63,12 +68,14 @@ public:
 	inline MatrixExpr(const Iter& exprOp, size_type op) noexcept :
 		exprOp{ exprOp },
 		op{ op },
-		multiCount{ 0 }
+		multiCount{ 0 },
+		tmp{},
+		evaluated{ false }
 	{}
 
 	inline Type operator*()		const noexcept { return *exprOp; }
 	inline Iter getExprOp()		const noexcept { return exprOp; }
-	inline size_type opType()	const noexcept { return op; }
+	inline size_type getOp()	const noexcept { return op; }
 	inline size_type lhsRows()	const noexcept { return exprOp.lhsRows(); }
 	inline size_type rhsRows()	const noexcept { return exprOp.rhsRows(); }
 	inline size_type rhsCols()	const noexcept { return exprOp.rhsCols(); }
@@ -77,19 +84,29 @@ public:
 	{
 		exprOp.analyzeExpr(ea, Iter::getOp());
 
-		if (Iter::OpType == MatrixOpBase::BINARY)
+		if (getOp() == MatrixOpBase::MULTIPLY
+			&& pOp == MatrixOpBase::MULTIPLY)
 		{
-			if (Iter::getOp() == MatrixOpBase::MULTIPLY)
-			{
-
-			}
+			evaluateExpr();
 		}
+
 	}
 
 private:
 
-	template<bool Inc>
-	inline void incrementSelf(size_type i) noexcept // TODO: Can be condensed?
+	void evaluateExpr()
+	{
+		auto it = begin();
+		tmp = MatTmpPtr(new MatrixType{ rowSize(), colSize() });
+		for (auto& v : *tmp)
+		{
+			v = *it;
+			++it;
+		}
+		evaluated = true;
+	}
+
+	void incrementSelf(size_type i) noexcept
 	{
 		if (exprOp.getOp() != MatrixOpBase::MULTIPLY)
 		{
@@ -131,25 +148,25 @@ public:
 
 	inline MatrixExpr& operator++() noexcept
 	{
-		incrementSelf<true>(1);
+		incrementSelf(1);
 		return *this;
 	}
 
 	inline MatrixExpr& operator+=(size_type i) noexcept
 	{
-		incrementSelf<true>(i);
+		incrementSelf(i);
 		return *this;
 	}
 
 	inline MatrixExpr& operator--() noexcept
 	{
-		incrementSelf<false>(-1);
+		incrementSelf(-1);
 		return *this;
 	}
 
 	inline MatrixExpr& operator-=(size_type i) noexcept
 	{
-		incrementSelf<false>(-i);
+		incrementSelf(-i);
 		return *this;
 	}
 
@@ -178,18 +195,24 @@ public:
 
 	class const_iterator
 	{
-		using MatrixExpr = ThisType;
+		using MatrixExpr	= ThisType;
+		using It			= typename MatrixType::const_iterator;
 
 		const MatrixExpr*	expr;		// Container class pointer
 		Iter				exprOp;		// Expression iterator of expr
 		size_type			multiCount;
+		It					it;
 
 	public:
 		const_iterator(const MatrixExpr* expr) noexcept :
 			expr{ expr },
 			exprOp{ expr->getExprOp() },
-			multiCount{ expr->multiCount }
-		{}
+			multiCount{ expr->multiCount },
+			it{}
+		{
+			if (expr->evaluated)
+				it = std::cbegin(*expr->tmp);
+		}
 
 		inline bool operator==(const const_iterator& other) const noexcept
 		{
@@ -203,11 +226,17 @@ public:
 
 		inline Type operator*() const noexcept
 		{
-			return *exprOp;
+			return expr->evaluated ? *it : *exprOp;
 		}
 
 		inline const_iterator& operator++() noexcept
 		{
+			if (expr->evaluated)
+			{
+				++it;
+				return *this;
+			}
+
 			if (exprOp.getOp() == MatrixOpBase::Op::MULTIPLY)
 			{
 				if (MajorOrder)
@@ -231,6 +260,7 @@ public:
 			}
 			else
 				++exprOp;
+
 			return *this;
 		}
 	};
@@ -247,7 +277,7 @@ class MatBinExpr
 	using size_type		= typename MatrixOpBase::size_type;
 	using ThisType		= MatBinExpr<LIt, RIt, Op, Type>;
 	using MatrixType	= Matrix<Type, LIt::MajorOrder>;
-	using TmpPtr		= std::unique_ptr<MatrixType>;
+	using MatTmp		= std::shared_ptr<MatrixType>;
 	//using MatrixIt		= typename MatrixType::const_iterator;
 
 	LIt				lit;
@@ -256,7 +286,7 @@ class MatBinExpr
 	const size_type nlhsRows;
 	const size_type nrhsRows;
 	const size_type nrhsCols;
-	TmpPtr			tmp;
+	MatTmp			tmp;
 
 public:
 	static constexpr bool MajorOrder				= LIt::MajorOrder;
@@ -270,7 +300,7 @@ public:
 		nlhsRows{ nlhsRows },
 		nrhsRows{ nrhsRows },
 		nrhsCols{ nrhsCols },
-		tmp{ nullptr }
+		tmp{}
 	{}
 
 	template<class It>
@@ -283,18 +313,8 @@ public:
 	{
 		analyzeSide(ea, lit);
 		analyzeSide(ea, rit);
-
-		if (getOp() == MatrixOpBase::MULTIPLY 
-			 && pOp == MatrixOpBase::MULTIPLY)
-		{
-			evaluateExpr();
-		}
 	}
 
-	void evaluateExpr()
-	{
-		tmp = std::make_unique<MatrixType>{ new MatrixType{} };
-	}
 
 	inline void lhsInc(size_type i)  noexcept { lit += i; }
 	inline void lhsDec(size_type i)  noexcept { lit -= i; }
