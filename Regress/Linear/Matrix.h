@@ -4,6 +4,8 @@
 #include "Expr.h"
 #include "ExprOperators.h" // Matrix doesn't rely on ExprOperators, it's here to make it easy to use Matrix
 
+//namespace regress{ // TODO: Wrap proj in namespaces
+
 template<class E>
 struct MatrixBase
 { };
@@ -701,3 +703,5 @@ inline std::ostream & operator<<(std::ostream & out, const Matrix<Type, MajorOrd
 
 	return out;
 }
+
+//} // End: namespace::regress

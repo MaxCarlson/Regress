@@ -130,6 +130,7 @@
     <ClInclude Include="Linear\Expr.h" />
     <ClInclude Include="Linear\ExprOperators.h" />
     <ClInclude Include="Linear\Matrix.h" />
+    <ClInclude Include="RegressAssert.h" />
     <ClInclude Include="Stopwatch.h" />
     <ClInclude Include="Network\Activation.h" />
     <ClInclude Include="Network\Dense.h" />

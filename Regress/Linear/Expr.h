@@ -84,6 +84,8 @@ public:
 	{
 		exprOp.analyzeExpr(ea, Iter::getOp());
 
+		// TODO: This is where we can evaluate transposed expressions
+
 		if (getOp() == MatrixOpBase::MULTIPLY
 			&& pOp == MatrixOpBase::MULTIPLY)
 		{
@@ -232,26 +234,24 @@ public:
 		inline const_iterator& operator++() noexcept
 		{
 			if (expr->evaluated)
-			{
 				++it;
-				return *this;
-			}
 
-			if (exprOp.getOp() == MatrixOpBase::Op::MULTIPLY)
+			else if (Iter::getOp() == MatrixOpBase::Op::MULTIPLY)
 			{
 				if (MajorOrder)
-				{
 					exprOp.lhsInc(1);
-					if (++multiCount % expr->lhsRows() == 0)
+				else
+					exprOp.rhsInc(1);
+
+				const size_type modVal = MajorOrder ? expr->lhsRows() : expr->rhsCols();
+				if (++multiCount % modVal == 0)
+				{
+					if (MajorOrder)
 					{
 						exprOp.lhsDec(expr->lhsRows());
 						exprOp.rhsInc(expr->rhsRows());
 					}
-				}
-				else
-				{
-					exprOp.rhsInc(1);
-					if (++multiCount % expr->rhsCols() == 0)
+					else
 					{
 						exprOp.rhsDec(expr->rhsCols());
 						exprOp.lhsInc(expr->rhsRows()); // Same as lhsCols
@@ -277,7 +277,6 @@ class MatBinExpr
 	using size_type		= typename MatrixOpBase::size_type;
 	using ThisType		= MatBinExpr<LIt, RIt, Op, Type>;
 	using MatrixType	= Matrix<Type, LIt::MajorOrder>;
-	using MatTmp		= std::shared_ptr<MatrixType>;
 	//using MatrixIt		= typename MatrixType::const_iterator;
 
 	LIt				lit;
@@ -286,7 +285,6 @@ class MatBinExpr
 	const size_type nlhsRows;
 	const size_type nrhsRows;
 	const size_type nrhsCols;
-	MatTmp			tmp;
 
 public:
 	static constexpr bool MajorOrder				= LIt::MajorOrder;
@@ -299,8 +297,7 @@ public:
 		op{ 0 },
 		nlhsRows{ nlhsRows },
 		nrhsRows{ nrhsRows },
-		nrhsCols{ nrhsCols },
-		tmp{}
+		nrhsCols{ nrhsCols }
 	{}
 
 	template<class It>

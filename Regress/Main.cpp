@@ -31,6 +31,15 @@ int main()
 		{4, 5, 6}
 	};
 
+	Matrix<int> tl(30, 30);
+	Matrix<int> tr(30, 30);
+
+	Stopwatch<std::chrono::milliseconds> w;
+	w.start();
+
+	Matrix<int> tp = (tl * tr) * tl * (tr * tl);
+	w.printCurrent();
+
 	Matrix<int> v = (lhs * rhs) * lhs;
 
 	//std::cout << lhsr << '\n';
