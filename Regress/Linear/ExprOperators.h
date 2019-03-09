@@ -19,7 +19,7 @@ inline MatrixExpr<MatUnaExpr<
 		MatrixTransposeOp<Type>,
 		Type>;
 	return MatrixExpr<ExprType, Type>{ ExprType{
-		it.cm_begin(), // Minor iterator
+		it.m_cbegin(), // Minor iterator
 		it.rows(),
 		it.cols() },
 		MatrixOpBase::Op::TRANSPOSE };

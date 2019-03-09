@@ -22,6 +22,7 @@ struct MatrixOpBase
 
 	enum Op : size_type
 	{
+		NONE,
 		ADD,
 		SUB,
 		MULTIPLY,
@@ -33,6 +34,12 @@ struct MatrixOpBase
 		NUMERICAL_DIV,
 		DOT,
 		TRANSPOSE
+	};
+
+	enum OpType : size_type
+	{
+		BINARY,
+		UNARY
 	};
 };
 
@@ -59,16 +66,24 @@ public:
 		multiCount{ 0 }
 	{}
 
+	inline Type operator*()		const noexcept { return *exprOp; }
 	inline Iter getExprOp()		const noexcept { return exprOp; }
 	inline size_type opType()	const noexcept { return op; }
 	inline size_type lhsRows()	const noexcept { return exprOp.lhsRows(); }
 	inline size_type rhsRows()	const noexcept { return exprOp.rhsRows(); }
 	inline size_type rhsCols()	const noexcept { return exprOp.rhsCols(); }
-	inline Type operator*()		const noexcept { return *exprOp; }
 
-	void analyzeExpr(ExprAnalyzer<Type, MajorOrder>& ea)
+	void analyzeExpr(ExprAnalyzer<Type, MajorOrder>& ea, size_type pOp)
 	{
-		exprOp.analyzeExpr(ea);
+		exprOp.analyzeExpr(ea, Iter::getOp());
+
+		if (Iter::OpType == MatrixOpBase::BINARY)
+		{
+			if (Iter::getOp() == MatrixOpBase::MULTIPLY)
+			{
+
+			}
+		}
 	}
 
 private:
@@ -232,6 +247,7 @@ class MatBinExpr
 	using size_type		= typename MatrixOpBase::size_type;
 	using ThisType		= MatBinExpr<LIt, RIt, Op, Type>;
 	using MatrixType	= Matrix<Type, LIt::MajorOrder>;
+	using TmpPtr		= std::unique_ptr<MatrixType>;
 	//using MatrixIt		= typename MatrixType::const_iterator;
 
 	LIt				lit;
@@ -240,9 +256,11 @@ class MatBinExpr
 	const size_type nlhsRows;
 	const size_type nrhsRows;
 	const size_type nrhsCols;
+	TmpPtr			tmp;
 
 public:
-	static constexpr bool MajorOrder = LIt::MajorOrder;
+	static constexpr bool MajorOrder				= LIt::MajorOrder;
+	static constexpr MatrixOpBase::OpType OpType	= MatrixOpBase::BINARY;
 
 
 	MatBinExpr(LIt lit, RIt rit, size_type nlhsRows, size_type nrhsRows, size_type nrhsCols) noexcept :
@@ -251,19 +269,31 @@ public:
 		op{ 0 },
 		nlhsRows{ nlhsRows },
 		nrhsRows{ nrhsRows },
-		nrhsCols{ nrhsCols }
+		nrhsCols{ nrhsCols },
+		tmp{ nullptr }
 	{}
 
 	template<class It>
 	void analyzeSide(ExprAnalyzer<Type, MajorOrder>& ea, It& it)
 	{
-		it.analyzeExpr(ea);
+		it.analyzeExpr(ea, getOp());
 	}
 
-	void analyzeExpr(ExprAnalyzer<Type, MajorOrder>& ea)
+	void analyzeExpr(ExprAnalyzer<Type, MajorOrder>& ea, size_type pOp)
 	{
 		analyzeSide(ea, lit);
 		analyzeSide(ea, rit);
+
+		if (getOp() == MatrixOpBase::MULTIPLY 
+			 && pOp == MatrixOpBase::MULTIPLY)
+		{
+			evaluateExpr();
+		}
+	}
+
+	void evaluateExpr()
+	{
+		tmp = std::make_unique<MatrixType>{ new MatrixType{} };
 	}
 
 	inline void lhsInc(size_type i)  noexcept { lit += i; }
@@ -326,7 +356,8 @@ class MatUnaExpr
 	size_type	ncols;
 
 public:
-	static constexpr bool MajorOrder = It::MajorOrder;
+	static constexpr bool MajorOrder				= It::MajorOrder;
+	static constexpr MatrixOpBase::OpType OpType	= MatrixOpBase::UNARY;
 
 
 	MatUnaExpr(It it, size_type nrows, size_type ncols) noexcept :
@@ -336,9 +367,9 @@ public:
 		ncols{ ncols }
 	{}
 
-	void analyzeExpr(ExprAnalyzer<Type, It::MajorOrder>& ea)
+	void analyzeExpr(ExprAnalyzer<Type, It::MajorOrder>& ea, size_type pOp)
 	{
-		it.analyzeExpr(ea);
+		it.analyzeExpr(ea, pOp);
 	}
 
 	inline void lhsInc(size_type)  { throw std::runtime_error("Cannot inc lhs in Unary Expr"); }
@@ -537,7 +568,7 @@ public:
 	inline const Num* operator->() const noexcept { return &num; }
 
 	template<class Type, bool MajorOrder>
-	inline void analyzeExpr(ExprAnalyzer<Type, MajorOrder>& ea) {}
+	inline void analyzeExpr(ExprAnalyzer<Type, MajorOrder>&, size_type) {}
 };
 
 template<class Type>

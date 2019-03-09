@@ -31,9 +31,11 @@ int main()
 		{4, 5, 6}
 	};
 
-	std::cout << lhsr << '\n';
-	lhsr.addColumn(2, 1);
-	std::cout << lhsr << '\n';
+	Matrix<int> v = (lhs * rhs) * lhs;
+
+	//std::cout << lhsr << '\n';
+	//lhsr.addColumn(2, 1);
+	//std::cout << lhsr << '\n';
 
 	Matrix<float> input = {
 		{0, 1},

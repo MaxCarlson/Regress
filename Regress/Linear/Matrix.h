@@ -107,29 +107,30 @@ public:
 	minor_iterator			m_end()			  noexcept { return { size(),	this }; }
 	minor_const_iterator	m_begin()	const noexcept { return { 0,		this }; }
 	minor_const_iterator	m_end()		const noexcept { return { size(),	this }; }
-	minor_const_iterator	cm_begin()	const noexcept { return { 0,		this }; }
-	minor_const_iterator	cm_end()	const noexcept { return { size(),	this }; }
+	minor_const_iterator	m_cbegin()	const noexcept { return { 0,		this }; }
+	minor_const_iterator	m_cend()	const noexcept { return { size(),	this }; }
+
+	// inorder_iterator will always traverse the matrix left-right, top-bottom
+	inorder_iterator		ino_begin()			  noexcept { return { 0,		this }; }
+	inorder_iterator		ino_end()			  noexcept { return { size(),	this }; }
+	inorder_const_iterator	ino_begin()		const noexcept { return { 0,		this }; }
+	inorder_const_iterator	ino_end()		const noexcept { return { size(),	this }; }
+	inorder_const_iterator	ino_cbegin()	const noexcept { return { 0,		this }; }
+	inorder_const_iterator	ino_cend()		const noexcept { return { size(),	this }; }
 
 	col_iterator		col_begin()			  noexcept { return { 0,		this }; }
 	col_iterator		col_end()			  noexcept { return { size(),	this }; }
 	col_const_iterator	col_begin()		const noexcept { return { 0,		this }; }
 	col_const_iterator	col_end()		const noexcept { return { size(),	this }; }
-	col_const_iterator	ccol_begin()	const noexcept { return { 0,		this }; }
-	col_const_iterator	ccol_end()		const noexcept { return { size(),	this }; }
+	col_const_iterator	col_cbegin()	const noexcept { return { 0,		this }; }
+	col_const_iterator	col_cend()		const noexcept { return { size(),	this }; }
 
 	row_iterator		row_begin()			  noexcept { return { 0,		this }; }
 	row_iterator		row_end()			  noexcept { return { size(),	this }; }
 	row_const_iterator	row_begin()		const noexcept { return { 0,		this }; }
 	row_const_iterator	row_end()		const noexcept { return { size(),	this }; }
-	row_const_iterator	crow_begin()	const noexcept { return { 0,		this }; }
-	row_const_iterator	crow_end()		const noexcept { return { size(),	this }; }
-
-	inorder_iterator		ino_begin()			  noexcept { return { 0,		this }; }
-	inorder_iterator		ino_end()			  noexcept { return { size(),	this }; }
-	inorder_const_iterator	ino_begin()		const noexcept { return { 0,		this }; }
-	inorder_const_iterator	ino_end()		const noexcept { return { size(),	this }; }
-	inorder_const_iterator	cino_begin()	const noexcept { return { 0,		this }; }
-	inorder_const_iterator	cino_end()		const noexcept { return { size(),	this }; }
+	row_const_iterator	row_cbegin()	const noexcept { return { 0,		this }; }
+	row_const_iterator	row_cend()		const noexcept { return { size(),	this }; }
 
 	// Apply a function to every member of the Matrix
 	// [](Type& t) { ...do something... return; }
@@ -218,7 +219,7 @@ public:
 
 		using value_type = Type;
 
-		inline void analyzeExpr(ExprAnalyzer<Type, MajorOrder>& ea) {}
+		inline void analyzeExpr(ExprAnalyzer<Type, MajorOrder>&, size_type pOp) {}
 	};
 
 	// An iterator that iterates through columns instead of rows
@@ -492,7 +493,7 @@ template<class Expr>
 inline Matrix<Type, MajorOrder>::Matrix(Expr expr)
 {
 	ExprAnalyzer ea{ *this };
-	expr.analyzeExpr(ea);
+	expr.analyzeExpr(ea, MatrixOpBase::NONE);
 	expr.assign(*this);
 }
 
@@ -593,10 +594,11 @@ inline void Matrix<Type, MajorOrder>::addColumn(size_type idx, Type val)
 	{
 		size_type ffill = idx * nrows;
 		auto fit = std::begin(vals) + ffill;
+		auto tb = std::begin(tmp.vals);
 
-		std::move(vals.begin(), fit, tmp.begin());
-		std::fill(tmp.vals.begin() + ffill, tmp.vals.begin() + (ffill + nrows), val);
-		std::move(fit, vals.end(), tmp.begin() + (ffill + nrows));
+		std::move(vals.begin(), fit, tb);
+		std::fill(tb + ffill, tb + (ffill + nrows), val);
+		std::move(fit, vals.end(), tb + (ffill + nrows));
 
 		*this = std::move(tmp);
 		return;
@@ -690,7 +692,7 @@ inline std::ostream & operator<<(std::ostream & out, const Matrix<Type, MajorOrd
 	using It	= typename Mat::inorder_const_iterator;
 
 	int i = 0;
-	for (It it = m.cino_begin(); it != m.cino_end(); ++it)
+	for (It it = m.ino_cbegin(); it != m.ino_cend(); ++it)
 	{
 		if (i++ % m.cols() == 0)
 			out << '\n';
