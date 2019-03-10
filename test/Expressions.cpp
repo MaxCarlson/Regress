@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "CppUnitTest.h"
-#include "../Regress/Linear/Matrix.h"
+#include "../Linear/Matrix.h"
+
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 

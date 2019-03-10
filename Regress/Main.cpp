@@ -2,50 +2,11 @@
 #include "Network\Model.h"
 #include "Network\Dense.h"
 #include "Network\InputLayer.h"
-#include "Linear\Matrix.h"
-#include "Stopwatch.h"
+#include "Linear\Stopwatch.h"
+
 
 int main()
 {
-	///*
-	Matrix<int> lhs = { 
-		{1, 2},
-		{3, 4},
-		{5, 6},
-	};
-
-	Matrix<int> rhs = {
-		{1, 2, 3},
-		{4, 5, 6}
-	};
-	//*/
-
-	Matrix<int, true> lhsr = {
-		{1, 2},
-		{3, 4},
-		{5, 6},
-	};
-
-	Matrix<int, true> rhsr = {
-		{1, 2, 3},
-		{4, 5, 6}
-	};
-
-	Matrix<int> tl(30, 30);
-	Matrix<int> tr(30, 30);
-
-	Stopwatch<std::chrono::milliseconds> w;
-	w.start();
-
-	Matrix<int> tp = (tl * tr) * tl * (tr * tl);
-	w.printCurrent();
-
-	Matrix<int> v = (lhs * rhs) * lhs;
-
-	//std::cout << lhsr << '\n';
-	//lhsr.addColumn(2, 1);
-	//std::cout << lhsr << '\n';
-
 	Matrix<float> input = {
 		{0, 1},
 		{1, 0},

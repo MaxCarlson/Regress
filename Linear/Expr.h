@@ -84,8 +84,10 @@ public:
 	{
 		exprOp.analyzeExpr(ea, Iter::getOp());
 
+		// TODO: Think of better, more extensible syntax for analyzing expressions
 		// TODO: This is where we can evaluate transposed expressions
 
+		// Improves speed by 20% in mutiplication heavy expressions
 		if (getOp() == MatrixOpBase::MULTIPLY
 			&& pOp == MatrixOpBase::MULTIPLY)
 		{
