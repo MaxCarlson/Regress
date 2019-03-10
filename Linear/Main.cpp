@@ -1,7 +1,6 @@
 #include "Matrix.h"
 #include "Stopwatch.h"
 
-
 int main()
 {
 	///*
@@ -31,12 +30,12 @@ int main()
 	Matrix<int> tl(90, 90);
 	Matrix<int> tr(90, 90);
 
-	
+	auto a = lhs / lhs;
 
 	Stopwatch<std::chrono::milliseconds> w;
 	w.start();
 
-	Matrix<int> tp = (tl * tr) * tl;
+	//Matrix<int> tp = (tl * tr) * tl;
 	w.printCurrent();
 
 	Matrix<int> v = (lhs * rhs) * lhs;

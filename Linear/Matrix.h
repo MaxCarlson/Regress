@@ -8,11 +8,13 @@
 //namespace regress{ // TODO: Wrap proj in namespaces
 
 // Partial specilization of traits that allows us
-// to get matrix's type inside MatrixBase
+// to get matrix's Type inside MatrixBase
 template<class Type, bool MajorOrder>
 struct Traits<Matrix<Type, MajorOrder>>
 {
-	using value_type = Type;
+	using value_type	= Type;
+	using MatrixType	= Matrix<Type, MajorOrder>;
+	static constexpr bool MajorOrder = MajorOrder;
 };
 
 /*

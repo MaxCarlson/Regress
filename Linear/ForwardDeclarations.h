@@ -1,5 +1,8 @@
 #pragma once
 
+template<class Derived>
+class MatrixBase;
+
 template<class, bool>
 class Matrix;
 
