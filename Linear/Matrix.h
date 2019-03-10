@@ -3,12 +3,17 @@
 #include <iostream>
 #include "Expr.h"
 #include "ExprOperators.h" // Matrix doesn't rely on ExprOperators, it's here to make it easy to use Matrix
+#include "MatrixBase.h"
 
 //namespace regress{ // TODO: Wrap proj in namespaces
 
-template<class E>
-struct MatrixBase
-{ };
+// Partial specilization of traits that allows us
+// to get matrix's type inside MatrixBase
+template<class Type, bool MajorOrder>
+struct Traits<Matrix<Type, MajorOrder>>
+{
+	using value_type = Type;
+};
 
 /*
 template<class Iter, class Type>
@@ -24,11 +29,14 @@ class MatrixCwiseProductOp;
 
 // without duplications
 template<class Type, bool MajorOrder = false>
-class Matrix 
+class Matrix : public MatrixBase<Matrix<Type, MajorOrder>>
 {
 public:
-	using Storage				= std::vector<Type>;
-	using size_type				= int;
+	using ThisType		= Matrix<Type, MajorOrder>;
+	using Storage		= std::vector<Type>;
+	using size_type		= int;
+	using value_type	= Type;
+
 
 	template<bool>				
 	class nonMajorOrderIteratorBase;	// TODO: Both of these names are long
@@ -71,8 +79,6 @@ private:
 
 
 public:
-	using value_type	= Type;
-	using ThisType		= Matrix<Type, MajorOrder>;
 
 	Matrix() = default;
 	Matrix(size_type nrows, size_type ncols);

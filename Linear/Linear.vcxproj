@@ -118,7 +118,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Expr.h" />
+    <ClInclude Include="MatrixBase.h" />
     <ClInclude Include="ExprOperators.h" />
+    <ClInclude Include="ForwardDeclarations.h" />
     <ClInclude Include="Matrix.h" />
     <ClInclude Include="RegressAssert.h" />
     <ClInclude Include="Stopwatch.h" />

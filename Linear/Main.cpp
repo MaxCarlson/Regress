@@ -31,6 +31,8 @@ int main()
 	Matrix<int> tl(90, 90);
 	Matrix<int> tr(90, 90);
 
+	
+
 	Stopwatch<std::chrono::milliseconds> w;
 	w.start();
 
@@ -38,6 +40,7 @@ int main()
 	w.printCurrent();
 
 	Matrix<int> v = (lhs * rhs) * lhs;
+
 
 
 

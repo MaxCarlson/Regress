@@ -50,11 +50,13 @@ struct MatrixOpBase
 template<class Iter, class Type>
 class MatrixExpr
 {
+public:
 	using size_type		= typename MatrixOpBase::size_type;
 	using MatrixType	= Matrix<Type, Iter::MajorOrder>;
 	using ThisType		= MatrixExpr<Iter, Type>;
 	using MatTmpPtr		= std::shared_ptr<MatrixType>;
 
+private:
 	Iter			exprOp;
 	const size_type op;			// TODO: This can be removed
 	size_type		multiCount;	// Number of times the multiply op has been applied (if applicable)
