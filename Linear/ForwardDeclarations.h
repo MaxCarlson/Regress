@@ -7,4 +7,7 @@ template<class, bool>
 class Matrix;
 
 template<class T>
-struct Traits;
+struct Traits
+{
+	using size_type = int;
+};

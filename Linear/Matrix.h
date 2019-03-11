@@ -238,6 +238,7 @@ public:
 	{
 	public:
 		using Base				= IteratorBase<isConst>;
+		using ThisType			= nonMajorOrderIteratorBase<isConst>;
 		using iterator_category = typename Base::iterator_category;
 		using ContainerType		= typename Base::ContainerType;
 		using ContainerPtr		= typename Base::ContainerPtr;
