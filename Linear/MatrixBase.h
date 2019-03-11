@@ -41,15 +41,29 @@ public:
 };
 
 template<class Op, class Lhs, class Rhs>
-class BinaryOp : public BaseExpr<BinaryOp<Op, Lhs, Rhs>>
+class BinaryOp;
+
+template<class Op, class Lhs, class Rhs>
+struct Traits<BinaryOp<Op, Lhs, Rhs>>
 {
-	using Base		= BaseExpr<BinaryOp<Op, Lhs, Rhs>>;
+	using value_type = typename Lhs::value_type;
+	using MatrixType = Lhs;
+	static constexpr bool MajorOrder = MatrixType::MajorOrder;
+};
+
+template<class Op, class Lhs, class Rhs>
+class BinaryOp : public MatrixBase<BinaryOp<Op, Lhs, Rhs>>
+{
+public:
+	using Base		= MatrixBase<BinaryOp<Op, Lhs, Rhs>>;
 	using ThisType	= BinaryOp<Op, Lhs, Rhs>;
 	using size_type = typename Base::size_type;
 	using Type		= typename Op::value_type;
 	using Lit		= typename Lhs::const_iterator;
-	using Rit		= typename Lhs::const_iterator;
+	using Rit		= typename Rhs::const_iterator;
 
+
+private:
 	const Lhs& lhs;
 	const Rhs& rhs;
 	Op op;
@@ -57,6 +71,8 @@ class BinaryOp : public BaseExpr<BinaryOp<Op, Lhs, Rhs>>
 	Rit rit;
 
 public:
+
+	static constexpr bool MajorOrder = Traits<Lhs>::MajorOrder;
 
 	BinaryOp(Op op, const Lhs& lhs, const Rhs& rhs) :
 		op{ op },
@@ -112,6 +128,51 @@ public:
 		rhsDec(i);
 		return *this;
 	}
+
+	class const_iterator
+	{
+		using MatrixExpr = ThisType;
+		MatrixExpr expr;
+
+	public:
+		static constexpr bool MajorOrder = MajorOrder;
+
+		const_iterator(const MatrixExpr* expr) noexcept :
+			expr{*expr}
+		{
+			
+		}
+
+		inline bool operator==(const const_iterator& other) const noexcept
+		{
+			return &expr == &other.expr;
+		}
+
+		inline bool operator!=(const const_iterator& other) const noexcept
+		{
+			return !(*this == other);
+		}
+
+		inline Type operator*() const noexcept
+		{
+			return *expr;
+		}
+
+		inline const_iterator& operator++() noexcept
+		{
+			++expr;
+			return *this;
+
+		}
+
+		inline const_iterator& operator+=(size_type i) noexcept
+		{
+			expr += i;
+			return *this;
+		}
+	};
+
+	const_iterator cbegin() const noexcept { return const_iterator{ this }; }
 };
 
 template<class Derived>
@@ -127,9 +188,17 @@ public:
 
 	inline void analyzeExpr(ExprAnalyzer<value_type, MajorOrder>&, size_type pOp) {}
 
-	void assign(Derived& to) const 
+	template<class Matrix>
+	void assign(Matrix& to)
 	{
-	
+		auto rit = static_cast<const Derived&>(*this);
+		to.resize(rit.resultRows(), rit.resultCols());
+
+		for (auto lit = to.begin();
+			lit != to.end(); ++lit, ++rit)
+		{
+			*lit = *rit;
+		}
 	}
 
 	template<class OtherDerived>
@@ -138,4 +207,5 @@ public:
 	{
 		return BinaryOp{ MulOp<value_type>{0} , static_cast<const Derived&>(*this), other };
 	}
+
 };

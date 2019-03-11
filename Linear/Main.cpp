@@ -31,7 +31,7 @@ int main()
 		{1, 2, 3},
 		{4, 5, 6}
 	};
-	auto a = lhst / lhst;
+	auto a = lhst / rhst / lhst;
 	MatrixT<int> val = a;
 
 
