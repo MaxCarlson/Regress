@@ -41,13 +41,14 @@ public:
 };
 
 template<class Op, class Lhs, class Rhs>
-class BinaryOp
+class BinaryOp : public BaseExpr<BinaryOp<Op, Lhs, Rhs>>
 {
+	using Base		= BaseExpr<BinaryOp<Op, Lhs, Rhs>>;
+	using ThisType	= BinaryOp<Op, Lhs, Rhs>;
+	using size_type = typename Base::size_type;
+	using Type		= typename Op::value_type;
 	using Lit		= typename Lhs::const_iterator;
 	using Rit		= typename Lhs::const_iterator;
-	using ThisType	= BinaryOp<Op, Lhs, Rhs>;
-	using size_type = typename Traits<ThisType>::size_type;
-	using Type		= typename Op::value_type;
 
 	const Lhs& lhs;
 	const Rhs& rhs;
@@ -61,10 +62,18 @@ public:
 		op{ op },
 		lhs{ lhs },
 		rhs{ rhs },
-		lit{lhs.cbegin()},
-		rit{rhs.cbegin()}
+		lit{ lhs.cbegin() },
+		rit{ rhs.cbegin() }
 	{
 	}
+
+	inline size_type lhsRows()	const noexcept { return lhs.rows(); }
+	inline size_type rhsRows()	const noexcept { return rhs.rows(); }
+	inline size_type rhsCols()	const noexcept { return rhs.cols(); }
+	inline size_type rows() const noexcept { return lhsRows(); }
+	inline size_type cols() const noexcept { return rhsCols(); }
+	inline size_type resultRows() const noexcept { return lhsRows(); }
+	inline size_type resultCols() const noexcept { return rhsCols(); }
 
 	inline void lhsInc(size_type i)  noexcept { lit += i; }
 	inline void lhsDec(size_type i)  noexcept { lit -= i; }
@@ -106,12 +115,13 @@ public:
 };
 
 template<class Derived>
-class MatrixBase
+class MatrixBase : public BaseExpr<Derived>
 {
 public:
+	using Base			= BaseExpr<Derived>;
 	using ThisType		= MatrixBase<Derived>;
 	using value_type	= typename Traits<Derived>::value_type;
-	using size_type		= int;
+	using size_type		= typename Base::size_type;
 	static constexpr bool MajorOrder = Traits<Derived>::MajorOrder;
 
 

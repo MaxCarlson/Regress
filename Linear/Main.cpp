@@ -1,6 +1,9 @@
 #include "Matrix.h"
 #include "Stopwatch.h"
 
+
+#include "MatrixT.h" // Testing
+
 int main()
 {
 
@@ -17,29 +20,30 @@ int main()
 	};
 	//*/
 
-	Matrix<int, true> lhsr = {
+
+	MatrixT<int> lhst = {
 		{1, 2},
 		{3, 4},
 		{5, 6},
 	};
 
-	Matrix<int, true> rhsr = {
+	Matrix<int> rhst = {
 		{1, 2, 3},
 		{4, 5, 6}
 	};
+	auto a = lhst / lhst;
+	MatrixT<int> val = a;
+
+
+
+	//Matrix<int> tp = (tl * tr) * tl;
 
 	Matrix<int> tl(90, 90);
 	Matrix<int> tr(90, 90);
-
-	auto a = lhs / lhs;
-
 	Stopwatch<std::chrono::milliseconds> w;
 	w.start();
-
-	//Matrix<int> tp = (tl * tr) * tl;
-	w.printCurrent();
-
 	Matrix<int> v = (lhs * rhs) * lhs;
+	w.printCurrent();
 
 
 
