@@ -36,8 +36,6 @@ public:
 
 		return result;
 	}
-
-	static constexpr int test = 1;
 };
 
 template<class Op, class Lhs, class Rhs>
@@ -96,7 +94,7 @@ public:
 	inline void rhsInc(size_type i)  noexcept { rit += i; }
 	inline void rhsDec(size_type i)  noexcept { rit -= i; }
 
-	Type operator*() const noexcept
+	Type evaluate() const noexcept
 	{
 		return op(lit, rit, lhs.rows(), rhs.rows(), rhs.cols());
 	}
@@ -139,9 +137,7 @@ public:
 
 		const_iterator(const MatrixExpr* expr) noexcept :
 			expr{*expr}
-		{
-			
-		}
+		{}
 
 		inline bool operator==(const const_iterator& other) const noexcept
 		{
@@ -155,7 +151,7 @@ public:
 
 		inline Type operator*() const noexcept
 		{
-			return *expr;
+			return expr.evaluate();
 		}
 
 		inline const_iterator& operator++() noexcept
@@ -186,26 +182,23 @@ public:
 	static constexpr bool MajorOrder = Traits<Derived>::MajorOrder;
 
 
-	inline void analyzeExpr(ExprAnalyzer<value_type, MajorOrder>&, size_type pOp) {}
-
 	template<class Matrix>
 	void assign(Matrix& to)
 	{
 		auto rit = static_cast<const Derived&>(*this);
 		to.resize(rit.resultRows(), rit.resultCols());
 
-		for (auto lit = to.begin();
-			lit != to.end(); ++lit, ++rit)
-		{
-			*lit = *rit;
-		}
+		for (auto lit = to.begin(); lit != to.end(); ++lit, ++rit)
+			*lit = rit.evaluate();
 	}
 
 	template<class OtherDerived>
 	const BinaryOp<MulOp<value_type>, Derived, OtherDerived>
-		operator/(const OtherDerived& other) const
+		operator*(const MatrixBase<OtherDerived>& other) const
 	{
-		return BinaryOp{ MulOp<value_type>{0} , static_cast<const Derived&>(*this), other };
+		return BinaryOp{ MulOp<value_type>{0}, 
+			static_cast<const Derived&>(*this), 
+			static_cast<const OtherDerived&>(other) };
 	}
 
 };

@@ -7,16 +7,6 @@
 
 //namespace regress{ // TODO: Wrap proj in namespaces
 
-// Partial specilization of traits that allows us
-// to get matrix's Type inside MatrixBase
-template<class Type, bool MajorOrder>
-struct Traits<Matrix<Type, MajorOrder>>
-{
-	using value_type	= Type;
-	using MatrixType	= Matrix<Type, MajorOrder>;
-	static constexpr bool MajorOrder = MajorOrder;
-};
-
 /*
 template<class Iter, class Type>
 class MatrixExpr;
@@ -31,7 +21,7 @@ class MatrixCwiseProductOp;
 
 // without duplications
 template<class Type, bool MajorOrder = false>
-class Matrix : public MatrixBase<Matrix<Type, MajorOrder>>
+class Matrix 
 {
 public:
 	using ThisType		= Matrix<Type, MajorOrder>;

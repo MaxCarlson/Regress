@@ -32,10 +32,11 @@ template<class Type, bool MajorOrder = false>
 class MatrixT : public MatrixBase<MatrixT<Type, MajorOrder>>
 {
 public:
-	using ThisType = MatrixT<Type, MajorOrder>;
-	using Storage = std::vector<Type>;
-	using size_type = int;
-	using value_type = Type;
+	using Base			= MatrixBase<MatrixT<Type, MajorOrder>>;
+	using ThisType		= MatrixT<Type, MajorOrder>;
+	using Storage		= std::vector<Type>;
+	using size_type		= int;
+	using value_type	= Type;
 
 
 	template<bool>
