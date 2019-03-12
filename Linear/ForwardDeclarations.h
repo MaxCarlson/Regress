@@ -1,10 +1,13 @@
 #pragma once
 
 template<class Derived>
-class MatrixBase;
+struct BaseExpr
+{
+	using size_type = int;
+};
 
-template<class, bool>
-class Matrix;
+template<class Derived>
+class MatrixBase;
 
 template<class, bool>
 class MatrixT;
@@ -13,11 +16,17 @@ template<class T>
 struct Traits
 {};
 
+template<class Op, class Lhs, class Rhs>
+class CwiseBinaryOp;
 
-template<class Derived>
-struct BaseExpr
+template<class Lhs, class Rhs>
+class ProductOp;
+
+// TODO: Move to an impl
+template<class T>
+struct RefSelector
 {
-	using size_type = int;
-
-
+	// If T is an expression type will be by value, otherwise (e.g. for Matrix) 
+	// it type is const T&
+	using type = std::conditional_t<T::IsExpr, T, const T&>;
 };

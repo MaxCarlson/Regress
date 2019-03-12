@@ -39,6 +39,12 @@
     <ClInclude Include="MatrixT.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="CwiseBinaryOp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ProductOp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">

@@ -117,12 +117,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="CwiseBinaryOp.h" />
     <ClInclude Include="Expr.h" />
     <ClInclude Include="MatrixBase.h" />
     <ClInclude Include="ExprOperators.h" />
     <ClInclude Include="ForwardDeclarations.h" />
     <ClInclude Include="Matrix.h" />
     <ClInclude Include="MatrixT.h" />
+    <ClInclude Include="ProductOp.h" />
     <ClInclude Include="RegressAssert.h" />
     <ClInclude Include="Stopwatch.h" />
   </ItemGroup>

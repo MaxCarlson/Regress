@@ -2,6 +2,8 @@
 #include <vector>
 #include <iostream>
 #include "MatrixBase.h"
+#include "CwiseBinaryOp.h"
+#include "ProductOp.h"
 
 //namespace regress{ // TODO: Wrap proj in namespaces
 
