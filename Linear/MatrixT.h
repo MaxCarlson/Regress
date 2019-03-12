@@ -72,7 +72,7 @@ public:
 
 
 	static constexpr bool MajorOrder = MajorOrder;
-
+	static constexpr bool IsExpr = false;
 private:
 	size_type	nrows;
 	size_type	ncols;

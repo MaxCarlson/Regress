@@ -49,6 +49,12 @@ struct Traits<BinaryOp<Op, Lhs, Rhs>>
 	static constexpr bool MajorOrder = MatrixType::MajorOrder;
 };
 
+template<class T>
+struct RefSelector
+{
+	using type = std::conditional_t<T::IsExpr, T, const T&>;
+};
+
 template<class Op, class Lhs, class Rhs>
 class BinaryOp : public MatrixBase<BinaryOp<Op, Lhs, Rhs>>
 {
@@ -62,24 +68,28 @@ public:
 
 
 private:
-	const Lhs& lhs;
-	const Rhs& rhs;
-	Op op;
-	Lit lit;
-	Rit rit;
+	using LhsT = typename RefSelector<Lhs>::type;
+	using RhsT = typename RefSelector<Rhs>::type;
+
+	LhsT	lhs;
+	RhsT	rhs;
+	Op		op;
+	Lit		lit;
+	Rit		rit;
 
 public:
 
 	static constexpr bool MajorOrder = Traits<Lhs>::MajorOrder;
+	static constexpr bool IsExpr = true;
 
-	BinaryOp(Op op, const Lhs& lhs, const Rhs& rhs) :
+
+	BinaryOp(Op op, const Lhs& lhsa, const Rhs& rhsa) :
 		op{ op },
-		lhs{ lhs },
-		rhs{ rhs },
+		lhs{ lhsa },
+		rhs{ rhsa },
 		lit{ lhs.cbegin() },
 		rit{ rhs.cbegin() }
-	{
-	}
+	{}
 
 	inline size_type lhsRows()	const noexcept { return lhs.rows(); }
 	inline size_type rhsRows()	const noexcept { return rhs.rows(); }
@@ -130,12 +140,12 @@ public:
 	class const_iterator
 	{
 		using MatrixExpr = ThisType;
-		MatrixExpr expr;
+		MatrixExpr& expr;
 
 	public:
 		static constexpr bool MajorOrder = MajorOrder;
 
-		const_iterator(const MatrixExpr* expr) noexcept :
+		const_iterator(MatrixExpr* expr) noexcept :
 			expr{*expr}
 		{}
 
@@ -158,7 +168,6 @@ public:
 		{
 			++expr;
 			return *this;
-
 		}
 
 		inline const_iterator& operator+=(size_type i) noexcept
@@ -168,7 +177,7 @@ public:
 		}
 	};
 
-	const_iterator cbegin() const noexcept { return const_iterator{ this }; }
+	const_iterator cbegin() noexcept { return const_iterator{ this }; }
 };
 
 template<class Derived>
