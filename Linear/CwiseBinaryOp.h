@@ -13,12 +13,12 @@ template<class Op, class Lhs, class Rhs>
 class CwiseBinaryOp : public MatrixBase<CwiseBinaryOp<Op, Lhs, Rhs>>
 {
 public:
-	using Base = MatrixBase<CwiseBinaryOp<Op, Lhs, Rhs>>;
-	using ThisType = CwiseBinaryOp<Op, Lhs, Rhs>;
+	using Base		= MatrixBase<CwiseBinaryOp<Op, Lhs, Rhs>>;
+	using ThisType	= CwiseBinaryOp<Op, Lhs, Rhs>;
 	using size_type = typename Base::size_type;
-	using Type = typename Op::value_type;
-	using Lit = typename Lhs::const_iterator;
-	using Rit = typename Rhs::const_iterator;
+	using Type		= typename Op::value_type;
+	using Lit		= typename Lhs::const_iterator;
+	using Rit		= typename Rhs::const_iterator;
 
 
 private:

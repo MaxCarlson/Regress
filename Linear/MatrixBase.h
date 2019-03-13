@@ -5,40 +5,6 @@ template<class Type, bool MOrder>
 class ExprAnalyzer;
 
 template<class Type>
-class MulOp
-{
-public:
-	using value_type = Type;
-
-	MulOp(Type) {}
-
-	template<class Lit, class Rit>
-	Type operator()(Lit lit, Rit rit, int lhsRows, int rhsRows, int rhsCols) const
-	{
-		Type result = 0;
-		for (;; --rhsRows)
-		{
-			result += *lit * *rit;
-			if (rhsRows <= 1)
-				break;
-
-			if (Lit::MajorOrder)
-			{
-				lit += lhsRows;
-				++rit;
-			}
-			else
-			{
-				++lit;
-				rit += rhsCols;
-			}
-		}
-
-		return result;
-	}
-};
-
-template<class Type>
 class AddOp
 {
 public:
