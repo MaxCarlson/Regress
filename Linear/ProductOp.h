@@ -43,6 +43,18 @@ public:
 	}
 };
 
+template<class It, class Expr>
+class ItWrapper
+{
+	It& it;
+	Expr& expr;
+public:
+	ItWrapper(It& it, Expr& expr):
+		it{it},
+		expr{expr}
+	{}
+};
+
 template<class Lhs, class Rhs>
 class ProductOp : public MatrixBase<ProductOp<Lhs, Rhs>>
 {
@@ -128,9 +140,9 @@ private:
 		else
 			rhsInc(i);
 
-		size_type idx = std::abs(i);
-		const size_type sign = (0 < i) - (i < 0);
-		const size_type modVal = MajorOrder ? lhsRows() : rhsCols();
+		size_type idx			= std::abs(i);
+		const size_type sign	= (0 < i) - (i < 0);
+		const size_type modVal	= MajorOrder ? lhsRows() : rhsCols();
 
 		while (idx--)
 		{
@@ -180,15 +192,13 @@ public:
 	class const_iterator
 	{
 		using MatrixExpr = ThisType;
-		MatrixExpr& expr;
-		size_type multiCount;
+		MatrixExpr expr;
 
 	public:
 		static constexpr bool MajorOrder = MajorOrder;
 
 		const_iterator(MatrixExpr* expr) noexcept :
-			expr{ *expr },
-			multiCount{ 0 }
+			expr{ *expr }
 		{}
 
 		inline bool operator==(const const_iterator& other) const noexcept
