@@ -134,3 +134,103 @@ public:
 
 	const_iterator begin() noexcept { return const_iterator{ this }; }
 };
+
+namespace impl
+{
+template<class Type>
+class AddOp
+{
+public:
+	using value_type = Type;
+
+	AddOp() {}
+
+	template<class Lit, class Rit>
+	Type operator()(Lit lit, Rit rit) const
+	{
+		return *lit + *rit;
+	}
+};
+
+template<class Type>
+class SubOp
+{
+public:
+	using value_type = Type;
+
+	SubOp() {}
+
+	template<class Lit, class Rit>
+	Type operator()(Lit lit, Rit rit) const
+	{
+		return *lit - *rit;
+	}
+};
+
+template<class Type>
+class CwiseProductOp
+{
+public:
+	using value_type = Type;
+
+	CwiseProductOp() {}
+
+	template<class Lit, class Rit>
+	Type operator()(Lit lit, Rit rit) const
+	{
+		return *lit * *rit;
+	}
+};
+
+template<class Type>
+class CwiseQuotientOp
+{
+public:
+	using value_type = Type;
+
+	CwiseQuotientOp() {}
+
+	template<class Lit, class Rit>
+	Type operator()(Lit lit, Rit rit) const
+	{
+		return *lit / *rit;
+	}
+};
+
+template<class Type>
+class Constant
+{
+public:
+	static constexpr bool IsExpr = false;
+	struct const_iterator
+	{
+		using Ref		= const_iterator&;
+		using size_type = impl::size_type;
+
+		Ref operator++() {}
+		Ref operator+=(size_type) {}
+		Ref operator--() {}
+		Ref operator-=(size_type) {}
+	};
+
+	const_iterator begin() const noexcept { return const_iterator{}; }
+};
+
+template<class Scalar, class Type>
+class ScalarProductOp
+{
+	const Scalar& s;
+public:
+	using value_type = Type;
+
+	ScalarProductOp(const Scalar& s) :
+		s{ s } 
+	{}
+
+	template<class Lit>
+	Type operator()(Lit lit) const
+	{
+		return *lit * s;
+	}
+};
+}

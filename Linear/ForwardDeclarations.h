@@ -1,9 +1,14 @@
 #pragma once
 
+namespace impl
+{
+using size_type = int;
+}
+
 template<class Derived>
 struct BaseExpr
 {
-	using size_type = int;
+	using size_type = typename impl::size_type;
 };
 
 template<class Derived>
@@ -18,6 +23,31 @@ struct Traits
 
 template<class Op, class Lhs, class Rhs>
 class CwiseBinaryOp;
+
+namespace impl
+{
+// Types of CwiseBinaryOp's
+template<class Type>
+class AddOp;
+
+template<class Type>
+class SubOp;
+
+template<class Type>
+class CwiseProductOp;
+
+template<class Type>
+class CwiseQuotientOp;
+
+// Wrapper for numerical op's
+template<class Type>
+class Constant;
+
+template<class Scalar, class Type>
+class ScalarProductOp;
+}
+
+// End Types of CwiseBinaryOp's
 
 template<class Lhs, class Rhs>
 class ProductOp;

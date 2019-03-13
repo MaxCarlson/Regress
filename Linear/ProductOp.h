@@ -9,6 +9,28 @@ struct Traits<ProductOp<Lhs, Rhs>>
 	static constexpr bool MajorOrder = MatrixType::MajorOrder;
 };
 
+//     +---+---+
+//     | A | B |
+//     +---+---+
+// n = | C | D |
+//     +---+---+
+//     | E | F |
+//     +---+---+
+//
+//     +---+---+---+---+
+//     | Z | Y | X | W |
+// m = +---+---+---+---+
+//     | V | U | T | S |
+//     +---+---+---+---+
+//
+//       +---------------+---------------+---------------+---------------+
+//       | (A*Z) + (B*V) | (A*Y) + (B*U) | (A*X) + (B*T) | (A*W) + (B*S) |
+//       +---------------+---------------+---------------+---------------+
+// n*m = | (C*Z) + (D*V) | (C*Y) + (D*U) | (C*X) + (D*T) | (C*W) + (D*S) |
+//       +---------------+---------------+---------------+---------------+
+//       | (E*Z) + (F*V) | (E*Y) + (F*U) | (E*X) + (F*T) | (E*W) + (F*S) |
+//       +---------------+---------------+---------------+---------------+
+//
 template<class Type>
 class MulOp
 {
@@ -41,18 +63,6 @@ public:
 
 		return result;
 	}
-};
-
-template<class It, class Expr>
-class ItWrapper
-{
-	It& it;
-	Expr& expr;
-public:
-	ItWrapper(It& it, Expr& expr):
-		it{it},
-		expr{expr}
-	{}
 };
 
 template<class Lhs, class Rhs>
@@ -109,29 +119,6 @@ public:
 	}
 
 private:
-
-	//     +---+---+
-	//     | A | B |
-	//     +---+---+
-	// n = | C | D |
-	//     +---+---+
-	//     | E | F |
-	//     +---+---+
-	//
-	//     +---+---+---+---+
-	//     | Z | Y | X | W |
-	// m = +---+---+---+---+
-	//     | V | U | T | S |
-	//     +---+---+---+---+
-	//
-	//       +---------------+---------------+---------------+---------------+
-	//       | (A*Z) + (B*V) | (A*Y) + (B*U) | (A*X) + (B*T) | (A*W) + (B*S) |
-	//       +---------------+---------------+---------------+---------------+
-	// m*n = | (C*Z) + (D*V) | (C*Y) + (D*U) | (C*X) + (D*T) | (C*W) + (D*S) |
-	//       +---------------+---------------+---------------+---------------+
-	//       | (E*Z) + (F*V) | (E*Y) + (F*U) | (E*X) + (F*T) | (E*W) + (F*S) |
-	//       +---------------+---------------+---------------+---------------+
-	//
 
 	void incrementSelf(size_type i)
 	{
@@ -192,7 +179,11 @@ public:
 	class const_iterator
 	{
 		using MatrixExpr = ThisType;
-		MatrixExpr expr;
+
+		// Note the copy here
+		// TODO: There's probably a better way to handle this, 
+		// expecially once we're using shared_ptrs for  evaluated exprs
+		MatrixExpr expr; 
 
 	public:
 		static constexpr bool MajorOrder = MajorOrder;

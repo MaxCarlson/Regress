@@ -4,21 +4,6 @@
 template<class Type, bool MOrder>
 class ExprAnalyzer;
 
-template<class Type>
-class AddOp
-{
-public:
-	using value_type = Type;
-
-	AddOp(Type) {}
-
-	template<class Lit, class Rit>
-	Type operator()(Lit lit, Rit rit) const
-	{
-		return *lit + *rit;
-	}
-};
-
 template<class Derived>
 class MatrixBase : public BaseExpr<Derived>
 {
@@ -42,11 +27,29 @@ public:
 	}
 
 	template<class OtherDerived>
-	const CwiseBinaryOp<AddOp<value_type>, Derived, OtherDerived>
+	const CwiseBinaryOp<impl::AddOp<value_type>, Derived, OtherDerived>
 		operator+(const MatrixBase<OtherDerived>& other) const
 	{
-		return CwiseBinaryOp{ AddOp<value_type>{0}, 
+		return CwiseBinaryOp{ impl::AddOp<value_type>{},
 			static_cast<const Derived&>(*this), 
+			static_cast<const OtherDerived&>(other) };
+	}
+
+	template<class OtherDerived>
+	const CwiseBinaryOp<impl::SubOp<value_type>, Derived, OtherDerived>
+		operator-(const MatrixBase<OtherDerived>& other) const
+	{
+		return CwiseBinaryOp{ impl::SubOp<value_type>{},
+			static_cast<const Derived&>(*this),
+			static_cast<const OtherDerived&>(other) };
+	}
+
+	template<class OtherDerived>
+	const CwiseBinaryOp<impl::CwiseQuotientOp<value_type>, Derived, OtherDerived>
+		operator/(const MatrixBase<OtherDerived>& other) const
+	{
+		return CwiseBinaryOp{ impl::CwiseQuotientOp<value_type>{},
+			static_cast<const Derived&>(*this),
 			static_cast<const OtherDerived&>(other) };
 	}
 
@@ -57,5 +60,14 @@ public:
 		return ProductOp{ 
 			static_cast<const Derived&>(*this),
 			static_cast<const OtherDerived&>(other) };
+	}
+
+	template<class Scalar>
+	const CwiseBinaryOp<impl::ScalarProductOp<Scalar, value_type>, Derived, impl::Constant<value_type>>
+		operator*(const Scalar& scalar) const
+	{
+		return CwiseBinaryOp{ impl::ScalarProductOp<Scalar, value_type>{scalar},
+			static_cast<const Derived&>(*this),
+			impl::Constant<value_type>{} };
 	}
 };
