@@ -54,13 +54,13 @@ public:
 			static_cast<const OtherDerived&>(other) };
 	}
 
-	template<class Scalar>
+	template<class Scalar, 
+		class = std::enable_if_t<!std::is_base_of_v<MatrixBase<Scalar>, Scalar>>>
 	const CwiseBinaryOp<impl::ScalarProductOp<Scalar, value_type>, 
 		Derived, 
 		impl::Constant<value_type, Scalar, Derived>>
 		operator*(const Scalar& scalar) const
 	{
-		static_assert(!std::is_base_of_v<MatrixBase<Scalar>, Scalar>);
 		return CwiseBinaryOp{ impl::ScalarProductOp<Scalar, value_type>{},
 			static_cast<const Derived&>(*this),
 			impl::Constant<value_type, Scalar, Derived>{scalar, static_cast<const Derived&>(*this)} };
