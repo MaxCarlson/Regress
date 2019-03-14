@@ -1,4 +1,5 @@
 #pragma once
+#include <memory>
 
 namespace impl
 {
@@ -60,6 +61,9 @@ class ScalarQuotientOp;
 
 template<class Lhs, class Rhs>
 class ProductOp;
+
+template<class Expr>
+class TransposeOp;
 
 // TODO: Move to an impl
 template<class T>

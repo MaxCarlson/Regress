@@ -6,8 +6,8 @@ template<class Op, class Lhs, class Rhs>
 struct Traits<CwiseBinaryOp<Op, Lhs, Rhs>>
 {
 	using value_type = typename Lhs::value_type;
-	using MatrixType = Lhs;
-	static constexpr bool MajorOrder = MatrixType::MajorOrder;
+	using ExprType = Lhs;
+	static constexpr bool MajorOrder = ExprType::MajorOrder;
 };
 
 template<class Op, class Lhs, class Rhs>
@@ -97,6 +97,7 @@ public:
 	const_iterator begin() noexcept { return const_iterator{ this }; }
 };
 
+// Different CwiseBinaryOp's
 namespace impl
 {
 template<class Type>
@@ -159,6 +160,7 @@ public:
 	}
 };
 
+// A wrapper for constant expressions 
 template<class Type, class Val, class Expr>
 class Constant
 {
@@ -196,6 +198,7 @@ public:
 	const_iterator begin() const noexcept { return const_iterator{ constant }; }
 };
 
+// Scalar Op's for CwiseBinaryOp
 template<class Scalar, class Type>
 class ScalarAddOp
 {

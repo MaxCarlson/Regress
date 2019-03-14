@@ -39,13 +39,16 @@
     <ClInclude Include="MatrixT.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="CwiseBinaryOp.h">
+    <ClInclude Include="Exprs\CwiseBinaryOp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ProductOp.h">
+    <ClInclude Include="Exprs\ExprIterator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ExprIterator.h">
+    <ClInclude Include="Exprs\ProductOp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Exprs\Transpose.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

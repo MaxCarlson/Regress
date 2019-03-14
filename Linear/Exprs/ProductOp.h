@@ -6,8 +6,8 @@ template<class Lhs, class Rhs>
 struct Traits<ProductOp<Lhs, Rhs>>
 {
 	using value_type = typename Lhs::value_type;
-	using MatrixType = Lhs;
-	static constexpr bool MajorOrder = MatrixType::MajorOrder;
+	using ExprType = Lhs;
+	static constexpr bool MajorOrder = ExprType::MajorOrder;
 };
 
 //     +---+---+
@@ -78,6 +78,9 @@ public:
 	using Type				= typename Traits<ThisType>::value_type;
 	using Lit				= typename Lhs::const_iterator;
 	using Rit				= typename Rhs::const_iterator;
+
+	// Note: This expr's iterator takes ThisType by VALUE 
+	// (I think we can do without this eventually, and should)
 	using const_iterator	= impl::ExprIterator<ThisType, MajorOrder>;
 
 

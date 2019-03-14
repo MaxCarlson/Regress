@@ -106,4 +106,9 @@ public:
 			static_cast<const Derived&>(*this),
 			impl::Constant<value_type, Scalar, Derived>{scalar, static_cast<const Derived&>(*this)} };
 	}
+
+	TransposeOp<ThisType> transpose() const
+	{
+		return TransposeOp{ static_cast<const Derived&>(*this) };
+	}
 };
