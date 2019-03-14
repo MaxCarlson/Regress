@@ -36,6 +36,18 @@ public:
 			static_cast<const OtherDerived&>(other) };
 	}
 
+	template<class Scalar,
+		class = std::enable_if_t<!std::is_base_of_v<MatrixBase<Scalar>, Scalar>>>
+		const CwiseBinaryOp<impl::ScalarAddOp<Scalar, value_type>,
+		Derived,
+		impl::Constant<value_type, Scalar, Derived>>
+		operator+(const Scalar& scalar) const
+	{
+		return CwiseBinaryOp{ impl::ScalarAddOp<Scalar, value_type>{},
+			static_cast<const Derived&>(*this),
+			impl::Constant<value_type, Scalar, Derived>{scalar, static_cast<const Derived&>(*this)} };
+	}
+
 	template<class OtherDerived>
 	const CwiseBinaryOp<impl::SubOp<value_type>, Derived, OtherDerived>
 		operator-(const MatrixBase<OtherDerived>& other) const
@@ -43,6 +55,18 @@ public:
 		return CwiseBinaryOp{ impl::SubOp<value_type>{},
 			static_cast<const Derived&>(*this),
 			static_cast<const OtherDerived&>(other) };
+	}
+
+	template<class Scalar,
+		class = std::enable_if_t<!std::is_base_of_v<MatrixBase<Scalar>, Scalar>>>
+		const CwiseBinaryOp<impl::ScalarSubOp<Scalar, value_type>,
+		Derived,
+		impl::Constant<value_type, Scalar, Derived>>
+		operator-(const Scalar& scalar) const
+	{
+		return CwiseBinaryOp{ impl::ScalarSubOp<Scalar, value_type>{},
+			static_cast<const Derived&>(*this),
+			impl::Constant<value_type, Scalar, Derived>{scalar, static_cast<const Derived&>(*this)} };
 	}
 
 	template<class OtherDerived>
@@ -73,5 +97,17 @@ public:
 		return CwiseBinaryOp{ impl::CwiseQuotientOp<value_type>{},
 			static_cast<const Derived&>(*this),
 			static_cast<const OtherDerived&>(other) };
+	}
+
+	template<class Scalar,
+		class = std::enable_if_t<!std::is_base_of_v<MatrixBase<Scalar>, Scalar>>>
+		const CwiseBinaryOp<impl::ScalarQuotientOp<Scalar, value_type>,
+		Derived,
+		impl::Constant<value_type, Scalar, Derived>>
+		operator/(const Scalar& scalar) const
+	{
+		return CwiseBinaryOp{ impl::ScalarQuotientOp<Scalar, value_type>{},
+			static_cast<const Derived&>(*this),
+			impl::Constant<value_type, Scalar, Derived>{scalar, static_cast<const Derived&>(*this)} };
 	}
 };

@@ -42,7 +42,7 @@ int main()
 	// {19, 26, 33} *	{3, 4}, =	{262, 340}
 	// {29, 40, 51}		{5, 6},		{404, 524}
 
-	MatrixT<int> bb = lhst * 2;
+	MatrixT<int> bb = lhst / 2.06;
 	
 	auto a = lhst * rhst * lhst + lhst * rhst * lhst;
 	MatrixT<int> val = a;

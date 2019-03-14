@@ -237,6 +237,32 @@ public:
 };
 
 template<class Scalar, class Type>
+class ScalarAddOp
+{
+public:
+	using value_type = Type;
+
+	template<class Lit, class Rit>
+	Type operator()(Lit lit, Rit rit) const
+	{
+		return static_cast<Type>(*lit + *rit);
+	}
+};
+
+template<class Scalar, class Type>
+class ScalarSubOp
+{
+public:
+	using value_type = Type;
+
+	template<class Lit, class Rit>
+	Type operator()(Lit lit, Rit rit) const
+	{
+		return static_cast<Type>(*lit - *rit);
+	}
+};
+
+template<class Scalar, class Type>
 class ScalarProductOp
 {
 public:
@@ -248,4 +274,18 @@ public:
 		return static_cast<Type>(*lit * *rit);
 	}
 };
+
+template<class Scalar, class Type>
+class ScalarQuotientOp
+{
+public:
+	using value_type = Type;
+
+	template<class Lit, class Rit>
+	Type operator()(Lit lit, Rit rit) const
+	{
+		return static_cast<Type>(*lit / *rit);
+	}
+};
+
 }

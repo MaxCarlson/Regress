@@ -39,12 +39,21 @@ class CwiseProductOp;
 template<class Type>
 class CwiseQuotientOp;
 
-// Wrapper for numerical op's
+// Wrapper for non-MatrixBase op's (e.g. Matrix a = a * 2;)
 template<class Type, class Val, class Expr>
 class Constant;
 
 template<class Scalar, class Type>
+class ScalarAddOp;
+
+template<class Scalar, class Type>
+class ScalarSubOp;
+
+template<class Scalar, class Type>
 class ScalarProductOp;
+
+template<class Scalar, class Type>
+class ScalarQuotientOp;
 }
 
 // End Types of CwiseBinaryOp's
