@@ -25,12 +25,13 @@ public:
 	using size_type			= typename Base::size_type;
 	using value_type		= typename Traits<ThisType>::value_type;
 	using Type				= value_type;
+	using It				= typename Expr::const_iterator;
 	using const_iterator	= impl::ExprIterator<ThisType&, MajorOrder>;
 	using TmpMatrix			= std::shared_ptr<MatrixT<value_type, MajorOrder>>;
 
-	ExprType		expr;
-	const_iterator	it;
-	TmpMatrix		tmpMat;
+	ExprType	expr;
+	It			it;
+	TmpMatrix	tmpMat;
 
 	TransposeOp(const Expr& expr) :
 		expr{ expr },
@@ -38,8 +39,47 @@ public:
 		tmpMat{ nullptr }
 	{}
 
+	inline size_type lhsRows()		const noexcept { return expr.rows(); }
+	inline size_type rhsRows()		const noexcept { return expr.rows(); }
+	inline size_type rhsCols()		const noexcept { return expr.cols(); }
+	inline size_type rows()			const noexcept { return lhsRows(); }
+	inline size_type cols()			const noexcept { return rhsCols(); }
+	inline size_type resultRows()	const noexcept { return lhsRows(); }
+	inline size_type resultCols()	const noexcept { return rhsCols(); }
+
+	inline void lhsInc(size_type i)  noexcept { it += i; }
+	inline void lhsDec(size_type i)  noexcept { it -= i; }
+	inline void rhsInc(size_type i)  noexcept { it += i; }
+	inline void rhsDec(size_type i)  noexcept { it -= i; }
+
 	Type evaluate() const noexcept
 	{
-		return ;
+		return 0;
 	}
+
+	ThisType& operator++() noexcept
+	{
+		lhsInc(1);
+		return *this;
+	}
+
+	ThisType& operator+=(size_type i) noexcept
+	{
+		lhsInc(i);
+		return *this;
+	}
+
+	ThisType& operator--() noexcept
+	{
+		lhsDec(1);
+		return *this;
+	}
+
+	ThisType& operator-=(size_type i) noexcept
+	{
+		lhsDec(i);
+		return *this;
+	}
+
+	const_iterator begin() noexcept { return const_iterator{ this }; }
 };

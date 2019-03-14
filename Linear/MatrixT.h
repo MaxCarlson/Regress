@@ -156,7 +156,6 @@ public:
 	void unaryExprPara(Func&& func) const;
 
 	void resize(size_type numRows, size_type numCols);
-	MatrixT transpose() const;
 	Type sum() const;
 
 	void addColumn(size_type idx, Type val = {});
@@ -598,13 +597,6 @@ inline void MatrixT<Type, MajorOrder>::addColumn(size_type idx, Type val)
 		++it;
 	}
 	*this = std::move(tmp);
-}
-
-
-template<class Type, bool MajorOrder>
-inline MatrixT<Type, MajorOrder> MatrixT<Type, MajorOrder>::transpose() const
-{
-	return MatrixT<Type>{ ~(*this) };
 }
 
 template<class Type, bool MajorOrder>
