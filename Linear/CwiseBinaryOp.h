@@ -43,13 +43,13 @@ public:
 		rit{ rhs.begin() }
 	{}
 
-	inline size_type lhsRows()	const noexcept { return lhs.rows(); }
-	inline size_type rhsRows()	const noexcept { return rhs.rows(); }
-	inline size_type rhsCols()	const noexcept { return rhs.cols(); }
-	inline size_type rows() const noexcept { return lhsRows(); }
-	inline size_type cols() const noexcept { return rhsCols(); }
-	inline size_type resultRows() const noexcept { return lhsRows(); }
-	inline size_type resultCols() const noexcept { return rhsCols(); }
+	inline size_type lhsRows()		const noexcept { return lhs.rows(); }
+	inline size_type rhsRows()		const noexcept { return rhs.rows(); }
+	inline size_type rhsCols()		const noexcept { return rhs.cols(); }
+	inline size_type rows()			const noexcept { return lhsRows(); }
+	inline size_type cols()			const noexcept { return rhsCols(); }
+	inline size_type resultRows()	const noexcept { return lhsRows(); }
+	inline size_type resultCols()	const noexcept { return rhsCols(); }
 
 	inline void lhsInc(size_type i)  noexcept { lit += i; }
 	inline void lhsDec(size_type i)  noexcept { lit -= i; }
@@ -104,6 +104,8 @@ public:
 			expr{ *expr }
 		{}
 
+		MatrixExpr& getCont() noexcept { return expr; }
+
 		inline bool operator==(const const_iterator& other) const noexcept
 		{
 			return &expr == &other.expr;
@@ -114,7 +116,7 @@ public:
 			return !(*this == other);
 		}
 
-		inline Type operator*() const noexcept
+		inline Type operator*() const
 		{
 			return expr.evaluate();
 		}
@@ -197,40 +199,53 @@ public:
 	}
 };
 
-template<class Type>
+template<class Type, class Val, class Expr>
 class Constant
 {
+	const Val&	constant;
+	const Expr&	expr;
 public:
-	static constexpr bool IsExpr = false;
+	static constexpr bool IsExpr = true;
+
+	Constant(const Val& constant, const Expr& expr) :
+		constant{ constant }, 
+		expr{ expr }
+	{}
+
 	struct const_iterator
 	{
 		using Ref		= const_iterator&;
 		using size_type = impl::size_type;
 
-		Ref operator++() {}
-		Ref operator+=(size_type) {}
-		Ref operator--() {}
-		Ref operator-=(size_type) {}
+		const Val& constant;
+
+		const_iterator(const Val& constant) :
+			constant{ constant }
+		{}
+
+		Ref operator++()			{ return *this; }
+		Ref operator+=(size_type)	{ return *this; }
+		Ref operator--()			{ return *this; }
+		Ref operator-=(size_type)	{ return *this; }
+		const Val& operator*() const noexcept { return constant; }
 	};
 
-	const_iterator begin() const noexcept { return const_iterator{}; }
+	size_type rows() const noexcept { return expr.rows(); }
+	size_type cols() const noexcept { return expr.cols(); }
+
+	const_iterator begin() const noexcept { return const_iterator{ constant }; }
 };
 
 template<class Scalar, class Type>
 class ScalarProductOp
 {
-	const Scalar& s;
 public:
 	using value_type = Type;
 
-	ScalarProductOp(const Scalar& s) :
-		s{ s } 
-	{}
-
-	template<class Lit>
-	Type operator()(Lit lit) const
+	template<class Lit, class Rit>
+	Type operator()(Lit lit, Rit rit) const
 	{
-		return *lit * s;
+		return static_cast<Type>(*lit * *rit);
 	}
 };
 }

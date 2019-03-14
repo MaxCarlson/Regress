@@ -40,7 +40,7 @@ template<class Type>
 class CwiseQuotientOp;
 
 // Wrapper for numerical op's
-template<class Type>
+template<class Type, class Val, class Expr>
 class Constant;
 
 template<class Scalar, class Type>

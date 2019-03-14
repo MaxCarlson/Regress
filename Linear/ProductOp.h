@@ -192,6 +192,8 @@ public:
 			expr{ *expr }
 		{}
 
+		MatrixExpr& getCont() noexcept { return expr; }
+
 		inline bool operator==(const const_iterator& other) const noexcept
 		{
 			return &expr == &other.expr;
@@ -202,7 +204,7 @@ public:
 			return !(*this == other);
 		}
 
-		inline Type operator*() const noexcept
+		inline Type operator*() const
 		{
 			return expr.evaluate();
 		}

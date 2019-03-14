@@ -19,11 +19,12 @@ public:
 	template<class Matrix>
 	void assign(Matrix& to)
 	{
-		auto rit = static_cast<const Derived&>(*this);
-		to.resize(rit.resultRows(), rit.resultCols());
+		auto rit = static_cast<Derived&>(*this).begin();
+		auto cont = rit.getCont();
+		to.resize(cont.resultRows(), cont.resultCols());
 
 		for (auto lit = to.begin(); lit != to.end(); ++lit, ++rit)
-			*lit = rit.evaluate();
+			*lit = *rit;
 	}
 
 	template<class OtherDerived>
@@ -45,15 +46,6 @@ public:
 	}
 
 	template<class OtherDerived>
-	const CwiseBinaryOp<impl::CwiseQuotientOp<value_type>, Derived, OtherDerived>
-		operator/(const MatrixBase<OtherDerived>& other) const
-	{
-		return CwiseBinaryOp{ impl::CwiseQuotientOp<value_type>{},
-			static_cast<const Derived&>(*this),
-			static_cast<const OtherDerived&>(other) };
-	}
-
-	template<class OtherDerived>
 	const ProductOp<Derived, OtherDerived>
 		operator*(const MatrixBase<OtherDerived>& other) const
 	{
@@ -63,11 +55,23 @@ public:
 	}
 
 	template<class Scalar>
-	const CwiseBinaryOp<impl::ScalarProductOp<Scalar, value_type>, Derived, impl::Constant<value_type>>
+	const CwiseBinaryOp<impl::ScalarProductOp<Scalar, value_type>, 
+		Derived, 
+		impl::Constant<value_type, Scalar, Derived>>
 		operator*(const Scalar& scalar) const
 	{
-		return CwiseBinaryOp{ impl::ScalarProductOp<Scalar, value_type>{scalar},
+		static_assert(!std::is_base_of_v<MatrixBase<Scalar>, Scalar>);
+		return CwiseBinaryOp{ impl::ScalarProductOp<Scalar, value_type>{},
 			static_cast<const Derived&>(*this),
-			impl::Constant<value_type>{} };
+			impl::Constant<value_type, Scalar, Derived>{scalar, static_cast<const Derived&>(*this)} };
+	}
+
+	template<class OtherDerived>
+	const CwiseBinaryOp<impl::CwiseQuotientOp<value_type>, Derived, OtherDerived>
+		operator/(const MatrixBase<OtherDerived>& other) const
+	{
+		return CwiseBinaryOp{ impl::CwiseQuotientOp<value_type>{},
+			static_cast<const Derived&>(*this),
+			static_cast<const OtherDerived&>(other) };
 	}
 };
