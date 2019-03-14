@@ -45,6 +45,9 @@
     <ClInclude Include="ProductOp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ExprIterator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">

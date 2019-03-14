@@ -27,6 +27,8 @@ public:
 			*lit = *rit;
 	}
 
+	// Matrix Operators
+
 	template<class OtherDerived>
 	const CwiseBinaryOp<impl::AddOp<value_type>, Derived, OtherDerived>
 		operator+(const MatrixBase<OtherDerived>& other) const
@@ -35,6 +37,27 @@ public:
 			static_cast<const Derived&>(*this), 
 			static_cast<const OtherDerived&>(other) };
 	}
+
+	template<class OtherDerived>
+	const CwiseBinaryOp<impl::SubOp<value_type>, Derived, OtherDerived>
+		operator-(const MatrixBase<OtherDerived>& other) const
+	{
+		return CwiseBinaryOp{ impl::SubOp<value_type>{},
+			static_cast<const Derived&>(*this),
+			static_cast<const OtherDerived&>(other) };
+	}
+
+	template<class OtherDerived>
+	const ProductOp<Derived, OtherDerived>
+		operator*(const MatrixBase<OtherDerived>& other) const
+	{
+		return ProductOp{ 
+			static_cast<const Derived&>(*this),
+			static_cast<const OtherDerived&>(other) };
+	}
+
+
+	// Scalar Operators
 
 	template<class Scalar,
 		class = std::enable_if_t<!std::is_base_of_v<MatrixBase<Scalar>, Scalar>>>
@@ -46,15 +69,6 @@ public:
 		return CwiseBinaryOp{ impl::ScalarAddOp<Scalar, value_type>{},
 			static_cast<const Derived&>(*this),
 			impl::Constant<value_type, Scalar, Derived>{scalar, static_cast<const Derived&>(*this)} };
-	}
-
-	template<class OtherDerived>
-	const CwiseBinaryOp<impl::SubOp<value_type>, Derived, OtherDerived>
-		operator-(const MatrixBase<OtherDerived>& other) const
-	{
-		return CwiseBinaryOp{ impl::SubOp<value_type>{},
-			static_cast<const Derived&>(*this),
-			static_cast<const OtherDerived&>(other) };
 	}
 
 	template<class Scalar,
@@ -69,34 +83,16 @@ public:
 			impl::Constant<value_type, Scalar, Derived>{scalar, static_cast<const Derived&>(*this)} };
 	}
 
-	template<class OtherDerived>
-	const ProductOp<Derived, OtherDerived>
-		operator*(const MatrixBase<OtherDerived>& other) const
-	{
-		return ProductOp{ 
-			static_cast<const Derived&>(*this),
-			static_cast<const OtherDerived&>(other) };
-	}
-
-	template<class Scalar, 
+	template<class Scalar,
 		class = std::enable_if_t<!std::is_base_of_v<MatrixBase<Scalar>, Scalar>>>
-	const CwiseBinaryOp<impl::ScalarProductOp<Scalar, value_type>, 
-		Derived, 
+		const CwiseBinaryOp<impl::ScalarProductOp<Scalar, value_type>,
+		Derived,
 		impl::Constant<value_type, Scalar, Derived>>
 		operator*(const Scalar& scalar) const
 	{
 		return CwiseBinaryOp{ impl::ScalarProductOp<Scalar, value_type>{},
 			static_cast<const Derived&>(*this),
 			impl::Constant<value_type, Scalar, Derived>{scalar, static_cast<const Derived&>(*this)} };
-	}
-
-	template<class OtherDerived>
-	const CwiseBinaryOp<impl::CwiseQuotientOp<value_type>, Derived, OtherDerived>
-		operator/(const MatrixBase<OtherDerived>& other) const
-	{
-		return CwiseBinaryOp{ impl::CwiseQuotientOp<value_type>{},
-			static_cast<const Derived&>(*this),
-			static_cast<const OtherDerived&>(other) };
 	}
 
 	template<class Scalar,

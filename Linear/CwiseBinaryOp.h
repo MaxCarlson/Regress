@@ -1,5 +1,6 @@
 #pragma once
 #include "ForwardDeclarations.h"
+#include "ExprIterator.h"
 
 template<class Op, class Lhs, class Rhs>
 struct Traits<CwiseBinaryOp<Op, Lhs, Rhs>>
@@ -13,12 +14,17 @@ template<class Op, class Lhs, class Rhs>
 class CwiseBinaryOp : public MatrixBase<CwiseBinaryOp<Op, Lhs, Rhs>>
 {
 public:
-	using Base		= MatrixBase<CwiseBinaryOp<Op, Lhs, Rhs>>;
-	using ThisType	= CwiseBinaryOp<Op, Lhs, Rhs>;
-	using size_type = typename Base::size_type;
-	using Type		= typename Op::value_type;
-	using Lit		= typename Lhs::const_iterator;
-	using Rit		= typename Rhs::const_iterator;
+	static constexpr bool MajorOrder = Traits<Lhs>::MajorOrder;
+
+
+	using Base				= MatrixBase<CwiseBinaryOp<Op, Lhs, Rhs>>;
+	using ThisType			= CwiseBinaryOp<Op, Lhs, Rhs>;
+	using size_type			= typename Base::size_type;
+	using value_type		= typename Traits<ThisType>::value_type;
+	using Type				= typename Op::value_type;
+	using Lit				= typename Lhs::const_iterator;
+	using Rit				= typename Rhs::const_iterator;
+	using const_iterator	= impl::ExprIterator<ThisType&, MajorOrder>;
 
 
 private:
@@ -33,7 +39,6 @@ private:
 
 public:
 
-	static constexpr bool MajorOrder = Traits<Lhs>::MajorOrder;
 
 	CwiseBinaryOp(Op op, const Lhs& lhsa, const Rhs& rhsa) :
 		op{ op },
@@ -88,51 +93,6 @@ public:
 		rhsDec(i);
 		return *this;
 	}
-
-	// This iterator is const only in the sense that we're not modifying
-	// and matricies with it. The expressions do get modified, but we need to match naming convension
-	// with the Matrix class. TODO: figure out how to do this more cleanly
-	class const_iterator
-	{
-		using MatrixExpr = ThisType;
-		MatrixExpr& expr;
-
-	public:
-		static constexpr bool MajorOrder = MajorOrder;
-
-		const_iterator(MatrixExpr* expr) noexcept :
-			expr{ *expr }
-		{}
-
-		MatrixExpr& getCont() noexcept { return expr; }
-
-		inline bool operator==(const const_iterator& other) const noexcept
-		{
-			return &expr == &other.expr;
-		}
-
-		inline bool operator!=(const const_iterator& other) const noexcept
-		{
-			return !(*this == other);
-		}
-
-		inline Type operator*() const
-		{
-			return expr.evaluate();
-		}
-
-		inline const_iterator& operator++() noexcept
-		{
-			++expr;
-			return *this;
-		}
-
-		inline const_iterator& operator+=(size_type i) noexcept
-		{
-			expr += i;
-			return *this;
-		}
-	};
 
 	const_iterator begin() noexcept { return const_iterator{ this }; }
 };

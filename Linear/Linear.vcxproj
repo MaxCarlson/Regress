@@ -119,6 +119,7 @@
   <ItemGroup>
     <ClInclude Include="CwiseBinaryOp.h" />
     <ClInclude Include="Expr.h" />
+    <ClInclude Include="ExprIterator.h" />
     <ClInclude Include="MatrixBase.h" />
     <ClInclude Include="ExprOperators.h" />
     <ClInclude Include="ForwardDeclarations.h" />

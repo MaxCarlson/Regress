@@ -69,3 +69,9 @@ struct RefSelector
 	// it type is const T&
 	using type = std::conditional_t<T::IsExpr, T, const T&>;
 };
+
+template<class T>
+struct IteratorSelector
+{
+	using type = std::conditional_t<T::IsExpr, typename T::ExprIterator, typename T::const_iterator>;
+};

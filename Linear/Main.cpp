@@ -46,7 +46,7 @@ int main()
 	
 	auto a = lhst * rhst * lhst + lhst * rhst * lhst;
 	MatrixT<int> val = a;
-	//Matrix<int> val2 = lhs * rhs * lhs;
+	Matrix<int> val2 = lhs * rhs * lhs + lhs * rhs * lhs;
 
 
 

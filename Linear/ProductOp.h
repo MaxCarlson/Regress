@@ -1,5 +1,6 @@
 #pragma once
 #include "ForwardDeclarations.h"
+#include "ExprIterator.h"
 
 template<class Lhs, class Rhs>
 struct Traits<ProductOp<Lhs, Rhs>>
@@ -69,12 +70,15 @@ template<class Lhs, class Rhs>
 class ProductOp : public MatrixBase<ProductOp<Lhs, Rhs>>
 {
 public:
-	using Base		= MatrixBase<ProductOp<Lhs, Rhs>>;
-	using ThisType	= ProductOp<Lhs, Rhs>;
-	using size_type = typename Base::size_type;
-	using Type		= typename Traits<ThisType>::value_type;
-	using Lit		= typename Lhs::const_iterator;
-	using Rit		= typename Rhs::const_iterator;
+	static constexpr bool MajorOrder = Traits<Lhs>::MajorOrder;
+
+	using Base				= MatrixBase<ProductOp<Lhs, Rhs>>;
+	using ThisType			= ProductOp<Lhs, Rhs>;
+	using size_type			= typename Base::size_type;
+	using Type				= typename Traits<ThisType>::value_type;
+	using Lit				= typename Lhs::const_iterator;
+	using Rit				= typename Rhs::const_iterator;
+	using const_iterator	= impl::ExprIterator<ThisType, MajorOrder>;
 
 
 private:
@@ -89,7 +93,6 @@ private:
 	size_type	multiCount;
 public:
 
-	static constexpr bool MajorOrder = Traits<Lhs>::MajorOrder;
 
 	ProductOp(const Lhs& lhsa, const Rhs& rhsa) :
 		lhs{ lhsa },
@@ -175,64 +178,6 @@ public:
 		incrementSelf(-i);
 		return *this;
 	}
-
-	class const_iterator
-	{
-		using MatrixExpr = ThisType;
-
-		// Note the copy here
-		// TODO: There's probably a better way to handle this, 
-		// expecially once we're using shared_ptrs for  evaluated exprs
-		MatrixExpr expr; 
-
-	public:
-		static constexpr bool MajorOrder = MajorOrder;
-
-		const_iterator(MatrixExpr* expr) noexcept :
-			expr{ *expr }
-		{}
-
-		MatrixExpr& getCont() noexcept { return expr; }
-
-		inline bool operator==(const const_iterator& other) const noexcept
-		{
-			return &expr == &other.expr;
-		}
-
-		inline bool operator!=(const const_iterator& other) const noexcept
-		{
-			return !(*this == other);
-		}
-
-		inline Type operator*() const
-		{
-			return expr.evaluate();
-		}
-
-		inline const_iterator& operator++() noexcept
-		{
-			++expr;
-			return *this;
-		}
-
-		inline const_iterator& operator+=(size_type i) noexcept
-		{
-			expr += i;
-			return *this;
-		}
-
-		inline const_iterator& operator--() noexcept
-		{
-			--expr;
-			return *this;
-		}
-
-		inline const_iterator& operator-=(size_type i) noexcept
-		{
-			expr -= i;
-			return *this;
-		}
-	};
 
 	const_iterator begin() noexcept { return const_iterator{ this }; }
 };
