@@ -224,6 +224,7 @@ public:
 			cont{ cont }
 		{}
 
+		template<bool isConst>
 		nonMajorOrderIteratorBase(const arrayOrderIteratorBase<isConst>& it) :
 			idx{it - it.matPtr()->ao_begin()},
 			cont{it.matPtr()}
@@ -269,6 +270,11 @@ public:
 		{
 			idx -= i;
 			return *this;
+		}
+
+		size_type operator-(const nonMajorOrderIteratorBase& other) const
+		{
+			return idx - other.idx;
 		}
 
 	private:
@@ -347,6 +353,12 @@ public:
 			cont{ cont }
 		{}
 
+		template<bool isConst>
+		arrayOrderIteratorBase(const nonMajorOrderIteratorBase<isConst>& it) :
+			it{ cont->vals.begin() + (it - it.matPtr()->nmo_begin()) },
+			cont{ it.matPtr() }
+		{}
+
 		ContainerPtr matPtr() const { return cont; }
 
 		ThisType& operator++()
@@ -383,6 +395,11 @@ public:
 		{
 			it -= i;
 			return *this;
+		}
+
+		size_type operator-(const ThisType& other) const
+		{
+			return it - other.it;
 		}
 
 		reference operator*() const

@@ -19,8 +19,8 @@ public:
 	template<class Matrix>
 	void assign(Matrix& to)
 	{
-		auto rit = static_cast<Derived&>(*this).begin();
-		auto cont = rit.getCont();
+		auto rit	= static_cast<Derived&>(*this).begin();
+		auto& cont	= rit.getCont();
 		to.resize(cont.resultRows(), cont.resultCols());
 
 		for (auto lit = to.begin(); lit != to.end(); ++lit, ++rit)
