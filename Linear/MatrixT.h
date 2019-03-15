@@ -144,6 +144,13 @@ public:
 	row_const_iterator	row_cbegin()	const noexcept { return { 0,		this }; }
 	row_const_iterator	row_cend()		const noexcept { return { size(),	this }; }
 
+private:
+	arrayOrderIteratorBase<false>		ao_begin()			noexcept { return { 0, this }; }
+	arrayOrderIteratorBase<true>		ao_begin()	const	noexcept { return { 0, this }; }
+	nonMajorOrderIteratorBase<false>	nmo_begin()			noexcept { return { 0, this }; }
+	nonMajorOrderIteratorBase<true>		nmo_begin()	const	noexcept { return { 0, this }; }
+public:
+
 	// Apply a function to every member of the Matrix
 	// [](Type& t) { ...do something... return; }
 	template<class Func>
@@ -197,14 +204,14 @@ public:
 	class nonMajorOrderIteratorBase : public IteratorBase<isConst>
 	{
 	public:
-		using Base = IteratorBase<isConst>;
-		using ThisType = nonMajorOrderIteratorBase<isConst>;
+		using Base				= IteratorBase<isConst>;
+		using ThisType			= nonMajorOrderIteratorBase<isConst>;
 		using iterator_category = typename Base::iterator_category;
-		using ContainerType = typename Base::ContainerType;
-		using ContainerPtr = typename Base::ContainerPtr;
-		using value_type = typename Base::value_type;
-		using reference = typename Base::reference;
-		using pointer = typename Base::pointer;
+		using ContainerType		= typename Base::ContainerType;
+		using ContainerPtr		= typename Base::ContainerPtr;
+		using value_type		= typename Base::value_type;
+		using reference			= typename Base::reference;
+		using pointer			= typename Base::pointer;
 
 	private:
 		size_type		idx;
@@ -215,6 +222,11 @@ public:
 		nonMajorOrderIteratorBase(size_type idx, ContainerPtr cont) :
 			idx{ idx },
 			cont{ cont }
+		{}
+
+		nonMajorOrderIteratorBase(const arrayOrderIteratorBase<isConst>& it) :
+			idx{it - it.matPtr()->ao_begin()},
+			cont{it.matPtr()}
 		{}
 
 		ContainerPtr matPtr() const { return cont; }
@@ -313,15 +325,15 @@ public:
 	class arrayOrderIteratorBase : public IteratorBase<isConst>
 	{
 	public:
-		using Base = IteratorBase<isConst>;
+		using Base				= IteratorBase<isConst>;
 		using iterator_category = typename Base::iterator_category;
-		using ContainerType = typename Base::ContainerType;
-		using ContainerPtr = typename Base::ContainerPtr;
-		using value_type = typename Base::value_type;
-		using reference = typename Base::reference;
-		using pointer = typename Base::pointer;
-		using It = typename Base::Siterator;
-		using ThisType = arrayOrderIteratorBase<isConst>;
+		using ContainerType		= typename Base::ContainerType;
+		using ContainerPtr		= typename Base::ContainerPtr;
+		using value_type		= typename Base::value_type;
+		using reference			= typename Base::reference;
+		using pointer			= typename Base::pointer;
+		using It				= typename Base::Siterator;
+		using ThisType			= arrayOrderIteratorBase<isConst>;
 
 	private:
 		It				it;

@@ -25,7 +25,11 @@ public:
 	using size_type			= typename Base::size_type;
 	using value_type		= typename Traits<ThisType>::value_type;
 	using Type				= value_type;
-	using It				= typename Expr::const_iterator;
+	using It				= std::conditional_t<IsMatrix, 
+		typename Expr::minor_const_iterator, 
+		typename Expr::const_iterator>;
+
+
 	using const_iterator	= impl::ExprIterator<ThisType&, MajorOrder>;
 	using TmpMatrix			= std::shared_ptr<MatrixT<value_type, MajorOrder>>;
 

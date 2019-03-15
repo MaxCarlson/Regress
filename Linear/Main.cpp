@@ -1,12 +1,9 @@
 #include "Matrix.h"
 #include "Stopwatch.h"
-
-
 #include "MatrixT.h" // Testing
 
 int main()
 {
-
 	///*
 	Matrix<int> lhs = {
 		{1, 2},
