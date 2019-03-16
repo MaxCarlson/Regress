@@ -94,16 +94,19 @@ public:
 
 	// TODO: We should create temporary else where!
 	// TODO: Switch back to const, also switch ExprIterator oprator* back to const
-	Type evaluate() noexcept
+	Type evaluate() const noexcept
 	{
-		if (IsMatrix)
+		if constexpr (IsMatrix)
 			return *it;
 		else
-		{
-			if (!evaluated)
-				createTemporary();
 			return *tmpIt;
-		}
+	}
+
+	void analyze()
+	{
+		expr.analyze();
+		if (!IsMatrix && !evaluated)
+			createTemporary();
 	}
 
 	void createTemporary()

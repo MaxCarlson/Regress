@@ -125,6 +125,12 @@ public:
 		return op(lit, rit, lhsRows(), rhsRows(), rhsCols());
 	}
 
+	void analyze()
+	{
+		lhs.analyze();
+		rhs.analyze();
+	}
+
 private:
 	/*
 	void incrementSelf(size_type i)

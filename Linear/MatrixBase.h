@@ -23,9 +23,13 @@ public:
 		auto& cont	= rit.getCont();
 		to.resize(cont.resultRows(), cont.resultCols());
 
+		static_cast<Derived&>(*this).analyze();
+
 		for (auto lit = to.begin(); lit != to.end(); ++lit, ++rit)
 			*lit = *rit;
 	}
+
+	void analyze() {}
 
 	// Matrix Operators
 

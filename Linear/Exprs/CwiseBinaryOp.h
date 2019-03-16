@@ -66,6 +66,12 @@ public:
 		return op(lit, rit);
 	}
 
+	void analyze()
+	{
+		lhs.analyze();
+		rhs.analyze();
+	}
+
 	ThisType& operator++() noexcept
 	{
 		lhsInc(1);
