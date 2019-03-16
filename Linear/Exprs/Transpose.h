@@ -71,9 +71,9 @@ public:
 	TmpIt		tmpIt;
 	bool		evaluated;
 
-	TransposeOp(Expr expr) : // Note the copy, TODO: Why is this needed?
+	TransposeOp(const Expr& expr) : 
 		expr{ expr },
-		it{ expr.begin() }, // If expr is a matrix, this iterator is converted into a nonMajorOrder iterator
+		it{ this->expr.begin() }, // If expr is a matrix, this iterator is converted into a nonMajorOrder iterator
 		tmpMat{ nullptr },
 		tmpIt{},
 		evaluated{ false }
@@ -92,6 +92,8 @@ public:
 	inline void rhsInc(size_type i)  noexcept { if (IsMatrix) it += i; else tmpIt += i; }
 	inline void rhsDec(size_type i)  noexcept { if (IsMatrix) it -= i; else tmpIt -= i; }
 
+	// TODO: We should create temporary else where!
+	// TODO: Switch back to const, also switch ExprIterator oprator* back to const
 	Type evaluate() noexcept
 	{
 		if (IsMatrix)
