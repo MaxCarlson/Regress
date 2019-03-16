@@ -38,7 +38,7 @@ class MulOp
 public:
 	using value_type = Type;
 
-	MulOp(Type) {}
+	MulOp() {}
 
 	template<class Lit, class Rit>
 	Type operator()(Lit lit, Rit rit, int lhsRows, int rhsRows, int rhsCols) const
@@ -94,6 +94,7 @@ private:
 	Rit			rit;
 	MulOp<Type>	op;
 	size_type	multiCount;
+	//size_type	opCount = 0;
 public:
 
 
@@ -102,7 +103,7 @@ public:
 		rhs{ rhsa },
 		lit{ lhs.begin() },
 		rit{ rhs.begin() },
-		op{ 0 },
+		op{},
 		multiCount{ 0 }
 	{}
 
@@ -125,6 +126,29 @@ public:
 	}
 
 private:
+	/*
+	void incrementSelf(size_type i)
+	{
+		rhsInc(i);
+
+		//opCount += i;
+		multiCount += i;
+
+		auto idx = std::abs(i);
+		size_type sign = (0 < i) - (i < 0);
+
+		if (multiCount % rhsCols() == 0)
+		{
+			rhsDec(rhsCols() * sign);
+			lhsInc(rhsRows() * sign); // Same as lhsCols
+		}
+
+		//if (opCount >= resultRows() * resultCols())
+		//{
+		//	lhsDec(lhsRows() * rhsRows());
+		//}
+	}
+	*/
 
 	void incrementSelf(size_type i)
 	{

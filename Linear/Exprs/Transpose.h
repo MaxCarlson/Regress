@@ -10,20 +10,22 @@ struct Traits<TransposeOp<Expr>>
 	static constexpr bool MajorOrder	= ExprType::MajorOrder;
 };
 
+namespace impl
+{
 template<class, class = std::void_t<>>
-struct has_type_member
+struct has_minor_iterator_member
 {
 	using type = std::false_type;
 };
-// specialization recognizes types that do have a nested ::type member:
+// specialization recognizes types that do have a nested ::minor_const_iterator member:
 template<class T>
-struct has_type_member<T, std::void_t<typename T::minor_const_iterator>>
+struct has_minor_iterator_member<T, std::void_t<typename T::minor_const_iterator>>
 {
 	using type = std::true_type;
 };
 
 template<class Expr, class>
-	struct ItSelector
+struct ItSelector
 {
 	using type = void;
 };
@@ -39,6 +41,7 @@ struct ItSelector<Expr, std::false_type>
 {
 	using type = typename Expr::const_iterator;
 };
+} // End impl::
 
 template<class Expr>
 class TransposeOp : public MatrixBase<TransposeOp<Expr>>
@@ -55,10 +58,10 @@ public:
 	using size_type			= typename Base::size_type;
 	using value_type		= typename Traits<ThisType>::value_type;
 	using Type				= value_type;
-	using It				= typename ItSelector<Expr, typename has_type_member<Expr>::type>::type;
+	using It				= typename impl::ItSelector<Expr, 
+		typename impl::has_minor_iterator_member<Expr>::type>::type;
 
-
-	using const_iterator	= impl::ExprIterator<ThisType&, MajorOrder>;
+	using const_iterator	= impl::ExprIterator<ThisType, MajorOrder>;
 	using TmpMatrix			= std::shared_ptr<MatrixT<value_type, MajorOrder>>;
 	using TmpIt				= typename MatrixT<value_type, MajorOrder>::iterator;
 
@@ -103,7 +106,13 @@ public:
 
 	void createTemporary()
 	{
-		tmpMat	= TmpMatrix{ new MatrixT<value_type, MajorOrder>(expr.resultCols(), expr.resultRows()) };
+		tmpMat = TmpMatrix{ new MatrixT<value_type, MajorOrder>() };
+
+		if constexpr (IsMatrix)
+			tmpMat->resize(expr.cols(), expr.rows());
+		else
+			tmpMat->resize(expr.resultCols(), expr.resultRows());
+		
 		tmpIt	= tmpMat->begin();
 
 		for (auto tIt = tmpMat->m_begin(); 

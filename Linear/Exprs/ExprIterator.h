@@ -8,7 +8,6 @@ class ExprIterator
 {
 	MatrixExpr expr;
 
-
 public:
 	using MatrixExprNoRef	= std::remove_reference_t<MatrixExpr>;
 	using Type				= typename MatrixExprNoRef::value_type;
@@ -17,6 +16,9 @@ public:
 
 	ExprIterator(MatrixExprNoRef* expr) noexcept :
 		expr{ *expr }
+	{}
+	ExprIterator(const ExprIterator& other) noexcept :
+		expr{ other.expr }
 	{}
 
 	MatrixExpr& getCont() noexcept { return expr; }
@@ -31,7 +33,7 @@ public:
 		return !(*this == other);
 	}
 
-	inline Type operator*() const
+	inline Type operator*() 
 	{
 		return expr.evaluate();
 	}

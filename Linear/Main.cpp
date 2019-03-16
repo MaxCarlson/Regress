@@ -39,12 +39,13 @@ int main()
 	// {19, 26, 33} *	{3, 4}, =	{262, 340}
 	// {29, 40, 51}		{5, 6},		{404, 524}
 
-	MatrixT<int> bb = lhst / 2.06;
+	//MatrixT<int> bb = lhst / 2.06;
 
-	auto cc = (lhst + lhst) * rhst;
-	MatrixT<int> c = cc;
+	//auto cc = (lhst + lhst) * rhst;
+	//auto cc = lhst * rhst * lhst;
+	//MatrixT<int> c = cc;
 
-	auto ll = (lhst * rhst).transpose() * lhst;
+	auto ll = (rhst).transpose();
 	MatrixT<int> tt = ll;
 
 	

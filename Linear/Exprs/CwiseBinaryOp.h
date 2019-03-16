@@ -24,7 +24,7 @@ public:
 	using Type				= typename Op::value_type;
 	using Lit				= typename Lhs::const_iterator;
 	using Rit				= typename Rhs::const_iterator;
-	using const_iterator	= impl::ExprIterator<ThisType&, MajorOrder>;
+	using const_iterator	= impl::ExprIterator<ThisType, MajorOrder>;
 
 
 private:
