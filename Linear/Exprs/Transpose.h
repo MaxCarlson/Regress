@@ -76,9 +76,9 @@ public:
 		evaluated{ false }
 	{}
 
-	inline size_type lhsRows()		const noexcept { return expr.rows(); }
-	inline size_type rhsRows()		const noexcept { return expr.rows(); }
-	inline size_type rhsCols()		const noexcept { return expr.cols(); }
+	inline size_type lhsRows()		const noexcept { return expr.cols(); }
+	inline size_type rhsRows()		const noexcept { return expr.cols(); }
+	inline size_type rhsCols()		const noexcept { return expr.rows(); }
 	inline size_type rows()			const noexcept { return expr.cols(); }
 	inline size_type cols()			const noexcept { return expr.rows(); }
 	inline size_type resultRows()	const noexcept { return expr.cols(); }
@@ -103,7 +103,7 @@ public:
 
 	void createTemporary()
 	{
-		tmpMat	= TmpMatrix{ new MatrixT<value_type, MajorOrder> };
+		tmpMat	= TmpMatrix{ new MatrixT<value_type, MajorOrder>(expr.resultCols(), expr.resultRows()) };
 		tmpIt	= tmpMat->begin();
 
 		for (auto tIt = tmpMat->m_begin(); 

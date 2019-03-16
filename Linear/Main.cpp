@@ -41,7 +41,10 @@ int main()
 
 	MatrixT<int> bb = lhst / 2.06;
 
-	auto ll = (lhst * rhst).transpose();
+	auto cc = (lhst + lhst) * rhst;
+	MatrixT<int> c = cc;
+
+	auto ll = (lhst * rhst).transpose() * lhst;
 	MatrixT<int> tt = ll;
 
 	
