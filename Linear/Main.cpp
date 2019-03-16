@@ -2,7 +2,6 @@
 #include "Stopwatch.h"
 #include "MatrixT.h" // Testing
 
-
 int main()
 {
 	///*
@@ -42,8 +41,9 @@ int main()
 
 	MatrixT<int> bb = lhst / 2.06;
 
-	//auto ll = (lhst * rhst).transpose();
-	//MatrixT<int> tt = ll;
+	auto ll = (lhst * rhst).transpose();
+	MatrixT<int> tt = ll;
+
 	
 	auto a = lhst * rhst * lhst + lhst * rhst * lhst;
 	MatrixT<int> val = a;

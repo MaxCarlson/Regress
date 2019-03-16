@@ -10,27 +10,32 @@ struct Traits<TransposeOp<Expr>>
 	static constexpr bool MajorOrder	= ExprType::MajorOrder;
 };
 
-template <class T, class Enable = void>
-struct is_defined
+template<class, class = std::void_t<>>
+struct has_type_member
 {
-	static constexpr bool value = false;
+	using type = std::false_type;
+};
+// specialization recognizes types that do have a nested ::type member:
+template<class T>
+struct has_type_member<T, std::void_t<typename T::minor_const_iterator>>
+{
+	using type = std::true_type;
 };
 
-template <class T>
-struct is_defined<T, std::enable_if_t<(sizeof(T))>>
+template<class Expr, class>
+	struct ItSelector
 {
-	static constexpr bool value = true;
+	using type = void;
 };
 
-template<class Expr, 
-	class = std::enable_if_t<is_defined<typename Expr::minor_const_iterator>::value>>
-struct ItSelector
+template<class Expr>
+struct ItSelector<Expr, std::true_type>
 {
 	using type = typename Expr::minor_const_iterator;
 };
 
 template<class Expr>
-struct ItSelector
+struct ItSelector<Expr, std::false_type>
 {
 	using type = typename Expr::const_iterator;
 };
@@ -50,8 +55,8 @@ public:
 	using size_type			= typename Base::size_type;
 	using value_type		= typename Traits<ThisType>::value_type;
 	using Type				= value_type;
-	using It				= typename ItSelector<Expr>::type;
-	
+	using It				= typename ItSelector<Expr, typename has_type_member<Expr>::type>::type;
+
 
 	using const_iterator	= impl::ExprIterator<ThisType&, MajorOrder>;
 	using TmpMatrix			= std::shared_ptr<MatrixT<value_type, MajorOrder>>;
@@ -63,7 +68,7 @@ public:
 	TmpIt		tmpIt;
 	bool		evaluated;
 
-	TransposeOp(const Expr& expr) :
+	TransposeOp(Expr expr) : // Note the copy, TODO: Why is this needed?
 		expr{ expr },
 		it{ expr.begin() }, // If expr is a matrix, this iterator is converted into a nonMajorOrder iterator
 		tmpMat{ nullptr },
