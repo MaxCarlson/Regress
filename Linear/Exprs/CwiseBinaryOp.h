@@ -39,7 +39,6 @@ private:
 
 public:
 
-
 	CwiseBinaryOp(Op op, const Lhs& lhsa, const Rhs& rhsa) :
 		op{ op },
 		lhs{ lhsa },
@@ -48,13 +47,10 @@ public:
 		rit{ rhs.begin() }
 	{}
 
-	inline size_type lhsRows()		const noexcept { return lhs.rows(); }
-	inline size_type rhsRows()		const noexcept { return rhs.rows(); }
-	inline size_type rhsCols()		const noexcept { return rhs.cols(); }
-	inline size_type rows()			const noexcept { return lhsRows(); }
-	inline size_type cols()			const noexcept { return rhsCols(); }
-	inline size_type resultRows()	const noexcept { return lhsRows(); }
-	inline size_type resultCols()	const noexcept { return rhsCols(); }
+	inline size_type rows()			const noexcept { return lhs.rows(); }
+	inline size_type cols()			const noexcept { return rhs.cols(); }
+	inline size_type resultRows()	const noexcept { return rows(); }
+	inline size_type resultCols()	const noexcept { return cols(); }
 
 	inline void lhsInc(size_type i)  noexcept { lit += i; }
 	inline void lhsDec(size_type i)  noexcept { lit -= i; }

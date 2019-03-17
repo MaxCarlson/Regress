@@ -107,13 +107,10 @@ public:
 		multiCount{ 0 }
 	{}
 
-	inline size_type lhsRows()	const noexcept { return lhs.rows(); }
-	inline size_type rhsRows()	const noexcept { return rhs.rows(); }
-	inline size_type rhsCols()	const noexcept { return rhs.cols(); }
-	inline size_type rows()		const noexcept { return lhsRows(); }
-	inline size_type cols()		const noexcept { return rhsCols(); }
-	inline size_type resultRows() const noexcept { return lhsRows(); }
-	inline size_type resultCols() const noexcept { return rhsCols(); }
+	inline size_type rows()		const noexcept { return lhs.rows(); }
+	inline size_type cols()		const noexcept { return rhs.cols(); }
+	inline size_type resultRows() const noexcept { return lhs.rows(); }
+	inline size_type resultCols() const noexcept { return rhs.cols(); }
 
 	inline void lhsInc(size_type i)  noexcept { lit += i; }
 	inline void lhsDec(size_type i)  noexcept { lit -= i; }
@@ -122,7 +119,7 @@ public:
 
 	Type evaluate() const noexcept
 	{
-		return op(lit, rit, lhsRows(), rhsRows(), rhsCols());
+		return op(lit, rit, lhs.rows(), rhs.rows(), rhs.cols());
 	}
 
 	/*
@@ -167,7 +164,7 @@ private:
 
 		size_type idx			= std::abs(i);
 		const size_type sign	= (0 < i) - (i < 0);
-		const size_type modVal	= MajorOrder ? lhsRows() : rhsCols();
+		const size_type modVal	= MajorOrder ? lhs.rows() : rhs.cols();
 
 		while (idx--)
 		{
@@ -176,13 +173,13 @@ private:
 			{
 				if (MajorOrder)
 				{
-					lhsDec(lhsRows() * sign);
-					rhsInc(rhsRows() * sign);
+					lhsDec(lhs.rows() * sign);
+					rhsInc(rhs.rows() * sign);
 				}
 				else
 				{
-					rhsDec(rhsCols() * sign);
-					lhsInc(rhsRows() * sign); // Same as lhsCols
+					rhsDec(rhs.cols() * sign);
+					lhsInc(rhs.rows() * sign); // Same as lhsCols
 				}
 				break;
 			}

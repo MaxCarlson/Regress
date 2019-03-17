@@ -79,9 +79,7 @@ public:
 		evaluated{ false }
 	{}
 
-	inline size_type lhsRows()		const noexcept { return expr.cols(); }
-	inline size_type rhsRows()		const noexcept { return expr.cols(); }
-	inline size_type rhsCols()		const noexcept { return expr.rows(); }
+
 	inline size_type rows()			const noexcept { return expr.cols(); }
 	inline size_type cols()			const noexcept { return expr.rows(); }
 	inline size_type resultRows()	const noexcept { return expr.cols(); }
@@ -114,9 +112,9 @@ public:
 		tmpMat = TmpMatrix{ new MatrixT<value_type, MajorOrder>() };
 
 		if constexpr (IsMatrix)
-			tmpMat->resize(expr.cols(), expr.rows());
+			tmpMat->resize(cols(), rows());
 		else
-			tmpMat->resize(expr.resultCols(), expr.resultRows());
+			tmpMat->resize(resultCols(), resultRows());
 		
 		tmpIt	= tmpMat->begin();
 
