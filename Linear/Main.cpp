@@ -1,9 +1,17 @@
 #include "Matrix.h"
 #include "Stopwatch.h"
 #include "MatrixT.h" // Testing
+//#include <Eigen\Dense>
+
+//using Eigen::Matrix2f;
 
 int main()
 {
+	//Matrix2f mat{ 2, 2 };
+	//auto mm = mat * mat;
+	//Matrix2f matVal = mm;;
+
+
 	///*
 	Matrix<int> lhs = {
 		{1, 2},
@@ -45,8 +53,8 @@ int main()
 	//auto cc = lhst * rhst * lhst;
 	//MatrixT<int> c = cc;
 
-	auto ll = (lhst * rhst).transpose() * lhst;
-	MatrixT<int> tt = ll;
+	//auto ll = (lhst * rhst).transpose() * lhst;
+	//MatrixT<int> tt = ll;
 
 	
 	auto a = lhst * rhst * lhst + lhst * rhst * lhst;

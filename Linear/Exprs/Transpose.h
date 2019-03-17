@@ -92,8 +92,6 @@ public:
 	inline void rhsInc(size_type i)  noexcept { if (IsMatrix) it += i; else tmpIt += i; }
 	inline void rhsDec(size_type i)  noexcept { if (IsMatrix) it -= i; else tmpIt -= i; }
 
-	// TODO: We should create temporary else where!
-	// TODO: Switch back to const, also switch ExprIterator oprator* back to const
 	Type evaluate() const noexcept
 	{
 		if constexpr (IsMatrix)
@@ -102,12 +100,14 @@ public:
 			return *tmpIt;
 	}
 
+	/*
 	void analyze()
 	{
 		expr.analyze();
 		if (!IsMatrix && !evaluated)
 			createTemporary();
 	}
+	*/
 
 	void createTemporary()
 	{

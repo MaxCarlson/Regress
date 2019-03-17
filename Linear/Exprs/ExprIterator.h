@@ -33,7 +33,7 @@ public:
 		return !(*this == other);
 	}
 
-	inline Type operator*() 
+	inline Type operator*() const
 	{
 		return expr.evaluate();
 	}

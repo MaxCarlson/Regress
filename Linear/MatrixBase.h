@@ -1,9 +1,6 @@
 #pragma once
 #include "ForwardDeclarations.h"
 
-template<class Type, bool MOrder>
-class ExprAnalyzer;
-
 template<class Derived>
 class MatrixBase : public BaseExpr<Derived>
 {
@@ -15,15 +12,17 @@ public:
 	static constexpr bool MajorOrder	= Traits<Derived>::MajorOrder;
 	static constexpr bool IsExpr		= true; // We will override this in anything not an expression
 
+	Derived& derived()				{ return static_cast<Derived&>(*this); }
+	const Derived& derived() const	{ return static_cast<const Derived&>(*this); }
+
 
 	template<class Matrix>
 	void assign(Matrix& to)
 	{
-		auto rit	= static_cast<Derived&>(*this).begin();
-		auto& cont	= rit.getCont();
-		to.resize(cont.resultRows(), cont.resultCols());
+		auto rit	= derived().begin();
+		to.resize(derived().resultRows(), derived().resultCols());
 
-		static_cast<Derived&>(*this).analyze();
+		//static_cast<Derived&>(*this).analyze();
 
 		for (auto lit = to.begin(); lit != to.end(); ++lit, ++rit)
 			*lit = *rit;
@@ -38,8 +37,8 @@ public:
 		operator+(const MatrixBase<OtherDerived>& other) const
 	{
 		return CwiseBinaryOp{ impl::AddOp<value_type>{},
-			static_cast<const Derived&>(*this), 
-			static_cast<const OtherDerived&>(other) };
+			derived(), 
+			other.derived() };
 	}
 
 	template<class OtherDerived>
@@ -47,8 +46,8 @@ public:
 		operator-(const MatrixBase<OtherDerived>& other) const
 	{
 		return CwiseBinaryOp{ impl::SubOp<value_type>{},
-			static_cast<const Derived&>(*this),
-			static_cast<const OtherDerived&>(other) };
+			derived(),
+			other.derived() };
 	}
 
 	template<class OtherDerived>
@@ -56,8 +55,8 @@ public:
 		operator*(const MatrixBase<OtherDerived>& other) const
 	{
 		return ProductOp{ 
-			static_cast<const Derived&>(*this),
-			static_cast<const OtherDerived&>(other) };
+			derived(),
+			other.derived() };
 	}
 
 
@@ -71,8 +70,8 @@ public:
 		operator+(const Scalar& scalar) const
 	{
 		return CwiseBinaryOp{ impl::ScalarAddOp<Scalar, value_type>{},
-			static_cast<const Derived&>(*this),
-			impl::Constant<value_type, Scalar, Derived>{scalar, static_cast<const Derived&>(*this)} };
+			derived(),
+			impl::Constant<value_type, Scalar, Derived>{scalar, derived()} };
 	}
 
 	template<class Scalar,
@@ -83,8 +82,8 @@ public:
 		operator-(const Scalar& scalar) const
 	{
 		return CwiseBinaryOp{ impl::ScalarSubOp<Scalar, value_type>{},
-			static_cast<const Derived&>(*this),
-			impl::Constant<value_type, Scalar, Derived>{scalar, static_cast<const Derived&>(*this)} };
+			derived(),
+			impl::Constant<value_type, Scalar, Derived>{scalar, derived()} };
 	}
 
 	template<class Scalar,
@@ -95,8 +94,8 @@ public:
 		operator*(const Scalar& scalar) const
 	{
 		return CwiseBinaryOp{ impl::ScalarProductOp<Scalar, value_type>{},
-			static_cast<const Derived&>(*this),
-			impl::Constant<value_type, Scalar, Derived>{scalar, static_cast<const Derived&>(*this)} };
+			derived(),
+			impl::Constant<value_type, Scalar, Derived>{scalar, derived()} };
 	}
 
 	template<class Scalar,
@@ -107,12 +106,12 @@ public:
 		operator/(const Scalar& scalar) const
 	{
 		return CwiseBinaryOp{ impl::ScalarQuotientOp<Scalar, value_type>{},
-			static_cast<const Derived&>(*this),
-			impl::Constant<value_type, Scalar, Derived>{scalar, static_cast<const Derived&>(*this)} };
+			derived(),
+			impl::Constant<value_type, Scalar, Derived>{scalar, derived()} };
 	}
 
 	const TransposeOp<Derived> transpose() const
 	{
-		return TransposeOp<Derived>{ static_cast<const Derived&>(*this) };
+		return TransposeOp<Derived>{ derived() };
 	}
 };
