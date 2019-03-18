@@ -121,7 +121,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Evaluators\ProductEvalutor.h" />
+    <ClInclude Include="Evaluators\Assignment.h" />
+    <ClInclude Include="Evaluators\Evaluators.h" />
     <ClInclude Include="Exprs\CwiseBinaryOp.h" />
     <ClInclude Include="Expr.h" />
     <ClInclude Include="Exprs\ExprIterator.h" />

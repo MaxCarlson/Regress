@@ -20,13 +20,12 @@ public:
 	template<class Matrix>
 	void assign(Matrix& to)
 	{
+		/*
 		auto rit	= derived().begin();
 		to.resize(derived().resultRows(), derived().resultCols());
-
-		//static_cast<Derived&>(*this).analyze();
-
 		for (auto lit = to.begin(); lit != to.end(); ++lit, ++rit)
 			*lit = *rit;
+		*/
 	}
 
 	void analyze() {}

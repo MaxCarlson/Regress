@@ -107,6 +107,9 @@ public:
 		multiCount{ 0 }
 	{}
 
+	const Lhs& getLhs() const { return lhs; }
+	const Rhs& getRhs() const { return rhs; }
+
 	inline size_type rows()		const noexcept { return lhs.rows(); }
 	inline size_type cols()		const noexcept { return rhs.cols(); }
 	inline size_type resultRows() const noexcept { return lhs.rows(); }

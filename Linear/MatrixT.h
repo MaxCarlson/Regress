@@ -5,7 +5,8 @@
 #include "Exprs\CwiseBinaryOp.h"
 #include "Exprs\ProductOp.h"
 #include "Exprs\Transpose.h"
-#include "Evaluators\ProductEvalutor.h"
+#include "Evaluators\Evaluators.h" // TODO: Move these to MatrixBase
+#include "Evaluators\Assignment.h"
 
 //namespace regress{ // TODO: Wrap proj in namespaces
 

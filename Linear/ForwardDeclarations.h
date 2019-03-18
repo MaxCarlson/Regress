@@ -79,3 +79,17 @@ struct IteratorSelector
 {
 	using type = std::conditional_t<T::IsExpr, typename T::ExprIterator, typename T::const_iterator>;
 };
+
+namespace impl
+{
+// Evaluators
+template<class Args>
+struct BinaryEvaluator;
+
+template<class Args>
+struct ProductEvaluator;
+
+// Assignment
+template<class... Args>
+struct Assignment {};
+}

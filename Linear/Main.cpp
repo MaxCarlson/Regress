@@ -58,9 +58,9 @@ int main()
 	//auto ll = (lhst * rhst).transpose() * lhst;
 	//MatrixT<int> tt = ll;
 
-	auto v = lhst + rhst;
+	auto v = lhst * rhst;
 
-	BinaryEvaluator<decltype(v)> be{ v };
+	impl::ProductEvaluator<decltype(v)> be{ v };
 	
 	auto a = lhst * rhst * lhst + lhst * rhst * lhst;
 	MatrixT<int> val = a;
