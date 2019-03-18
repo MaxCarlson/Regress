@@ -5,6 +5,7 @@
 #include "Exprs\CwiseBinaryOp.h"
 #include "Exprs\ProductOp.h"
 #include "Exprs\Transpose.h"
+#include "Evaluators\ProductEvalutor.h"
 
 //namespace regress{ // TODO: Wrap proj in namespaces
 

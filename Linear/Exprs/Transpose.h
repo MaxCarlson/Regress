@@ -116,7 +116,7 @@ public:
 		else
 			tmpMat->resize(resultCols(), resultRows());
 		
-		tmpIt	= tmpMat->begin();
+		tmpIt = tmpMat->begin();
 
 		for (auto tIt = tmpMat->m_begin(); 
 			tIt != tmpMat->m_end(); ++tIt, ++it)

@@ -51,6 +51,9 @@
     <ClInclude Include="Exprs\Transpose.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Evaluators\ProductEvalutor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">

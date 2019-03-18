@@ -22,14 +22,14 @@ public:
 	using size_type			= typename Base::size_type;
 	using value_type		= typename Traits<ThisType>::value_type;
 	using Type				= typename Op::value_type;
+	using LhsT				= typename RefSelector<Lhs>::type;
+	using RhsT				= typename RefSelector<Rhs>::type;
 	using Lit				= typename Lhs::const_iterator;
 	using Rit				= typename Rhs::const_iterator;
 	using const_iterator	= impl::ExprIterator<ThisType, MajorOrder>;
 
 
 private:
-	using LhsT = typename RefSelector<Lhs>::type;
-	using RhsT = typename RefSelector<Rhs>::type;
 
 	LhsT	lhs;
 	RhsT	rhs;
@@ -46,6 +46,10 @@ public:
 		lit{ lhs.begin() },
 		rit{ rhs.begin() }
 	{}
+
+	const Op& getOp() const { return op; }
+	const Lhs& getLhs() const { return lhs; }
+	const Rhs& getRhs() const { return rhs; }
 
 	inline size_type rows()			const noexcept { return lhs.rows(); }
 	inline size_type cols()			const noexcept { return rhs.cols(); }
