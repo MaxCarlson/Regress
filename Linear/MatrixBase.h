@@ -26,6 +26,7 @@ public:
 		for (auto lit = to.begin(); lit != to.end(); ++lit, ++rit)
 			*lit = *rit;
 		*/
+		impl::Assignment<Matrix, Derived, value_type>::run(to, derived());
 	}
 
 	void analyze() {}

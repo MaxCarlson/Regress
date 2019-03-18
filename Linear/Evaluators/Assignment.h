@@ -10,9 +10,11 @@ struct Assignment {};
 template<class Dest, class Lhs, class Rhs, class Type> // TODO: Specilaize for +=, etc
 struct Assignment<Dest, ProductOp<Lhs, Rhs>, Type>
 {
-	static void run(Dest& dest, const Lhs& lhs, const Rhs& rhs)
-	{
+	using ExprType = ProductOp<Lhs, Rhs>;
 
+	inline static void run(Dest& dest, const ExprType& expr)
+	{
+		ProductEvaluator<ExprType> eval{ expr };
 	}
 };
 

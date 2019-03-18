@@ -45,7 +45,7 @@ struct BinaryEvaluator<CwiseBinaryOp<Op, Lhs, Rhs>>
 {
 	using Expr			= CwiseBinaryOp<Op, Lhs, Rhs>;
 	using size_type		= typename Lhs::size_type;
-	using value_type	= decltype(typename Lhs::value_type{} * typename Lhs::value_type{});
+	using value_type	= decltype(typename Lhs::value_type{} + typename Lhs::value_type{});
 
 	explicit BinaryEvaluator(const Expr& expr) :
 		op{ expr.getOp() },
@@ -53,28 +53,52 @@ struct BinaryEvaluator<CwiseBinaryOp<Op, Lhs, Rhs>>
 		rhs{ expr.getRhs() }
 	{}
 
+	value_type evaluate(size_type row, size_type col) const
+	{
+		return m(row, col);
+	}
 
-
-private:
+protected:
 	const Op op;
 	Evaluator<Lhs> lhs;
 	Evaluator<Rhs> rhs;
 };
 
-// This Product Evaluator creates a temporary
+template<class Dest, class Lhs, class Rhs, class Type>
+void productImpl(Dest& dest, const Lhs& lhs, const Rhs& rhs)
+{
+	Evaluator<Lhs> lhsE{ lhs };
+	Evaluator<Rhs> rhsE{ rhs };
+
+	for (int i = 0; i < lhs.rows(); ++i)
+	{
+		for (int j = 0; j < rhs.cols(); ++j)
+		{
+			Type sum = 0;
+			for(int h = 0; h < rhs.rows(); ++h)
+				sum += lhsE.evaluate(i, j) * lhsE.evaluate(h, j);
+			dest(i, j) = sum;
+		}
+	}
+		
+}
+
 template<class Lhs, class Rhs>
 struct ProductEvaluator<ProductOp<Lhs, Rhs>>
 	: public EvaluatorBase<ProductOp<Lhs, Rhs>>
 {
 	using Expr = ProductOp<Lhs, Rhs>;
+	using value_type = decltype(typename Lhs::value_type{} + typename Lhs::value_type{});
 
-	explicit ProductEvaluator(const Expr& expr) 
+	explicit ProductEvaluator(const Expr& expr) :
+		m(expr.resultRows(), expr.resultCols())
 	{
 	
+		productImpl<decltype(m), Lhs, Rhs, value_type>(m, expr.getLhs(), expr.getRhs());
 	}
 
 private:
-	//MatrixT result;
+	MatrixT<value_type, false> m;
 };
 
 } // End impl::

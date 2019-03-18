@@ -2,8 +2,8 @@
 #include "Stopwatch.h"
 
 #include "MatrixT.h" // Testing
-//#include <Eigen\Dense>
-//using Eigen::MatrixXd;
+#include <Eigen\Dense>
+using Eigen::MatrixXd;
 
 int main()
 {
@@ -59,12 +59,12 @@ int main()
 	//MatrixT<int> tt = ll;
 
 	auto v = lhst * rhst;
-
-	impl::ProductEvaluator<decltype(v)> be{ v };
+	MatrixT<int> vv = v;
+	//impl::ProductEvaluator<decltype(v)> be{ v };
 	
-	auto a = lhst * rhst * lhst + lhst * rhst * lhst;
-	MatrixT<int> val = a;
-	Matrix<int> val2 = lhs * rhs * lhs + lhs * rhs * lhs;
+	//auto a = lhst * rhst * lhst + lhst * rhst * lhst;
+	//MatrixT<int> val = a;
+	//Matrix<int> val2 = lhs * rhs * lhs + lhs * rhs * lhs;
 
 
 

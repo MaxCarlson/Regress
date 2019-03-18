@@ -91,5 +91,5 @@ struct ProductEvaluator;
 
 // Assignment
 template<class... Args>
-struct Assignment {};
+struct Assignment;
 }
