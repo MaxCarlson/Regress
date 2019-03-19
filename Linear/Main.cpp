@@ -67,7 +67,7 @@ int main()
 	Stopwatch s;
 	s.start();
 
-	auto v = lhst * rhst * lhstc;
+	auto v = lhst * rhst * lhst + lhst;
 	MatrixT<int> vv = v;
 	s.printCurrent();
 
@@ -76,8 +76,6 @@ int main()
 	Matrix<int> aa = a;
 	s.printCurrent();
 
-	//impl::ProductEvaluator<decltype(v)> be{ v };
-	
 	//auto a = lhst * rhst * lhst + lhst * rhst * lhst;
 	//MatrixT<int> val = a;
 	//Matrix<int> val2 = lhs * rhs * lhs + lhs * rhs * lhs;

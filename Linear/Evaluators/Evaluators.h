@@ -15,6 +15,7 @@ struct Evaluator : public EvaluatorBase<Expr>
 };
 
 // Specialization for Matrix
+
 template<class Type, bool MajorOrder>
 struct Evaluator<MatrixT<Type, MajorOrder>>
 	: public EvaluatorBase<MatrixT<Type, MajorOrder>>
@@ -27,9 +28,9 @@ struct Evaluator<MatrixT<Type, MajorOrder>>
 		m{ m }
 	{}
 
-	value_type& evaluate(size_type row, size_type col)
+	value_type& evaluateRef(size_type row, size_type col)
 	{
-		return m(row, col);
+		return const_cast<MatrixType&>(m)(row, col);
 	}
 
 	value_type evaluate(size_type row, size_type col) const
@@ -46,7 +47,7 @@ protected:
 
 template<class Func, class Lhs, class Rhs>
 struct Evaluator<CwiseBinaryOp<Func, Lhs, Rhs>>
-	: public ProductEvaluator<CwiseBinaryOp<Func, Lhs, Rhs>>
+	: public BinaryEvaluator<CwiseBinaryOp<Func, Lhs, Rhs>>
 {
 	using Op	= CwiseBinaryOp<Func, Lhs, Rhs>;
 	using Base	= BinaryEvaluator<Op>;
@@ -60,6 +61,11 @@ struct BinaryEvaluator<CwiseBinaryOp<Func, Lhs, Rhs>>
 	using Expr			= CwiseBinaryOp<Func, Lhs, Rhs>;
 	using size_type		= typename Lhs::size_type;
 	using value_type	= decltype(typename Lhs::value_type{} + typename Lhs::value_type{});
+
+	enum
+	{
+		MajorOrder = Lhs::MajorOrder
+	};
 
 	explicit BinaryEvaluator(const Expr& expr) :
 		op{ expr.getOp() },
@@ -120,7 +126,7 @@ struct ProductEvaluator<ProductOp<Lhs, Rhs>>
 	using RhsE			= Evaluator<Rhs>;
 	using value_type	= typename Expr::value_type;
 
-	enum Info
+	enum 
 	{
 		MajorOrder = Lhs::MajorOrder
 	};
@@ -195,4 +201,7 @@ struct TransposeEvaluator<TransposeOp<Expr>>
 protected:
 	ExprE exprE;
 };
+
+
+
 } // End impl::

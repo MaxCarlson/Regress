@@ -14,8 +14,10 @@ template<class Op, class Lhs, class Rhs>
 class CwiseBinaryOp : public MatrixBase<CwiseBinaryOp<Op, Lhs, Rhs>>
 {
 public:
-	static constexpr bool MajorOrder = Traits<Lhs>::MajorOrder;
-
+	enum
+	{
+		MajorOrder = Traits<Lhs>::MajorOrder
+	};
 
 	using Base				= MatrixBase<CwiseBinaryOp<Op, Lhs, Rhs>>;
 	using ThisType			= CwiseBinaryOp<Op, Lhs, Rhs>;
@@ -24,9 +26,6 @@ public:
 	using Type				= typename Op::value_type;
 	using LhsT				= typename RefSelector<Lhs>::type;
 	using RhsT				= typename RefSelector<Rhs>::type;
-	using Lit				= typename Lhs::const_iterator;
-	using Rit				= typename Rhs::const_iterator;
-	using const_iterator	= impl::ExprIterator<ThisType, MajorOrder>;
 
 
 private:
@@ -34,17 +33,13 @@ private:
 	LhsT	lhs;
 	RhsT	rhs;
 	Op		op;
-	Lit		lit;
-	Rit		rit;
 
 public:
 
 	CwiseBinaryOp(Op op, const Lhs& lhsa, const Rhs& rhsa) :
 		op{ op },
 		lhs{ lhsa },
-		rhs{ rhsa },
-		lit{ lhs.begin() },
-		rit{ rhs.begin() }
+		rhs{ rhsa }
 	{}
 
 	const Op& getOp() const { return op; }
@@ -55,54 +50,6 @@ public:
 	inline size_type cols()			const noexcept { return rhs.cols(); }
 	inline size_type resultRows()	const noexcept { return rows(); }
 	inline size_type resultCols()	const noexcept { return cols(); }
-
-	inline void lhsInc(size_type i)  noexcept { lit += i; }
-	inline void lhsDec(size_type i)  noexcept { lit -= i; }
-	inline void rhsInc(size_type i)  noexcept { rit += i; }
-	inline void rhsDec(size_type i)  noexcept { rit -= i; }
-
-	Type evaluate() const noexcept
-	{
-		return op(lit, rit);
-	}
-
-	/*
-	void analyze()
-	{
-		lhs.analyze();
-		rhs.analyze();
-	}
-	*/
-
-	ThisType& operator++() noexcept
-	{
-		lhsInc(1);
-		rhsInc(1);
-		return *this;
-	}
-
-	ThisType& operator+=(size_type i) noexcept
-	{
-		lhsInc(i);
-		rhsInc(i);
-		return *this;
-	}
-
-	ThisType& operator--() noexcept
-	{
-		lhsDec(1);
-		rhsDec(1);
-		return *this;
-	}
-
-	ThisType& operator-=(size_type i) noexcept
-	{
-		lhsDec(i);
-		rhsDec(i);
-		return *this;
-	}
-
-	const_iterator begin() noexcept { return const_iterator{ this }; }
 };
 
 // Different CwiseBinaryOp's
@@ -119,7 +66,7 @@ public:
 	template<class Lit, class Rit>
 	Type operator()(Lit lit, Rit rit) const
 	{
-		return *lit + *rit;
+		return lit + rit;
 	}
 };
 
@@ -134,7 +81,7 @@ public:
 	template<class Lit, class Rit>
 	Type operator()(Lit lit, Rit rit) const
 	{
-		return *lit - *rit;
+		return lit - rit;
 	}
 };
 
@@ -149,7 +96,7 @@ public:
 	template<class Lit, class Rit>
 	Type operator()(Lit lit, Rit rit) const
 	{
-		return *lit * *rit;
+		return lit * rit;
 	}
 };
 
@@ -164,7 +111,7 @@ public:
 	template<class Lit, class Rit>
 	Type operator()(Lit lit, Rit rit) const
 	{
-		return *lit / *rit;
+		return lit / rit;
 	}
 };
 

@@ -32,57 +32,20 @@ struct Traits<ProductOp<Lhs, Rhs>>
 //       | (E*Z) + (F*V) | (E*Y) + (F*U) | (E*X) + (F*T) | (E*W) + (F*S) |
 //       +---------------+---------------+---------------+---------------+
 //
-template<class Type>
-class MulOp
-{
-public:
-	using value_type = Type;
-
-	MulOp() {}
-
-	template<class Lit, class Rit>
-	Type operator()(Lit lit, Rit rit, int lhsRows, int rhsRows, int rhsCols) const
-	{
-		Type result = 0;
-		for (;; --rhsRows)
-		{
-			result += *lit * *rit;
-			if (rhsRows <= 1)
-				break;
-
-			if (Lit::MajorOrder)
-			{
-				lit += lhsRows;
-				++rit;
-			}
-			else
-			{
-				++lit;
-				rit += rhsCols;
-			}
-		}
-
-		return result;
-	}
-};
 
 template<class Lhs, class Rhs>
 class ProductOp : public MatrixBase<ProductOp<Lhs, Rhs>>
 {
 public:
-	static constexpr bool MajorOrder = Traits<Lhs>::MajorOrder;
+	enum
+	{
+		MajorOrder = Traits<Lhs>::MajorOrder
+	};
 
 	using Base				= MatrixBase<ProductOp<Lhs, Rhs>>;
 	using ThisType			= ProductOp<Lhs, Rhs>;
 	using size_type			= typename Base::size_type;
 	using Type				= typename Traits<ThisType>::value_type;
-	using Lit				= typename Lhs::const_iterator;
-	using Rit				= typename Rhs::const_iterator;
-
-	// Note: This expr's iterator takes ThisType by VALUE 
-	// (I think we can do without this eventually, and should)
-	using const_iterator	= impl::ExprIterator<ThisType, MajorOrder>;
-
 
 private:
 	using LhsT = typename RefSelector<Lhs>::type;
@@ -90,21 +53,11 @@ private:
 
 	LhsT		lhs;
 	RhsT		rhs;
-	Lit			lit;
-	Rit			rit;
-	MulOp<Type>	op;
-	size_type	multiCount;
-	//size_type	opCount = 0;
 public:
-
 
 	ProductOp(const Lhs& lhsa, const Rhs& rhsa) :
 		lhs{ lhsa },
-		rhs{ rhsa },
-		lit{ lhs.begin() },
-		rit{ rhs.begin() },
-		op{},
-		multiCount{ 0 }
+		rhs{ rhsa }
 	{}
 
 	const Lhs& getLhs() const { return lhs; }
@@ -114,105 +67,4 @@ public:
 	inline size_type cols()		const noexcept { return rhs.cols(); }
 	inline size_type resultRows() const noexcept { return lhs.rows(); }
 	inline size_type resultCols() const noexcept { return rhs.cols(); }
-
-	inline void lhsInc(size_type i)  noexcept { lit += i; }
-	inline void lhsDec(size_type i)  noexcept { lit -= i; }
-	inline void rhsInc(size_type i)  noexcept { rit += i; }
-	inline void rhsDec(size_type i)  noexcept { rit -= i; }
-
-	Type evaluate() const noexcept
-	{
-		return op(lit, rit, lhs.rows(), rhs.rows(), rhs.cols());
-	}
-
-	/*
-	void analyze()
-	{
-		lhs.analyze();
-		rhs.analyze();
-	}
-	*/
-
-private:
-	/*
-	void incrementSelf(size_type i)
-	{
-		rhsInc(i);
-
-		//opCount += i;
-		multiCount += i;
-
-		auto idx = std::abs(i);
-		size_type sign = (0 < i) - (i < 0);
-
-		if (multiCount % rhsCols() == 0)
-		{
-			rhsDec(rhsCols() * sign);
-			lhsInc(rhsRows() * sign); // Same as lhsCols
-		}
-
-		//if (opCount >= resultRows() * resultCols())
-		//{
-		//	lhsDec(lhsRows() * rhsRows());
-		//}
-	}
-	*/
-
-	void incrementSelf(size_type i)
-	{
-		if (MajorOrder)
-			lhsInc(i);
-		else
-			rhsInc(i);
-
-		size_type idx			= std::abs(i);
-		const size_type sign	= (0 < i) - (i < 0);
-		const size_type modVal	= MajorOrder ? lhs.rows() : rhs.cols();
-
-		while (idx--)
-		{
-			multiCount += sign;
-			if (multiCount % modVal == 0)
-			{
-				if (MajorOrder)
-				{
-					lhsDec(lhs.rows() * sign);
-					rhsInc(rhs.rows() * sign);
-				}
-				else
-				{
-					rhsDec(rhs.cols() * sign);
-					lhsInc(rhs.rows() * sign); // Same as lhsCols
-				}
-				break;
-			}
-		}
-	}
-
-public:
-	ThisType& operator++()
-	{
-		incrementSelf(1);
-		return *this;
-	}
-
-	ThisType& operator+=(size_type i)
-	{
-		incrementSelf(i);
-		return *this;
-	}
-
-	ThisType& operator--()
-	{
-		incrementSelf(-1);
-		return *this;
-	}
-
-	ThisType& operator-=(size_type i)
-	{
-		incrementSelf(-i);
-		return *this;
-	}
-
-	const_iterator begin() noexcept { return const_iterator{ this }; }
 };
