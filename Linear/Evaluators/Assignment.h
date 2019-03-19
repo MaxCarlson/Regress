@@ -28,6 +28,31 @@ private:
 	ExprImpl& exprImpl;
 };
 
+template<class Dest, class ExprEval>
+struct ActualDest
+{
+	using DestType = std::conditional_t<ExprEval::MajorOrder != Dest::MajorOrder,
+		TransposeEvaluator<Dest>, Dest&>;
+	using size_type = typename Dest::size_type;
+
+	ActualDest(Dest& dest) :
+		dest{ dest }
+	{}
+
+	void evaluate(size_type row, size_type col)
+	{
+		dest.evaluate(row, col);
+	}
+
+	void set(Dest&& src)
+	{
+		dest = std::move(src);
+	}
+
+private:
+	DestType dest;
+};
+
 template<class Dest, class Lhs, class Rhs, class Type> // TODO: Specilaize for +=, etc
 struct Assignment<Dest, ProductOp<Lhs, Rhs>, Type>
 {
@@ -35,15 +60,12 @@ struct Assignment<Dest, ProductOp<Lhs, Rhs>, Type>
 
 	inline static void run(Dest& dest, const ExprType& expr)
 	{
-		Evaluator<ExprType> exprE{ expr };
-		//Evaluator<Dest>		destE{ dest };
+		using ExprEval = Evaluator<ExprType>;
+
+		ExprEval					exprE{ expr };
+		ActualDest<Dest, ExprEval>	actDest{ dest };
 		
-		
-		if (Evaluator<ExprType>::MajorOrder != Dest::MajorOrder)
-			;	// TODO: Add code to automatically transpose exprE if it's MajorOrder does not match!
-				// Preferably through a Transpose Expr
-		else
-			dest = exprE.moveMatrix();
+		actDest.set(exprE.moveMatrix());
 	}
 };
 
@@ -56,8 +78,6 @@ struct Assignment<Dest, CwiseBinaryOp<Op, Lhs, Rhs>, Type>
 	{
 		Evaluator<ExprType> exprE{ expr };
 		Evaluator<Dest>		destE{ dest };
-
-
 	}
 };
 

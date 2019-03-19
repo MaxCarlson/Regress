@@ -34,6 +34,12 @@ int main()
 		{5, 6},
 	};
 
+	MatrixT<int, true> lhstc = {
+		{1, 2},
+		{3, 4},
+		{5, 6},
+	};
+
 	MatrixT<int> rhst = {
 		{1, 2, 3},
 		{4, 5, 6}
@@ -61,7 +67,7 @@ int main()
 	Stopwatch s;
 	s.start();
 
-	auto v = lhst * rhst * lhst;
+	auto v = lhst * rhst * lhstc;
 	MatrixT<int> vv = v;
 	s.printCurrent();
 

@@ -171,11 +171,11 @@ struct TransposeEvaluator<TransposeOp<Expr>>
 	: public EvaluatorBase<TransposeOp<Expr>>
 {
 	using ThisType		= TransposeEvaluator<TransposeOp<Expr>>;
-	using Expr			= TransposeOp<Expr>;
-	using ExprE			= Evaluator<Expr>;
+	using Op			= TransposeOp<Expr>;
+	using ExprE			= Evaluator<Op>;
 	using value_type	= typename Expr::value_type;
 
-	explicit TransposeEvaluator(const Expr& expr) :
+	explicit TransposeEvaluator(const Op& expr) :
 		exprE{ expr }
 	{}
 
