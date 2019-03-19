@@ -58,8 +58,18 @@ int main()
 	//auto ll = (lhst * rhst).transpose() * lhst;
 	//MatrixT<int> tt = ll;
 
+	Stopwatch s;
+	s.start();
+
 	auto v = lhst * rhst * lhst;
 	MatrixT<int> vv = v;
+	s.printCurrent();
+
+	s.start();
+	auto a = lhs * rhs * lhs;
+	Matrix<int> aa = a;
+	s.printCurrent();
+
 	//impl::ProductEvaluator<decltype(v)> be{ v };
 	
 	//auto a = lhst * rhst * lhst + lhst * rhst * lhst;

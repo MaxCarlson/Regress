@@ -40,12 +40,26 @@ struct Assignment<Dest, ProductOp<Lhs, Rhs>, Type>
 		
 		
 		if (Evaluator<ExprType>::MajorOrder != Dest::MajorOrder)
-			; // TODO: Add code to automatically transpose exprE if it's MajorOrder does not match!
+			;	// TODO: Add code to automatically transpose exprE if it's MajorOrder does not match!
+				// Preferably through a Transpose Expr
 		else
 			dest = exprE.moveMatrix();
 	}
 };
 
+template<class Dest, class Op, class Lhs, class Rhs, class Type> // TODO: Specilaize for +=, etc
+struct Assignment<Dest, CwiseBinaryOp<Op, Lhs, Rhs>, Type>
+{
+	using ExprType = ProductOp<Lhs, Rhs>;
+
+	inline static void run(Dest& dest, const ExprType& expr)
+	{
+		Evaluator<ExprType> exprE{ expr };
+		Evaluator<Dest>		destE{ dest };
+
+
+	}
+};
 
 
 } // End impl::

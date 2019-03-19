@@ -89,6 +89,9 @@ struct BinaryEvaluator;
 template<class Args>
 struct ProductEvaluator;
 
+template<class Args>
+struct TransposeEvaluator;
+
 // Assignment
 template<class... Args>
 struct Assignment;

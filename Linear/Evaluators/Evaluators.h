@@ -44,20 +44,20 @@ protected:
 	const MatrixType& m;
 };
 
-template<class Op, class Lhs, class Rhs>
-struct Evaluator<CwiseBinaryOp<Op, Lhs, Rhs>>
-	: public ProductEvaluator<CwiseBinaryOp<Op, Lhs, Rhs>>
+template<class Func, class Lhs, class Rhs>
+struct Evaluator<CwiseBinaryOp<Func, Lhs, Rhs>>
+	: public ProductEvaluator<CwiseBinaryOp<Func, Lhs, Rhs>>
 {
-	using Expr = CwiseBinaryOp<Op, Lhs, Rhs>;
-	using Base = BinaryEvaluator<Expr>;
-	explicit Evaluator(const Expr& expr) : Base(expr) {}
+	using Op	= CwiseBinaryOp<Func, Lhs, Rhs>;
+	using Base	= BinaryEvaluator<Op>;
+	explicit Evaluator(const Op& op) : Base(op) {}
 };
 
-template<class Op, class Lhs, class Rhs>
-struct BinaryEvaluator<CwiseBinaryOp<Op, Lhs, Rhs>>
-	: public EvaluatorBase<CwiseBinaryOp<Op, Lhs, Rhs>>
+template<class Func, class Lhs, class Rhs>
+struct BinaryEvaluator<CwiseBinaryOp<Func, Lhs, Rhs>>
+	: public EvaluatorBase<CwiseBinaryOp<Func, Lhs, Rhs>>
 {
-	using Expr			= CwiseBinaryOp<Op, Lhs, Rhs>;
+	using Expr			= CwiseBinaryOp<Func, Lhs, Rhs>;
 	using size_type		= typename Lhs::size_type;
 	using value_type	= decltype(typename Lhs::value_type{} + typename Lhs::value_type{});
 
@@ -76,7 +76,7 @@ struct BinaryEvaluator<CwiseBinaryOp<Op, Lhs, Rhs>>
 	size_type cols() const noexcept { return rhs.cols(); }
 
 protected:
-	const Op op;
+	const Func op;
 	Evaluator<Lhs> lhs;
 	Evaluator<Rhs> rhs;
 };
@@ -105,9 +105,9 @@ template<class Lhs, class Rhs>
 struct Evaluator<ProductOp<Lhs, Rhs>>
 	: public ProductEvaluator<ProductOp<Lhs, Rhs>>
 {
-	using Expr = ProductOp<Lhs, Rhs>;
-	using Base = ProductEvaluator<Expr>;
-	explicit Evaluator(const Expr& expr) : Base(expr) {}
+	using Op	= ProductOp<Lhs, Rhs>;
+	using Base	= ProductEvaluator<Op>;
+	explicit Evaluator(const Op& op) : Base(op) {}
 };
 
 template<class Lhs, class Rhs>
@@ -157,4 +157,42 @@ protected:
 	MatrixType m;
 };
 
+template<class Expr>
+struct Evaluator<TransposeOp<Expr>>
+	: public TransposeEvaluator<TransposeOp<Expr>>
+{
+	using Op	= TransposeOp<Expr>;
+	using Base	= TransposeEvaluator<Op>;
+	explicit Evaluator(const Op& op) : Base(op) {}
+};
+
+template<class Expr>
+struct TransposeEvaluator<TransposeOp<Expr>>
+	: public EvaluatorBase<TransposeOp<Expr>>
+{
+	using ThisType		= TransposeEvaluator<TransposeOp<Expr>>;
+	using Expr			= TransposeOp<Expr>;
+	using ExprE			= Evaluator<Expr>;
+	using value_type	= typename Expr::value_type;
+
+	explicit TransposeEvaluator(const Expr& expr) :
+		exprE{ expr }
+	{}
+
+	size_type rows() const noexcept { return exprE.cols(); }
+	size_type cols() const noexcept { return exprE.rows(); }
+
+	value_type& evaluate(size_type row, size_type col)
+	{
+		return exprE.evaluate(col, row);
+	}
+
+	value_type evaluate(size_type row, size_type col) const
+	{
+		return exprE.evaluate(col, row);
+	}
+
+protected:
+	ExprE exprE;
+};
 } // End impl::
