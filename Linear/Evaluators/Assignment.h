@@ -14,7 +14,8 @@ struct Assignment<Dest, ProductOp<Lhs, Rhs>, Type>
 
 	inline static void run(Dest& dest, const ExprType& expr)
 	{
-		ProductEvaluator<ExprType> eval{ expr };
+		Evaluator<ExprType> exprE{ expr };
+		Evaluator<Dest>		destE{ dest };
 	}
 };
 

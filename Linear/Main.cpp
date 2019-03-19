@@ -7,12 +7,12 @@ using Eigen::MatrixXd;
 
 int main()
 {
-	/*
+	///*
 	MatrixXd mat;
 	mat.resize(2, 2);
-	auto mm = mat * mat;
-	MatrixXd matVal = mm;;
-	*/
+	auto mm = mat * mat + mat;
+	mat = mm;;
+	//*/
 
 	///*
 	Matrix<int> lhs = {

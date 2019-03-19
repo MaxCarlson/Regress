@@ -27,7 +27,7 @@ struct Evaluator<MatrixT<Type, MajorOrder>>
 	using value_type	= Type;
 	
 	explicit Evaluator(const MatrixType& m) :
-		m{m}
+		m{ m }
 	{}
 
 	value_type evaluate(size_type row, size_type col) const
@@ -37,6 +37,15 @@ struct Evaluator<MatrixT<Type, MajorOrder>>
 
 private:
 	const MatrixType& m;
+};
+
+template<class Op, class Lhs, class Rhs>
+struct Evaluator<CwiseBinaryOp<Op, Lhs, Rhs>>
+	: public ProductEvaluator<CwiseBinaryOp<Op, Lhs, Rhs>>
+{
+	using Expr = CwiseBinaryOp<Op, Lhs, Rhs>;
+	using Base = BinaryEvaluator<Expr>;
+	explicit Evaluator(const Expr& expr) : Base(expr) {}
 };
 
 template<class Op, class Lhs, class Rhs>
@@ -64,6 +73,13 @@ protected:
 	Evaluator<Rhs> rhs;
 };
 
+enum class ProductOption
+{
+
+};
+
+// Evaluates the entire expression
+// TODO: Add an impl that only evaluates for an index
 template<class Dest, class Lhs, class Rhs, class Type>
 void productImpl(Dest& dest, const Lhs& lhs, const Rhs& rhs)
 {
@@ -71,17 +87,23 @@ void productImpl(Dest& dest, const Lhs& lhs, const Rhs& rhs)
 	Evaluator<Rhs> rhsE{ rhs };
 
 	for (int i = 0; i < lhs.rows(); ++i)
-	{
 		for (int j = 0; j < rhs.cols(); ++j)
 		{
 			Type sum = 0;
 			for(int h = 0; h < rhs.rows(); ++h)
-				sum += lhsE.evaluate(i, j) * lhsE.evaluate(h, j);
+				sum += lhsE.evaluate(i, h) * rhsE.evaluate(h, j); 
 			dest(i, j) = sum;
 		}
-	}
-		
 }
+
+template<class Lhs, class Rhs>
+struct Evaluator<ProductOp<Lhs, Rhs>>
+	: public ProductEvaluator<ProductOp<Lhs, Rhs>>
+{
+	using Expr = ProductOp<Lhs, Rhs>;
+	using Base = ProductEvaluator<Expr>;
+	explicit Evaluator(const Expr& expr) : Base(expr) {}
+};
 
 template<class Lhs, class Rhs>
 struct ProductEvaluator<ProductOp<Lhs, Rhs>>
