@@ -11,7 +11,7 @@ int main()
 	MatrixXd mat;
 	mat.resize(2, 2);
 	auto mm = mat * mat + mat;
-	mat = mm;;
+	mat = mm;
 	//*/
 
 	///*
@@ -58,7 +58,7 @@ int main()
 	//auto ll = (lhst * rhst).transpose() * lhst;
 	//MatrixT<int> tt = ll;
 
-	auto v = lhst * rhst;
+	auto v = lhst * rhst * lhst;
 	MatrixT<int> vv = v;
 	//impl::ProductEvaluator<decltype(v)> be{ v };
 	

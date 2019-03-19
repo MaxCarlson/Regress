@@ -43,6 +43,8 @@ public:
 	using size_type		= int;
 	using value_type	= Type;
 
+	template<class... Args>
+	friend struct impl::Assignment;
 
 	template<bool>
 	class nonMajorOrderIteratorBase;	// TODO: Both of these names are long
@@ -94,9 +96,11 @@ public:
 	template<class Expr>
 	MatrixT(Expr expr); // TODO: Look into expense of this copy
 
-	size_type size() const noexcept { return vals.size(); }
-	size_type rows() const noexcept { return nrows; }
-	size_type cols() const noexcept { return ncols; }
+	Type* data()				noexcept { return vals.data(); }
+	const Type* data()	const	noexcept { return vals.data(); }
+	size_type size()	const	noexcept { return vals.size(); }
+	size_type rows()	const	noexcept { return nrows; }
+	size_type cols()	const	noexcept { return ncols; }
 
 	Type& operator()(size_type row, size_type col);
 	const Type& operator()(size_type row, size_type col) const;

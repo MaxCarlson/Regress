@@ -6,10 +6,7 @@ namespace impl
 
 template<class Expr>
 struct EvaluatorBase 
-{
-
-};
-
+{};
 
 template<class Expr>
 struct Evaluator : public EvaluatorBase<Expr>
@@ -17,7 +14,7 @@ struct Evaluator : public EvaluatorBase<Expr>
 	//explicit Evaluator(const Expr& expr) {}
 };
 
-// Specilzation for Matrix
+// Specialization for Matrix
 template<class Type, bool MajorOrder>
 struct Evaluator<MatrixT<Type, MajorOrder>>
 	: public EvaluatorBase<MatrixT<Type, MajorOrder>>
@@ -30,12 +27,20 @@ struct Evaluator<MatrixT<Type, MajorOrder>>
 		m{ m }
 	{}
 
+	value_type& evaluate(size_type row, size_type col)
+	{
+		return m(row, col);
+	}
+
 	value_type evaluate(size_type row, size_type col) const
 	{
 		return m(row, col);
 	}
 
-private:
+	size_type rows() const noexcept { return m.rows(); }
+	size_type cols() const noexcept { return m.cols(); }
+
+protected:
 	const MatrixType& m;
 };
 
@@ -64,8 +69,11 @@ struct BinaryEvaluator<CwiseBinaryOp<Op, Lhs, Rhs>>
 
 	value_type evaluate(size_type row, size_type col) const
 	{
-		return m(row, col);
+		return op(lhs.evaluate(row, col), rhs.evaluate(row, col));
 	}
+
+	size_type rows() const noexcept { return lhs.rows(); }
+	size_type cols() const noexcept { return rhs.cols(); }
 
 protected:
 	const Op op;
@@ -73,26 +81,23 @@ protected:
 	Evaluator<Rhs> rhs;
 };
 
-enum class ProductOption
+enum class ProductOption // TODO: Options for product evaluation
 {
 
 };
 
 // Evaluates the entire expression
 // TODO: Add an impl that only evaluates for an index
-template<class Dest, class Lhs, class Rhs, class Type>
-void productImpl(Dest& dest, const Lhs& lhs, const Rhs& rhs)
+template<class Dest, class LhsE, class RhsE, class Type>
+void productEntireImpl(Dest& dest, const LhsE& lhsE, const RhsE& rhsE)
 {
-	Evaluator<Lhs> lhsE{ lhs };
-	Evaluator<Rhs> rhsE{ rhs };
-
-	for (int i = 0; i < lhs.rows(); ++i)
-		for (int j = 0; j < rhs.cols(); ++j)
+	for (int i = 0; i < lhsE.rows(); ++i)
+		for (int j = 0; j < rhsE.cols(); ++j)
 		{
 			Type sum = 0;
-			for(int h = 0; h < rhs.rows(); ++h)
+			for(int h = 0; h < rhsE.rows(); ++h)
 				sum += lhsE.evaluate(i, h) * rhsE.evaluate(h, j); 
-			dest(i, j) = sum;
+			dest.evaluate(i, j) = sum;
 		}
 }
 
@@ -109,18 +114,47 @@ template<class Lhs, class Rhs>
 struct ProductEvaluator<ProductOp<Lhs, Rhs>>
 	: public EvaluatorBase<ProductOp<Lhs, Rhs>>
 {
-	using Expr = ProductOp<Lhs, Rhs>;
-	using value_type = decltype(typename Lhs::value_type{} + typename Lhs::value_type{});
+	using ThisType		= ProductEvaluator<ProductOp<Lhs, Rhs>>;
+	using Expr			= ProductOp<Lhs, Rhs>;
+	using LhsE			= Evaluator<Lhs>;
+	using RhsE			= Evaluator<Rhs>;
+	using value_type	= typename Expr::value_type;
+
+	enum Info
+	{
+		MajorOrder = Lhs::MajorOrder
+	};
+
+	using MatrixType	= MatrixT<value_type, MajorOrder>;
+
 
 	explicit ProductEvaluator(const Expr& expr) :
-		m(expr.resultRows(), expr.resultCols())
+		lhsE{ expr.getLhs() },
+		rhsE{ expr.getRhs() },
+		m( expr.resultRows(), expr.resultCols() )
 	{
-	
-		productImpl<decltype(m), Lhs, Rhs, value_type>(m, expr.getLhs(), expr.getRhs());
+		productEntireImpl<ThisType, LhsE, RhsE, value_type>(*this, lhsE, rhsE);
 	}
 
-private:
-	MatrixT<value_type, false> m;
+	MatrixType&& moveMatrix() { return std::move(m); }
+
+	size_type rows() const noexcept { return lhsE.rows(); }
+	size_type cols() const noexcept { return rhsE.cols(); }
+
+	value_type& evaluate(size_type row, size_type col)
+	{
+		return m(row, col);
+	}
+
+	value_type evaluate(size_type row, size_type col) const
+	{
+		return m(row, col);
+	}
+
+protected:
+	LhsE lhsE;
+	RhsE rhsE;
+	MatrixType m;
 };
 
 } // End impl::
