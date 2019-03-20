@@ -124,8 +124,10 @@ struct Assignment<Dest, CwiseBinaryOp<Op, Lhs, Rhs>, Type>
 		ExprEval					exprE{ expr };
 		ActualDest<Dest, ExprEval>	destE{ dest };
 
-		//assignmentLoopCoeff(destE, exprE);
-		assignmentLoopPacket(destE, exprE);
+		if(ExprEval::Packetable)
+			assignmentLoopPacket(destE, exprE);
+		else
+			assignmentLoopCoeff(destE, exprE);
 	}
 };
 

@@ -23,6 +23,11 @@ struct Evaluator<MatrixT<Type, MajorOrder>>
 	using MatrixType	= MatrixT<Type, MajorOrder>;
 	using size_type		= typename MatrixType::size_type;
 	using value_type	= Type;
+
+	enum
+	{
+		Packetable = true
+	};
 	
 	explicit Evaluator(const MatrixType& m) :
 		m{ m }
@@ -90,10 +95,16 @@ struct BinaryEvaluator<CwiseBinaryOp<Func, Lhs, Rhs>>
 	using Expr			= CwiseBinaryOp<Func, Lhs, Rhs>;
 	using size_type		= typename Lhs::size_type;
 	using value_type	= typename Lhs::value_type;
+	using LhsE			= Evaluator<Lhs>;
+	using RhsE			= Evaluator<Rhs>;
+
 
 	enum
 	{
-		MajorOrder = Lhs::MajorOrder
+		MajorOrder = Lhs::MajorOrder,
+		Packetable = std::is_same_v<typename Lhs::value_type, typename Rhs::value_type>
+			&& LhsE::Packetable && RhsE::Packetable
+		// TODO: Indexable ? Lhs::MajorOrder == Rhs::MajorOrder && Lhs::Indexable && Rhs::Indexable
 	};
 
 	explicit BinaryEvaluator(const Expr& expr) :
@@ -118,8 +129,8 @@ struct BinaryEvaluator<CwiseBinaryOp<Func, Lhs, Rhs>>
 
 protected:
 	const Func op;
-	Evaluator<Lhs> lhs;
-	Evaluator<Rhs> rhs;
+	LhsE lhs;
+	RhsE rhs;
 };
 
 enum class ProductOption // TODO: Options for product evaluation
@@ -162,14 +173,14 @@ struct ProductEvaluator<ProductOp<Lhs, Rhs>>
 	using LhsE			= Evaluator<Lhs>;
 	using RhsE			= Evaluator<Rhs>;
 	using value_type	= typename Expr::value_type;
+	using MatrixType	= MatrixT<value_type, MajorOrder>;
 
 	enum 
 	{
-		MajorOrder = Lhs::MajorOrder
+		MajorOrder = Lhs::MajorOrder,
+		Packetable = std::is_same_v<typename Lhs::value_type, typename Rhs::value_type>
+			&& LhsE::Packetable && RhsE::Packetable
 	};
-
-	using MatrixType	= MatrixT<value_type, MajorOrder>;
-
 
 	explicit ProductEvaluator(const Expr& expr) :
 		lhsE{ expr.getLhs() },
@@ -219,6 +230,11 @@ struct TransposeEvaluator<TransposeOp<Expr>>
 	using size_type		= typename Expr::size_type;
 	using value_type	= typename Expr::value_type;
 
+	enum
+	{
+		Packetable = ExprE::Packetable
+	};
+
 	explicit TransposeEvaluator(const Op& expr) :
 		exprE{ expr }
 	{}
@@ -256,6 +272,11 @@ struct ConstantEvaluator<Constant<Type, Expr>>
 	using ThisExpr		= Constant<Type, Expr>;
 	using size_type		= int;
 	using value_type	= Type;
+
+	enum
+	{
+		Packetable = true
+	};
 
 	explicit ConstantEvaluator(const ThisExpr& expr) :
 		expr{ expr }
