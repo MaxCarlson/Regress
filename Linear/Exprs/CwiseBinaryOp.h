@@ -100,110 +100,29 @@ public:
 	}
 };
 
-template<class Type>
-class CwiseQuotientOp
+template<class Type, class Expr>
+struct Constant
 {
-public:
-	using value_type = Type;
+	using size_type = typename Expr::size_type;
 
-	CwiseQuotientOp() {}
-
-	template<class Lit, class Rit>
-	Type operator()(Lit lit, Rit rit) const
-	{
-		return lit / rit;
-	}
-};
-
-// A wrapper for constant expressions 
-template<class Type, class Val, class Expr>
-class Constant
-{
-	const Val&	constant;
-	const Expr&	expr;
-public:
-	static constexpr bool IsExpr = true;
-
-	Constant(const Val& constant, const Expr& expr) :
-		constant{ constant }, 
+	Constant(const Type& t, const Expr& expr) :
+		t{ t },
 		expr{ expr }
 	{}
 
-	struct const_iterator
+	enum
 	{
-		using Ref		= const_iterator&;
-		using size_type = impl::size_type;
-
-		const Val& constant;
-
-		const_iterator(const Val& constant) :
-			constant{ constant }
-		{}
-
-		Ref operator++()			{ return *this; }
-		Ref operator+=(size_type)	{ return *this; }
-		Ref operator--()			{ return *this; }
-		Ref operator-=(size_type)	{ return *this; }
-		const Val& operator*() const noexcept { return constant; }
+		IsExpr = true
 	};
 
-	size_type rows() const noexcept { return expr.rows(); }
-	size_type cols() const noexcept { return expr.cols(); }
+	inline size_type rows()	const noexcept { return expr.rows(); }
+	inline size_type cols()	const noexcept { return expr.cols(); }
 
-	const_iterator begin() const noexcept { return const_iterator{ constant }; }
+	const Type& getValue() const { return t; }
+
+private:
+	const Type& t;
+	const Expr& expr;
 };
 
-// Scalar Op's for CwiseBinaryOp
-template<class Scalar, class Type>
-class ScalarAddOp
-{
-public:
-	using value_type = Type;
-
-	template<class Lit, class Rit>
-	Type operator()(Lit lit, Rit rit) const
-	{
-		return static_cast<Type>(*lit + *rit);
-	}
-};
-
-template<class Scalar, class Type>
-class ScalarSubOp
-{
-public:
-	using value_type = Type;
-
-	template<class Lit, class Rit>
-	Type operator()(Lit lit, Rit rit) const
-	{
-		return static_cast<Type>(*lit - *rit);
-	}
-};
-
-template<class Scalar, class Type>
-class ScalarProductOp
-{
-public:
-	using value_type = Type;
-
-	template<class Lit, class Rit>
-	Type operator()(Lit lit, Rit rit) const
-	{
-		return static_cast<Type>(*lit * *rit);
-	}
-};
-
-template<class Scalar, class Type>
-class ScalarQuotientOp
-{
-public:
-	using value_type = Type;
-
-	template<class Lit, class Rit>
-	Type operator()(Lit lit, Rit rit) const
-	{
-		return static_cast<Type>(*lit / *rit);
-	}
-};
-
-}
+} // End impl::

@@ -20,15 +20,6 @@ struct Traits<MatrixT<Type, MajorOrder>>
 	static constexpr bool MajorOrder = MajorOrder;
 };
 
-/*
-template<class Iter, class Type>
-class MatrixExpr;
-template<class LIt, class RIt, class Op, class Type>
-class MatBinExpr;
-template<class Type>
-class MatrixCwiseProductOp;
-*/
-
 // TODO: Add a storage abstraction so we can have multiple things point to the same memory, such as view slices
 // TODO: Add template param for using Column Major Order
 
@@ -584,7 +575,6 @@ inline Type MatrixT<Type, MajorOrder>::sum() const
 	return sum;
 }
 
-// TODO: This will need split code when we have columnMajorOrder template param
 // TODO: This is a seriously non-optimal algorithm
 template<class Type, bool MajorOrder>
 inline void MatrixT<Type, MajorOrder>::addColumn(size_type idx, Type val)

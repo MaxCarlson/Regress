@@ -15,7 +15,7 @@ struct Evaluator : public EvaluatorBase<Expr>
 };
 
 // Specialization for Matrix
-
+// Note: Capable of wrapping a non-const matrix and still using evaluateRef for assignment
 template<class Type, bool MajorOrder>
 struct Evaluator<MatrixT<Type, MajorOrder>>
 	: public EvaluatorBase<MatrixT<Type, MajorOrder>>
@@ -60,7 +60,7 @@ struct BinaryEvaluator<CwiseBinaryOp<Func, Lhs, Rhs>>
 {
 	using Expr			= CwiseBinaryOp<Func, Lhs, Rhs>;
 	using size_type		= typename Lhs::size_type;
-	using value_type	= decltype(typename Lhs::value_type{} + typename Lhs::value_type{});
+	using value_type	= typename Lhs::value_type;
 
 	enum
 	{
@@ -116,6 +116,8 @@ struct Evaluator<ProductOp<Lhs, Rhs>>
 	explicit Evaluator(const Op& op) : Base(op) {}
 };
 
+// Basic ProductEvaluator that creates a temporary
+// TODO: ProductEvaluator with no temporary
 template<class Lhs, class Rhs>
 struct ProductEvaluator<ProductOp<Lhs, Rhs>>
 	: public EvaluatorBase<ProductOp<Lhs, Rhs>>
@@ -179,6 +181,7 @@ struct TransposeEvaluator<TransposeOp<Expr>>
 	using ThisType		= TransposeEvaluator<TransposeOp<Expr>>;
 	using Op			= TransposeOp<Expr>;
 	using ExprE			= Evaluator<Op>;
+	using size_type		= typename Expr::size_type;
 	using value_type	= typename Expr::value_type;
 
 	explicit TransposeEvaluator(const Op& expr) :
@@ -202,6 +205,34 @@ protected:
 	ExprE exprE;
 };
 
+template<class Type, class Expr>
+struct Evaluator<Constant<Type, Expr>>
+	: public ConstantEvaluator<Constant<Type, Expr>>
+{
+	using Op	= Constant<Type, Expr>;
+	using Base	= ConstantEvaluator<Op>;
+	explicit Evaluator(const Op& op) : Base(op) {}
+};
 
+template<class Type, class Expr>
+struct ConstantEvaluator<Constant<Type, Expr>>
+	: public EvaluatorBase<Constant<Type, Expr>>
+{
+	using ThisExpr		= Constant<Type, Expr>;
+	using size_type		= int;
+	using value_type	= Type;
+
+	explicit ConstantEvaluator(const ThisExpr& expr) :
+		expr{ expr }
+	{}
+
+	value_type evaluate(size_type, size_type) const
+	{
+		return expr.getValue();
+	}
+
+protected:
+	const ThisExpr& expr;
+};
 
 } // End impl::

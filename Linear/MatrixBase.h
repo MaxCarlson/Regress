@@ -54,56 +54,20 @@ public:
 		return ProductOp{ derived(), other.derived() };
 	}
 
+	const TransposeOp<Derived> transpose() const
+	{
+		return TransposeOp<Derived>{ derived() };
+	}
 
 	// Scalar Operators 
 	// (enabled on objects that aren't derived from MatrixBase)
 
 	template<class Scalar,
 		class = std::enable_if_t<!std::is_base_of_v<MatrixBase<Scalar>, Scalar>>>
-		const CwiseBinaryOp<impl::ScalarAddOp<Scalar, value_type>,
-		Derived,
-		impl::Constant<value_type, Scalar, Derived>>
+	const CwiseBinaryOp<impl::AddOp<value_type>, Derived, impl::Constant<Scalar, Derived>>
 		operator+(const Scalar& scalar) const
 	{
-		return CwiseBinaryOp{ impl::ScalarAddOp<Scalar, value_type>{}, derived(),
-			impl::Constant<value_type, Scalar, Derived>{scalar, derived()} };
-	}
-
-	template<class Scalar,
-		class = std::enable_if_t<!std::is_base_of_v<MatrixBase<Scalar>, Scalar>>>
-		const CwiseBinaryOp<impl::ScalarSubOp<Scalar, value_type>,
-		Derived,
-		impl::Constant<value_type, Scalar, Derived>>
-		operator-(const Scalar& scalar) const
-	{
-		return CwiseBinaryOp{ impl::ScalarSubOp<Scalar, value_type>{}, derived(),
-			impl::Constant<value_type, Scalar, Derived>{scalar, derived()} };
-	}
-
-	template<class Scalar,
-		class = std::enable_if_t<!std::is_base_of_v<MatrixBase<Scalar>, Scalar>>>
-		const CwiseBinaryOp<impl::ScalarProductOp<Scalar, value_type>,
-		Derived,
-		impl::Constant<value_type, Scalar, Derived>>
-		operator*(const Scalar& scalar) const
-	{
-		return CwiseBinaryOp{ impl::ScalarProductOp<Scalar, value_type>{}, derived(),
-			impl::Constant<value_type, Scalar, Derived>{scalar, derived()} };
-	}
-
-	template<class Scalar,
-		class = std::enable_if_t<!std::is_base_of_v<MatrixBase<Scalar>, Scalar>>>
-		const CwiseBinaryOp<impl::ScalarQuotientOp<Scalar, value_type>,
-		Derived,
-		impl::Constant<value_type, Scalar, Derived>>
-		operator/(const Scalar& scalar) const
-	{
-		return CwiseBinaryOp{ impl::ScalarQuotientOp<Scalar, value_type>{}, derived(),
-			impl::Constant<value_type, Scalar, Derived>{scalar, derived()} };
-	}
-
-	const TransposeOp<Derived> transpose() const
-	{
-		return TransposeOp<Derived>{ derived() };
+		return CwiseBinaryOp{ impl::AddOp<value_type>{}, derived(), 
+			impl::Constant<Scalar, Derived>{scalar, derived()} };
 	}
 };

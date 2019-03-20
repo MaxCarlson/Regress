@@ -41,7 +41,7 @@ template<class Type>
 class CwiseQuotientOp;
 
 // Wrapper for non-MatrixBase op's (e.g. Matrix a = a * 2;)
-template<class Type, class Val, class Expr>
+template<class Type, class Expr>
 class Constant;
 
 template<class Scalar, class Type>
@@ -83,6 +83,9 @@ struct IteratorSelector
 namespace impl
 {
 // Evaluators
+template<class Arg>
+struct ConstantEvaluator;
+
 template<class Args>
 struct BinaryEvaluator;
 

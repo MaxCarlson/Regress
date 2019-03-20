@@ -67,12 +67,12 @@ int main()
 	Stopwatch s;
 	s.start();
 
-	auto v = lhst * rhst * lhst + lhst;
+	auto v = lhst * rhst * lhst + 2;
 	MatrixT<int> vv = v;
 	s.printCurrent();
 
 	s.start();
-	auto a = lhs * rhs * lhs;
+	auto a = lhs * rhs * lhs + lhs;
 	Matrix<int> aa = a;
 	s.printCurrent();
 
