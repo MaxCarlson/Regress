@@ -97,6 +97,9 @@ struct Assignment;
 namespace impl
 {
 
+template<class Type>
+struct PacketTraits;
+
 using Packet4f = __m128;
 using Packet4i = __m128i;
 using Packet2d = __m128d;

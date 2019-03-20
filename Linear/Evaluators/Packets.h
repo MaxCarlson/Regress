@@ -7,6 +7,21 @@ using Packet4f = __m128;
 using Packet4i = __m128i;
 using Packet2d = __m128d;
 
+// Get the packet traits of a type
+template<class Type>
+struct PacketTraits
+{
+	using type = std::conditional_t<std::is_same_v<Type, float>, Packet4f,
+		std::conditional_t<std::is_same_v<Type, int>, Packet4i,
+		std::conditional_t<std::is_same_v<Type, double>, Packet2d, void>>>;
+
+	enum
+	{
+		Packetable	= !std::is_same_v<void, type>,
+		Stride		= std::is_same_v<type, Packet2d> ? 2 : 4,
+	};
+};
+
 template<class Packet, class Type>
 Packet pload(const Type* ptr) { return {}; }
 
