@@ -1,6 +1,7 @@
 #pragma once
 #include "ForwardDeclarations.h"
 #include "ExprIterator.h"
+#include <xmmintrin.h>
 
 template<class Op, class Lhs, class Rhs>
 struct Traits<CwiseBinaryOp<Op, Lhs, Rhs>>
@@ -65,6 +66,11 @@ public:
 	Type operator()(const Lhs& lit, const Rhs& rit) const
 	{
 		return lit + rit;
+	}
+
+	__m128 packetOp(const __m128& p1, const __m128& p2) const
+	{
+		return _mm_add_ps(p1, p2);
 	}
 };
 

@@ -34,9 +34,6 @@ public:
 	using size_type		= int;
 	using value_type	= Type;
 
-	template<class... Args>
-	friend struct impl::Assignment;
-
 	template<bool>
 	class nonMajorOrderIteratorBase;	// TODO: Both of these names are long
 	template<bool>
@@ -95,6 +92,9 @@ public:
 
 	Type& operator()(size_type row, size_type col);
 	const Type& operator()(size_type row, size_type col) const;
+
+	Type& index(size_type i)				noexcept { return vals[i]; }
+	const Type& index(size_type i) const	noexcept { return vals[i]; }
 
 	bool operator==(const MatrixT& other) const;
 	bool operator!=(const MatrixT& other) const;

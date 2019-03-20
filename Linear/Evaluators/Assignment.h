@@ -16,6 +16,12 @@ void assignmentLoopCoeff(Dest& dest, const Expr& expr)
 			dest.evaluateRef(i, j) = expr.evaluate(i, j);
 }
 
+template<class Dest, class Expr>
+void assignmentLoopPacket(Dest& dest, const Expr& expr)
+{
+
+}
+
 template<class... Args>
 struct Assignment {};
 
@@ -60,7 +66,7 @@ struct ActualDest
 
 	void set(Dest&& src)
 	{
-		dest = std::move(src);
+		dest.set(std::move(src));
 	}
 
 	size_type rows() const noexcept { return dest.rows(); }

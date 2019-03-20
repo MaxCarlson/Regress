@@ -61,6 +61,7 @@ public:
 
 	// Scalar Operators 
 	// (enabled on objects that aren't derived from MatrixBase)
+	// TODO: Add operators so we can do -> Matrix m; Matrix t = 2 * m;
 
 	template<class Scalar,
 		class = std::enable_if_t<!std::is_base_of_v<MatrixBase<Scalar>, Scalar>>>

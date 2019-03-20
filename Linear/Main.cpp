@@ -5,12 +5,25 @@
 #include <Eigen\Dense>
 using Eigen::MatrixXd;
 
+#include "Evaluators\Packets.h"
+
 int main()
 {
+	float ar1[4] = { 1, 2, 3, 4 };
+	float ar2[4] = { 5, 6, 7, 8 };
+
+	__m128 first;
+	__m128 second;
+	first	= _mm_load_ps(ar1);
+	second	= _mm_load_ps(ar2);
+
+	__m128 res = _mm_add_ps(first, second);
+	auto rr = pload<Packet4f>(&(ar1[0]));
+
 	///*
 	MatrixXd mat;
 	mat.resize(2, 2);
-	auto mm = mat * mat + mat;
+	auto mm = mat * mat;
 	mat = mm;
 	//*/
 
@@ -67,7 +80,7 @@ int main()
 	Stopwatch s;
 	s.start();
 
-	auto v = lhst * rhst * lhst * 2;
+	auto v = lhst + lhst;
 	MatrixT<int> vv = v;
 	s.printCurrent();
 

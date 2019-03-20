@@ -38,8 +38,19 @@ struct Evaluator<MatrixT<Type, MajorOrder>>
 		return m(row, col);
 	}
 
+	template<class Packet>
+	Packet packet(size_type index) const
+	{
+		return &m.index(index);
+	}
+
 	size_type rows() const noexcept { return m.rows(); }
 	size_type cols() const noexcept { return m.cols(); }
+
+	void set(MatrixType&& other)
+	{
+		const_cast<MatrixType&>(m) = std::move(other);
+	}
 
 protected:
 	const MatrixType& m;

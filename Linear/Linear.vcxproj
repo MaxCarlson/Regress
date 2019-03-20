@@ -123,6 +123,7 @@
   <ItemGroup>
     <ClInclude Include="Evaluators\Assignment.h" />
     <ClInclude Include="Evaluators\Evaluators.h" />
+    <ClInclude Include="Evaluators\Packets.h" />
     <ClInclude Include="Exprs\CwiseBinaryOp.h" />
     <ClInclude Include="Expr.h" />
     <ClInclude Include="Exprs\ExprIterator.h" />
