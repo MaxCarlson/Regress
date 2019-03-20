@@ -39,9 +39,27 @@ struct Evaluator<MatrixT<Type, MajorOrder>>
 	}
 
 	template<class Packet>
+	Packet packet(size_type row, size_type col) const
+	{
+		return pload<Packet, value_type>(&m(row, col));
+	}
+
+	template<class Packet>
 	Packet packet(size_type index) const
 	{
-		return &m.index(index);
+		return pload<Packet>(&m.index(index));
+	}
+
+	template<class Packet>
+	void writePacket(size_type row, size_type col, const Packet& p) const
+	{
+		return pstore(const_cast<value_type*>(&m(row, col)), p);
+	}
+
+	template<class Packet>
+	void writePacket(size_type index, const Packet& p) const
+	{
+		return pstore(const_cast<value_type*>(&m.index(index)), p);
 	}
 
 	size_type rows() const noexcept { return m.rows(); }
@@ -87,6 +105,12 @@ struct BinaryEvaluator<CwiseBinaryOp<Func, Lhs, Rhs>>
 	value_type evaluate(size_type row, size_type col) const
 	{
 		return op(lhs.evaluate(row, col), rhs.evaluate(row, col));
+	}
+
+	template<class Packet>
+	Packet packet(size_type row, size_type col) const
+	{
+		return op.packetOp<Packet>(lhs.template packet<Packet>(row, col), rhs.template packet<Packet>(row, col));
 	}
 
 	size_type rows() const noexcept { return lhs.rows(); }

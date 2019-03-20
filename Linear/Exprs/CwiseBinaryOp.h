@@ -68,9 +68,10 @@ public:
 		return lit + rit;
 	}
 
-	__m128 packetOp(const __m128& p1, const __m128& p2) const
+	template<class Packet>
+	Packet packetOp(const Packet& p1, const Packet& p2) const
 	{
-		return _mm_add_ps(p1, p2);
+		return padd(p1, p2);
 	}
 };
 

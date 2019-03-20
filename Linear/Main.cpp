@@ -17,9 +17,6 @@ int main()
 	first	= _mm_load_ps(ar1);
 	second	= _mm_load_ps(ar2);
 
-	__m128 res = _mm_add_ps(first, second);
-	auto rr = pload<Packet4f>(&(ar1[0]));
-
 	///*
 	MatrixXd mat;
 	mat.resize(2, 2);
@@ -58,6 +55,12 @@ int main()
 		{4, 5, 6}
 	};
 
+	MatrixT<int> bigger = {
+		{1, 2, 3 ,4},
+		{3, 4, 4, 5},
+		{5, 6, 6, 7},
+		{5, 6, 6, 7},
+	};
 
 	// lhs * rhs * lhs
 	// {1, 2},					{9,  12, 15}
@@ -68,19 +71,10 @@ int main()
 	// {19, 26, 33} *	{3, 4}, =	{262, 340}
 	// {29, 40, 51}		{5, 6},		{404, 524}
 
-	//MatrixT<int> bb = lhst / 2.06;
-
-	//auto cc = (lhst + lhst) * rhst;
-	//auto cc = lhst * rhst * lhst;
-	//MatrixT<int> c = cc;
-
-	//auto ll = (lhst * rhst).transpose() * lhst;
-	//MatrixT<int> tt = ll;
-
 	Stopwatch s;
 	s.start();
 
-	auto v = lhst + lhst;
+	auto v = bigger + bigger;
 	MatrixT<int> vv = v;
 	s.printCurrent();
 

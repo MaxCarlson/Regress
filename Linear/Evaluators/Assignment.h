@@ -19,7 +19,17 @@ void assignmentLoopCoeff(Dest& dest, const Expr& expr)
 template<class Dest, class Expr>
 void assignmentLoopPacket(Dest& dest, const Expr& expr)
 {
+	int rows = dest.rows();
+	int cols = dest.cols();
 
+	int maxRow = rows;
+	int maxCol = cols;
+
+	for (int i = 0; i < maxRow; i += 1)
+		for (int j = 0; j < maxCol; j += 4)
+		{
+			dest.writePacket<Packet4i>(i, j, expr.packet<Packet4i>(i, j));
+		}
 }
 
 template<class... Args>
@@ -62,6 +72,12 @@ struct ActualDest
 	value_type& evaluateRef(size_type row, size_type col)
 	{
 		return dest.evaluateRef(row, col);
+	}
+
+	template<class Packet>
+	void writePacket(size_type row, size_type col, const Packet& p) const
+	{
+		dest.template writePacket<Packet>(row, col, p);
 	}
 
 	void set(Dest&& src)
@@ -108,7 +124,8 @@ struct Assignment<Dest, CwiseBinaryOp<Op, Lhs, Rhs>, Type>
 		ExprEval					exprE{ expr };
 		ActualDest<Dest, ExprEval>	destE{ dest };
 
-		assignmentLoopCoeff(destE, exprE);
+		//assignmentLoopCoeff(destE, exprE);
+		assignmentLoopPacket(destE, exprE);
 	}
 };
 

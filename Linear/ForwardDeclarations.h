@@ -1,5 +1,7 @@
 #pragma once
 #include <memory>
+#include <xmmintrin.h>
+#include <emmintrin.h>
 
 namespace impl
 {
@@ -89,4 +91,22 @@ struct TransposeEvaluator;
 // Assignment
 template<class... Args>
 struct Assignment;
+}
+
+// Instrinsic wrappers
+namespace impl
+{
+
+using Packet4f = __m128;
+using Packet4i = __m128i;
+using Packet2d = __m128d;
+
+template<class Packet, class Type>
+Packet pload(const Type* ptr);
+
+template<class Packet, class Type>
+void pstore(Type* to, const Packet& ptr);
+
+template<class Packet>
+Packet padd(const Packet& p1, const Packet& p2);
 }
