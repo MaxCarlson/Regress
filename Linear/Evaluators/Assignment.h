@@ -28,6 +28,9 @@ void assignmentLoopCoeffPacket(Dest& dest, const Expr& expr)
 		Stride = Traits::Stride,
 	};
 
+	// TODO: Make just as optimal for ColumnOrder matrix's
+	// through use of outer / inner (need to be implemented in all evaluators)
+
 	size_type rows = dest.rows();
 	size_type cols = dest.cols();
 
@@ -37,15 +40,13 @@ void assignmentLoopCoeffPacket(Dest& dest, const Expr& expr)
 	size_type i, j;
 
 	// Do aligned ops
-	for (i = 0; i < maxRow; i += 1)
-		for (j = 0; j < maxCol; j += 4)
-		{
+	for (i = 0; i < maxRow; ++i)
+		for (j = 0; j < maxCol; j += Stride)
 			dest.writePacket<PacketType>(i, j, expr.packet<PacketType>(i, j));
-		}
-
+	
 	// Do leftoves
-	for(; i < rows; ++i)
-		for (; j < cols; ++j)
+	for(i = 0; i < rows; ++i)
+		for (j = maxCol; j < cols; ++j)
 			dest.evaluateRef(i, j) = expr.evaluate(i, j);
 }
 
@@ -109,6 +110,8 @@ struct ActualDest
 
 	size_type rows() const noexcept { return dest.rows(); }
 	size_type cols() const noexcept { return dest.cols(); }
+	//size_type outer() const noexcept { return MajorOrder ? cols() : rows(); }
+	//size_type inner() const noexcept { return MajorOrder ? rows() : cols(); }
 
 private:
 	DestType dest;
@@ -146,6 +149,7 @@ struct Assignment<Dest, CwiseBinaryOp<Op, Lhs, Rhs>, Type>
 		ExprEval					exprE{ expr };
 		ActualDest<Dest, ExprEval>	destE{ dest };
 
+		// TODO: Specialize AssignmentKernel for this stuff
 		if(ExprEval::Packetable)
 			assignmentLoopCoeffPacket(destE, exprE);
 		else
