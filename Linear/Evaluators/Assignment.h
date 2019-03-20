@@ -17,19 +17,36 @@ void assignmentLoopCoeff(Dest& dest, const Expr& expr)
 }
 
 template<class Dest, class Expr>
-void assignmentLoopPacket(Dest& dest, const Expr& expr)
+void assignmentLoopCoeffPacket(Dest& dest, const Expr& expr)
 {
-	int rows = dest.rows();
-	int cols = dest.cols();
+	using size_type		= typename Dest::size_type;
+	using Traits		= PacketTraits<typename Dest::value_type>;
+	using PacketType	= typename Traits::type;
 
-	int maxRow = rows;
-	int maxCol = cols;
+	enum
+	{
+		Stride = Traits::Stride,
+	};
 
-	for (int i = 0; i < maxRow; i += 1)
-		for (int j = 0; j < maxCol; j += 4)
+	size_type rows = dest.rows();
+	size_type cols = dest.cols();
+
+	size_type maxRow = rows - rows % Stride;
+	size_type maxCol = cols - cols % Stride;
+
+	size_type i, j;
+
+	// Do aligned ops
+	for (i = 0; i < maxRow; i += 1)
+		for (j = 0; j < maxCol; j += 4)
 		{
-			dest.writePacket<Packet4i>(i, j, expr.packet<Packet4i>(i, j));
+			dest.writePacket<PacketType>(i, j, expr.packet<PacketType>(i, j));
 		}
+
+	// Do leftoves
+	for(; i < rows; ++i)
+		for (; j < cols; ++j)
+			dest.evaluateRef(i, j) = expr.evaluate(i, j);
 }
 
 template<class... Args>
@@ -63,6 +80,11 @@ struct ActualDest
 		TransposeEvaluator<Dest>, Evaluator<Dest>>;
 	using size_type		= typename Dest::size_type;
 	using value_type	= typename Dest::value_type;
+
+	enum
+	{
+		MajorOrder = Dest::MajorOrder
+	};
 
 
 	ActualDest(Dest& dest) :
@@ -125,7 +147,7 @@ struct Assignment<Dest, CwiseBinaryOp<Op, Lhs, Rhs>, Type>
 		ActualDest<Dest, ExprEval>	destE{ dest };
 
 		if(ExprEval::Packetable)
-			assignmentLoopPacket(destE, exprE);
+			assignmentLoopCoeffPacket(destE, exprE);
 		else
 			assignmentLoopCoeff(destE, exprE);
 	}

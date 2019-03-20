@@ -62,6 +62,11 @@ class AddOp
 public:
 	using value_type = Type;
 
+	enum
+	{
+		Packetable = PacketTraits<Type>::Packetable
+	};
+
 	template<class Lhs, class Rhs>
 	Type operator()(const Lhs& lit, const Rhs& rit) const
 	{
@@ -81,10 +86,21 @@ class SubOp
 public:
 	using value_type = Type;
 
+	enum
+	{
+		Packetable = PacketTraits<Type>::Packetable
+	};
+
 	template<class Lhs, class Rhs>
 	Type operator()(const Lhs& lit, const Rhs& rit) const
 	{
 		return lit - rit;
+	}
+
+	template<class Packet>
+	Packet packetOp(const Packet& p1, const Packet& p2) const
+	{
+		return psub(p1, p2);
 	}
 };
 
@@ -94,10 +110,21 @@ class MulOp
 public:
 	using value_type = Type;
 
+	enum
+	{
+		Packetable = PacketTraits<Type>::Packetable
+	};
+
 	template<class Lhs, class Rhs>
 	Type operator()(const Lhs& lit, const Rhs& rit) const
 	{
 		return lit * rit;
+	}
+
+	template<class Packet>
+	Packet packetOp(const Packet& p1, const Packet& p2) const
+	{
+		return pmul(p1, p2);
 	}
 };
 
@@ -107,11 +134,18 @@ class DivOp
 public:
 	using value_type = Type;
 
+	enum
+	{
+		Packetable = PacketTraits<Type>::HasDivide;
+	};
+
 	template<class Lhs, class Rhs>
 	Type operator()(const Lhs& lit, const Rhs& rit) const
 	{
 		return lit / rit;
 	}
+
+	// TODO: Conditional packeting
 };
 
 template<class Type>
@@ -120,12 +154,23 @@ class CwiseProductOp
 public:
 	using value_type = Type;
 
+	enum
+	{
+		Packetable = PacketTraits<Type>::Packetable
+	};
+
 	CwiseProductOp() {}
 
 	template<class Lhs, class Rhs>
 	Type operator()(const Lhs& lit, const Rhs& rit) const
 	{
 		return lit * rit;
+	}
+
+	template<class Packet>
+	Packet packetOp(const Packet& p1, const Packet& p2) const
+	{
+		return pmul(p1, p2);
 	}
 };
 

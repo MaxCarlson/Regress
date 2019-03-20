@@ -103,7 +103,7 @@ struct BinaryEvaluator<CwiseBinaryOp<Func, Lhs, Rhs>>
 	{
 		MajorOrder = Lhs::MajorOrder,
 		Packetable = std::is_same_v<typename Lhs::value_type, typename Rhs::value_type>
-			&& LhsE::Packetable && RhsE::Packetable
+			&& LhsE::Packetable && RhsE::Packetable && Func::Packetable
 		// TODO: Indexable ? Lhs::MajorOrder == Rhs::MajorOrder && Lhs::Indexable && Rhs::Indexable
 	};
 
@@ -173,7 +173,6 @@ struct ProductEvaluator<ProductOp<Lhs, Rhs>>
 	using LhsE			= Evaluator<Lhs>;
 	using RhsE			= Evaluator<Rhs>;
 	using value_type	= typename Expr::value_type;
-	using MatrixType	= MatrixT<value_type, MajorOrder>;
 
 	enum 
 	{
@@ -181,6 +180,9 @@ struct ProductEvaluator<ProductOp<Lhs, Rhs>>
 		Packetable = std::is_same_v<typename Lhs::value_type, typename Rhs::value_type>
 			&& LhsE::Packetable && RhsE::Packetable
 	};
+
+	using MatrixType	= MatrixT<value_type, MajorOrder>;
+
 
 	explicit ProductEvaluator(const Expr& expr) :
 		lhsE{ expr.getLhs() },
