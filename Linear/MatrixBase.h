@@ -70,4 +70,31 @@ public:
 		return CwiseBinaryOp{ impl::AddOp<value_type>{}, derived(), 
 			impl::Constant<Scalar, Derived>{scalar, derived()} };
 	}
+
+	template<class Scalar,
+		class = std::enable_if_t<!std::is_base_of_v<MatrixBase<Scalar>, Scalar>>>
+		const CwiseBinaryOp<impl::SubOp<value_type>, Derived, impl::Constant<Scalar, Derived>>
+		operator-(const Scalar& scalar) const
+	{
+		return CwiseBinaryOp{ impl::SubOp<value_type>{}, derived(),
+			impl::Constant<Scalar, Derived>{scalar, derived()} };
+	}
+
+	template<class Scalar,
+		class = std::enable_if_t<!std::is_base_of_v<MatrixBase<Scalar>, Scalar>>>
+		const CwiseBinaryOp<impl::MulOp<value_type>, Derived, impl::Constant<Scalar, Derived>>
+		operator*(const Scalar& scalar) const
+	{
+		return CwiseBinaryOp{ impl::MulOp<value_type>{}, derived(),
+			impl::Constant<Scalar, Derived>{scalar, derived()} };
+	}
+
+	template<class Scalar,
+		class = std::enable_if_t<!std::is_base_of_v<MatrixBase<Scalar>, Scalar>>>
+		const CwiseBinaryOp<impl::DivOp<value_type>, Derived, impl::Constant<Scalar, Derived>>
+		operator/(const Scalar& scalar) const
+	{
+		return CwiseBinaryOp{ impl::DivOp<value_type>{}, derived(),
+			impl::Constant<Scalar, Derived>{scalar, derived()} };
+	}
 };

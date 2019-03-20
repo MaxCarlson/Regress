@@ -61,10 +61,8 @@ class AddOp
 public:
 	using value_type = Type;
 
-	AddOp() {}
-
-	template<class Lit, class Rit>
-	Type operator()(Lit lit, Rit rit) const
+	template<class Lhs, class Rhs>
+	Type operator()(const Lhs& lit, const Rhs& rit) const
 	{
 		return lit + rit;
 	}
@@ -76,12 +74,36 @@ class SubOp
 public:
 	using value_type = Type;
 
-	SubOp() {}
-
-	template<class Lit, class Rit>
-	Type operator()(Lit lit, Rit rit) const
+	template<class Lhs, class Rhs>
+	Type operator()(const Lhs& lit, const Rhs& rit) const
 	{
 		return lit - rit;
+	}
+};
+
+template<class Type>
+class MulOp
+{
+public:
+	using value_type = Type;
+
+	template<class Lhs, class Rhs>
+	Type operator()(const Lhs& lit, const Rhs& rit) const
+	{
+		return lit * rit;
+	}
+};
+
+template<class Type>
+class DivOp
+{
+public:
+	using value_type = Type;
+
+	template<class Lhs, class Rhs>
+	Type operator()(const Lhs& lit, const Rhs& rit) const
+	{
+		return lit / rit;
 	}
 };
 
@@ -93,13 +115,16 @@ public:
 
 	CwiseProductOp() {}
 
-	template<class Lit, class Rit>
-	Type operator()(Lit lit, Rit rit) const
+	template<class Lhs, class Rhs>
+	Type operator()(const Lhs& lit, const Rhs& rit) const
 	{
 		return lit * rit;
 	}
 };
 
+// Simple wrapper so we can perform 
+// Matrix m; m operator(x) constant 
+// (e.g.) m + 2; m / 2; etc
 template<class Type, class Expr>
 struct Constant
 {
