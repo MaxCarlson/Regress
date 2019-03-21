@@ -10,7 +10,6 @@ void assignmentLoopCoeff(Dest& dest, const Expr& expr)
 	// TODO: Index based assignement
 	// TODO: Correct major order assignement
 	// TODO: OpenMp
-	// TODO: intrinsics
 	for (int i = 0; i < dest.rows(); ++i)
 		for (int j = 0; j < dest.cols(); ++j)
 			dest.evaluateRef(i, j) = expr.evaluate(i, j);
@@ -37,16 +36,16 @@ void assignmentLoopCoeffPacket(Dest& dest, const Expr& expr)
 	size_type maxRow = rows - rows % Stride;
 	size_type maxCol = cols - cols % Stride;
 
-	size_type i, j;
+	// TODO: Detect non-aligned memory / do non-aligned memory up to aligned block
 
 	// Do aligned ops
-	for (i = 0; i < maxRow; ++i)
-		for (j = 0; j < maxCol; j += Stride)
+	for (size_type i = 0; i < maxRow; ++i)
+		for (size_type j = 0; j < maxCol; j += Stride)
 			dest.writePacket<PacketType>(i, j, expr.packet<PacketType>(i, j));
 	
-	// Do leftoves
-	for(i = 0; i < rows; ++i)
-		for (j = maxCol; j < cols; ++j)
+	// Do leftovers
+	for(size_type i = 0; i < rows; ++i)
+		for (size_type j = maxCol; j < cols; ++j)
 			dest.evaluateRef(i, j) = expr.evaluate(i, j);
 }
 
@@ -98,7 +97,7 @@ struct ActualDest
 	}
 
 	template<class Packet>
-	void writePacket(size_type row, size_type col, const Packet& p) const
+	void writePacket(size_type row, size_type col, const Packet& p) 
 	{
 		dest.template writePacket<Packet>(row, col, p);
 	}

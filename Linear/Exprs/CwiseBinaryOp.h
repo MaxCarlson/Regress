@@ -1,7 +1,6 @@
 #pragma once
 #include "ForwardDeclarations.h"
 #include "ExprIterator.h"
-#include <xmmintrin.h>
 
 template<class Op, class Lhs, class Rhs>
 struct Traits<CwiseBinaryOp<Op, Lhs, Rhs>>
@@ -136,7 +135,7 @@ public:
 
 	enum
 	{
-		Packetable = PacketTraits<Type>::HasDivide;
+		Packetable = PacketTraits<Type>::Packetable && PacketTraits<Type>::HasDivide;
 	};
 
 	template<class Lhs, class Rhs>
@@ -180,26 +179,72 @@ public:
 template<class Type, class Expr>
 struct Constant
 {
-	using size_type = typename Expr::size_type;
-
-	Constant(const Type& t, const Expr& expr) :
-		t{ t },
-		expr{ expr }
-	{}
+	using size_type			= typename Expr::size_type;
+	using value_type		= Type;
+	using ThisPacketTraits	= PacketTraits<Type>;
+	using PacketType		= typename ThisPacketTraits::type;
 
 	enum
 	{
-		IsExpr = true
+		IsExpr		= true,
+		Packetable	= PacketTraits<Type>::Packetable
 	};
+
+	Constant(const Type& t, const Expr& expr) :
+		t{ t },
+		expr{ expr },
+		mem( ThisPacketTraits::Stride )
+	{
+		if constexpr (Packetable)
+		{
+			std::fill(mem.begin(), mem.end(), t);
+			p = pload<PacketType, Type>(mem.data());
+		}
+	}
+
+	const Type& evaluate() const { return t; }
+
+	// TODO: Benchmark just using p or loading on each call
+	PacketType packet() const
+	{
+		return p;
+	}
 
 	inline size_type rows()	const noexcept { return expr.rows(); }
 	inline size_type cols()	const noexcept { return expr.cols(); }
 
-	const Type& getValue() const { return t; }
 
 private:
+
+	// TODO: Remove packet & mem from struct when not in use
+	// TODO: Will have to benchmark this impl vs. loads on each call to packet
+
+	/*
+	template<bool isPacketable>
+	struct Helper
+	{};
+
+	struct Helper<false>
+	{
+		const Type& t;
+		const Expr& expr;
+	};
+
+	struct Helper<true>
+	{
+		const Type& t;
+		const Expr& expr;
+		PacketType p;
+		std::vector<Type> mem;
+	};
+
+	Helper<Packetable> vars;
+	*/
+
 	const Type& t;
 	const Expr& expr;
+	PacketType p;
+	std::vector<Type> mem;
 };
 
 } // End impl::

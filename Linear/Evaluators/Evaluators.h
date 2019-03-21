@@ -26,7 +26,7 @@ struct Evaluator<MatrixT<Type, MajorOrder>>
 
 	enum
 	{
-		Packetable = true
+		Packetable = PacketTraits<Type>::Packetable
 	};
 	
 	explicit Evaluator(const MatrixType& m) :
@@ -56,13 +56,13 @@ struct Evaluator<MatrixT<Type, MajorOrder>>
 	}
 
 	template<class Packet>
-	void writePacket(size_type row, size_type col, const Packet& p) const
+	void writePacket(size_type row, size_type col, const Packet& p) 
 	{
 		return pstore(const_cast<value_type*>(&m(row, col)), p);
 	}
 
 	template<class Packet>
-	void writePacket(size_type index, const Packet& p) const
+	void writePacket(size_type index, const Packet& p) 
 	{
 		return pstore(const_cast<value_type*>(&m.index(index)), p);
 	}
@@ -103,8 +103,10 @@ struct BinaryEvaluator<CwiseBinaryOp<Func, Lhs, Rhs>>
 	{
 		MajorOrder = Lhs::MajorOrder,
 		Packetable = std::is_same_v<typename Lhs::value_type, typename Rhs::value_type>
-			&& LhsE::Packetable && RhsE::Packetable && Func::Packetable
-		// TODO: Indexable ? Lhs::MajorOrder == Rhs::MajorOrder && Lhs::Indexable && Rhs::Indexable
+			&& LhsE::Packetable && RhsE::Packetable && Func::Packetable,
+
+		// TODO: We need to add Lhse::MajorOrderLeft && right for this to work
+		//Indexable = LhsE::MajorOrder == RhsE::MajorOrder && LhsE::Indexable && RhsE::Indexable
 	};
 
 	explicit BinaryEvaluator(const Expr& expr) :
@@ -234,7 +236,7 @@ struct TransposeEvaluator<TransposeOp<Expr>>
 
 	enum
 	{
-		Packetable = ExprE::Packetable
+		Packetable = ExprE::Packetable 
 	};
 
 	explicit TransposeEvaluator(const Op& expr) :
@@ -277,7 +279,7 @@ struct ConstantEvaluator<Constant<Type, Expr>>
 
 	enum
 	{
-		Packetable = true
+		Packetable = ThisExpr::Packetable
 	};
 
 	explicit ConstantEvaluator(const ThisExpr& expr) :
@@ -286,7 +288,13 @@ struct ConstantEvaluator<Constant<Type, Expr>>
 
 	value_type evaluate(size_type, size_type) const
 	{
-		return expr.getValue();
+		return expr.evaluate();
+	}
+
+	template<class Packet>
+	Packet packet(size_type row, size_type col) const
+	{
+		return expr.packet();
 	}
 
 protected:

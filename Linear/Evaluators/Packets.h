@@ -69,6 +69,9 @@ template<class Packet, class Type>
 Packet pload(const Type* ptr) { static_assert(false); return {}; }
 
 template<class Packet, class Type>
+Packet pload1(const Type* ptr) { static_assert(false); return {}; }
+
+template<class Packet, class Type>
 void pstore(Type* to, const Packet& ptr) { static_assert(false); }
 
 template<class Packet>
@@ -87,6 +90,9 @@ Packet pdiv(const Packet& p1, const Packet& p2) { static_assert(false); return {
 template<> Packet4f pload<Packet4f, float	>(const float*		from) { return _mm_load_ps(from); }
 template<> Packet4i pload<Packet4i, int		>(const int*		from) { return _mm_load_si128(reinterpret_cast<const __m128i*>(from)); }
 template<> Packet2d pload<Packet2d, double	> (const double*	from) { return _mm_load_pd(from); }
+
+//template<> Packet4f pload1<Packet4f, float	>(const float*		from) { return _mm_load1_ps(from); }
+//template<> Packet2d pload1<Packet2d, double	>(const double*	from) { return _mm_load1_pd(from); }
 
 template<> void pstore<Packet4f, float	>(float*	to, const Packet4f& from) { return _mm_store_ps(to, from); }
 template<> void pstore<Packet4i, int	>(int*		to, const Packet4i& from) { return _mm_store_si128(reinterpret_cast<__m128i*>(to), from); }
