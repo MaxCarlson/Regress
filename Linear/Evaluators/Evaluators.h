@@ -232,15 +232,22 @@ struct TransposeEvaluator<TransposeOp<Expr>>
 	enum
 	{
 		MajorOrder = Expr::MajorOrder,
-		Packetable = ExprE::Packetable 
+		Packetable = false //ExprE::Packetable 
 	};
 
+	// TODO: This should probably be derived from UnaryEvaluator
+
 	explicit TransposeEvaluator(const Op& expr) :
-		exprE{ expr }
+		exprE{ expr.getExpr() }
 	{}
 
 	size_type rows() const noexcept { return exprE.cols(); }
 	size_type cols() const noexcept { return exprE.rows(); }
+
+
+	//
+	// TODO: NOT WORKING
+	//
 
 	value_type& evaluate(size_type row, size_type col)
 	{

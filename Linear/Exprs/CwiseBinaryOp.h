@@ -1,6 +1,5 @@
 #pragma once
 #include "ForwardDeclarations.h"
-#include "ExprIterator.h"
 
 template<class Op, class Lhs, class Rhs>
 struct Traits<CwiseBinaryOp<Op, Lhs, Rhs>>

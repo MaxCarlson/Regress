@@ -1,6 +1,5 @@
 #pragma once
 #include "ForwardDeclarations.h"
-#include "ExprIterator.h"
 
 template<class Expr>
 struct Traits<TransposeOp<Expr>>
@@ -24,13 +23,18 @@ public:
 	using Base				= MatrixBase<TransposeOp<Expr>>;
 	using size_type			= typename Base::size_type;
 	using value_type		= typename Traits<ThisType>::value_type;
-	using Type				= value_type;
+
+private:
 
 	const Expr&	expr;
+
+public:
 
 	TransposeOp(const Expr& expr) : 
 		expr{ expr }
 	{}
+
+	const Expr& getExpr() const { return expr; }
 
 	inline size_type rows()			const noexcept { return expr.cols(); }
 	inline size_type cols()			const noexcept { return expr.rows(); }

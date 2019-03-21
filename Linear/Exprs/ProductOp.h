@@ -1,6 +1,5 @@
 #pragma once
 #include "ForwardDeclarations.h"
-#include "ExprIterator.h"
 
 template<class Lhs, class Rhs>
 struct Traits<ProductOp<Lhs, Rhs>>

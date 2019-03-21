@@ -56,7 +56,7 @@ int main()
 	};
 
 	MatrixT<int> bigger = {
-		{1, 2, 3 ,4, 1},
+		{1, 2, 3, 4, 1},
 		{3, 4, 4, 5, 1},
 		{5, 6, 6, 7, 1},
 		{5, 6, 6, 7, 1},
@@ -74,7 +74,7 @@ int main()
 	Stopwatch s;
 	s.start();
 
-	auto v = bigger + bigger + bigger.transpose();
+	auto v = bigger.transpose();
 	MatrixT<int> vv = v;
 	s.printCurrent();
 
