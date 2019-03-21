@@ -149,7 +149,29 @@ struct Assignment<Dest, CwiseBinaryOp<Op, Lhs, Rhs>, Type>
 		ActualDest<Dest, ExprEval>	destE{ dest };
 
 		// TODO: Specialize AssignmentKernel for this stuff
-		if(ExprEval::Packetable)
+		if constexpr(ExprEval::Packetable)
+			assignmentLoopCoeffPacket(destE, exprE);
+		else
+			assignmentLoopCoeff(destE, exprE);
+	}
+};
+
+template<class Dest, class Expr, class Type> // TODO: Specilaize for +=, etc
+struct Assignment<Dest, TransposeOp<Expr>, Type>
+{
+	using ExprType = TransposeOp<Expr>;
+
+	inline static void run(Dest& dest, const ExprType& expr)
+	{
+		using ExprEval = Evaluator<ExprType>;
+
+		dest.resize(expr.resultRows(), expr.resultCols());
+
+		ExprEval					exprE{ expr };
+		ActualDest<Dest, ExprEval>	destE{ dest };
+
+		// TODO: Specialize AssignmentKernel for this stuff
+		if constexpr (ExprEval::Packetable)
 			assignmentLoopCoeffPacket(destE, exprE);
 		else
 			assignmentLoopCoeff(destE, exprE);

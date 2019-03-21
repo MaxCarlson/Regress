@@ -48,11 +48,11 @@ public:
 	using Type				= typename Traits<ThisType>::value_type;
 
 private:
-	using LhsT = typename RefSelector<Lhs>::type;
-	using RhsT = typename RefSelector<Rhs>::type;
+	//using LhsT = typename RefSelector<Lhs>::type;
+	//using RhsT = typename RefSelector<Rhs>::type;
 
-	LhsT		lhs;
-	RhsT		rhs;
+	const Lhs&	lhs;
+	const Rhs&	rhs;
 public:
 
 	ProductOp(const Lhs& lhsa, const Rhs& rhsa) :

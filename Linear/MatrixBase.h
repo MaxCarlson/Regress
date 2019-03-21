@@ -18,7 +18,7 @@ public:
 
 
 	template<class Matrix>
-	void assign(Matrix& to)
+	void assign(Matrix& to) const
 	{
 		/*
 		auto rit	= derived().begin();

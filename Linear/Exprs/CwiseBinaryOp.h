@@ -30,9 +30,9 @@ public:
 
 private:
 
-	LhsT	lhs;
-	RhsT	rhs;
-	Op		op;
+	const LhsT&	lhs;
+	const RhsT&	rhs;
+	const Op	op;
 
 public:
 
@@ -135,7 +135,7 @@ public:
 
 	enum
 	{
-		Packetable = PacketTraits<Type>::Packetable && PacketTraits<Type>::HasDivide;
+		Packetable = PacketTraits<Type>::Packetable && PacketTraits<Type>::HasDivide
 	};
 
 	template<class Lhs, class Rhs>

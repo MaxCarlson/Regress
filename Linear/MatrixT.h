@@ -82,7 +82,7 @@ public:
 
 	// Handles assignment from expressions
 	template<class Expr>
-	MatrixT(Expr expr); // TODO: Look into expense of this copy
+	MatrixT(const Expr& expr); // TODO: Look into expense of this copy
 
 	Type* data()				noexcept { return vals.data(); }
 	const Type* data()	const	noexcept { return vals.data(); }
@@ -487,7 +487,7 @@ inline MatrixT<Type, MajorOrder>::MatrixT(const std::initializer_list<std::initi
 
 template<class Type, bool MajorOrder>
 template<class Expr>
-inline MatrixT<Type, MajorOrder>::MatrixT(Expr expr)
+inline MatrixT<Type, MajorOrder>::MatrixT(const Expr& expr)
 {
 	expr.assign(*this);
 }

@@ -135,11 +135,6 @@ protected:
 	RhsE rhs;
 };
 
-enum class ProductOption // TODO: Options for product evaluation
-{
-
-};
-
 // Evaluates the entire expression
 // TODO: Add an impl that only evaluates for an index
 template<class Dest, class LhsE, class RhsE, class Type>
@@ -171,10 +166,10 @@ struct ProductEvaluator<ProductOp<Lhs, Rhs>>
 	: public EvaluatorBase<ProductOp<Lhs, Rhs>>
 {
 	using ThisType		= ProductEvaluator<ProductOp<Lhs, Rhs>>;
-	using Expr			= ProductOp<Lhs, Rhs>;
+	using Op			= ProductOp<Lhs, Rhs>;
 	using LhsE			= Evaluator<Lhs>;
 	using RhsE			= Evaluator<Rhs>;
-	using value_type	= typename Expr::value_type;
+	using value_type	= typename Op::value_type;
 
 	enum 
 	{
@@ -186,7 +181,7 @@ struct ProductEvaluator<ProductOp<Lhs, Rhs>>
 	using MatrixType	= MatrixT<value_type, MajorOrder>;
 
 
-	explicit ProductEvaluator(const Expr& expr) :
+	explicit ProductEvaluator(const Op& expr) :
 		lhsE{ expr.getLhs() },
 		rhsE{ expr.getRhs() },
 		m( expr.resultRows(), expr.resultCols() )
@@ -230,12 +225,13 @@ struct TransposeEvaluator<TransposeOp<Expr>>
 {
 	using ThisType		= TransposeEvaluator<TransposeOp<Expr>>;
 	using Op			= TransposeOp<Expr>;
-	using ExprE			= Evaluator<Op>;
+	using ExprE			= Evaluator<Expr>;
 	using size_type		= typename Expr::size_type;
 	using value_type	= typename Expr::value_type;
 
 	enum
 	{
+		MajorOrder = Expr::MajorOrder,
 		Packetable = ExprE::Packetable 
 	};
 
@@ -254,6 +250,13 @@ struct TransposeEvaluator<TransposeOp<Expr>>
 	value_type evaluate(size_type row, size_type col) const
 	{
 		return exprE.evaluate(col, row);
+	}
+
+	// TODO: Make sure this works in all cases!
+	template<class Packet>
+	Packet packet(size_type row, size_type col) const
+	{
+		return exprE.template packet<Packet>(col, row);
 	}
 
 protected:
