@@ -244,11 +244,6 @@ struct TransposeEvaluator<TransposeOp<Expr>>
 	size_type rows() const noexcept { return exprE.cols(); }
 	size_type cols() const noexcept { return exprE.rows(); }
 
-
-	//
-	// TODO: NOT WORKING
-	//
-
 	value_type& evaluate(size_type row, size_type col)
 	{
 		return exprE.evaluate(col, row);
@@ -259,10 +254,11 @@ struct TransposeEvaluator<TransposeOp<Expr>>
 		return exprE.evaluate(col, row);
 	}
 
-	// TODO: Make sure this works in all cases!
+	// TODO: This definitely does NOT work
 	template<class Packet>
 	Packet packet(size_type row, size_type col) const
 	{
+		static_assert("Cannot Packet TransposeOp");
 		return exprE.template packet<Packet>(col, row);
 	}
 

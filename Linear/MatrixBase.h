@@ -1,5 +1,6 @@
 #pragma once
 #include "ForwardDeclarations.h"
+#include "RegressAssert.h"
 
 template<class Derived>
 class MatrixBase : public BaseExpr<Derived>
@@ -37,6 +38,7 @@ public:
 	const CwiseBinaryOp<impl::AddOp<value_type>, Derived, OtherDerived>
 		operator+(const MatrixBase<OtherDerived>& other) const
 	{
+		regress_assert(derived().rows() == other.derived.rows() && derived().cols() == other.derived.cols());
 		return CwiseBinaryOp{ impl::AddOp<value_type>{}, derived(), other.derived() };
 	}
 

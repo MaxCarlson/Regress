@@ -74,7 +74,7 @@ int main()
 	Stopwatch s;
 	s.start();
 
-	auto v = bigger.transpose();
+	auto v = bigger + bigger.transpose();
 	MatrixT<int> vv = v;
 	s.printCurrent();
 

@@ -38,6 +38,6 @@ public:
 
 	inline size_type rows()			const noexcept { return expr.cols(); }
 	inline size_type cols()			const noexcept { return expr.rows(); }
-	inline size_type resultRows()	const noexcept { return cols(); }
-	inline size_type resultCols()	const noexcept { return rows(); }
+	inline size_type resultRows()	const noexcept { return rows(); }
+	inline size_type resultCols()	const noexcept { return cols(); }
 };
