@@ -86,7 +86,7 @@ public:
 	Matrix(size_type nrows, size_type ncols);
 	Matrix(const std::initializer_list<std::initializer_list<Type>>& m);
 
-	/*
+	///*
 	Matrix(Matrix&& other) noexcept :
 		nrows{ other.nrows },
 		ncols{ other.ncols },
@@ -100,7 +100,7 @@ public:
 		vals = std::move(other.vals);
 		return *this;
 	}
-	*/
+	//*/
 
 	// Handles assignment from expressions
 	template<class Expr>

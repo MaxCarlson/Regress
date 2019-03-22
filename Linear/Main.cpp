@@ -48,7 +48,7 @@ int main()
 	//s.start();
 
 	//auto v = 2 * rhst;
-	Matrix<int> vv = bigger * bigger;
+	Matrix<int> vv = bigger * bigger + bigger;
 	//s.printCurrent();
 	//s.start();
 	

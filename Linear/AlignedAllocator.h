@@ -1,6 +1,11 @@
 #pragma once
 #include <memory>
-#include <malloc.h>
+
+#ifdef _MSC_VER
+#else
+#include <cstdlib>
+#endif
+
 namespace impl
 {
 
@@ -14,13 +19,13 @@ struct AlignedAllocator
 	using const_reference	= const value_type&;
 	using size_type			= size_t;
 	using difference_type	= std::ptrdiff_t;
-
+	
 	enum
 	{
-		Alignment = 16 < alignof(void*) ? alignof(void*) : 16
+		Alignment = 16
 	};
 
-	static inline Type* allocate(size_type size, Alignment)
+	static inline Type* allocate(size_type size)
 	{
 		#ifdef _MSC_VER
 			return reinterpret_cast<Type*>(_aligned_malloc(size * sizeof(Type), Alignment));

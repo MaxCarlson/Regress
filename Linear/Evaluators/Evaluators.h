@@ -29,7 +29,11 @@ struct Evaluator<Matrix<Type, MajorOrder>>
 		Packetable = PacketTraits<Type>::Packetable
 	};
 	
-	explicit Evaluator(const MatrixType& m) :
+	explicit Evaluator(const MatrixType& m) noexcept :
+		m{ m }
+	{}
+
+	explicit Evaluator(MatrixType&& m) noexcept :
 		m{ m }
 	{}
 
@@ -146,7 +150,7 @@ void productEntireImpl(Dest& dest, const LhsE& lhsE, const RhsE& rhsE)
 			Type sum = 0;
 			for(int h = 0; h < rhsE.rows(); ++h)
 				sum += lhsE.evaluate(i, h) * rhsE.evaluate(h, j); 
-			dest.evaluate(i, j) = sum;
+			dest.evaluateRef(i, j) = sum;
 		}
 }
 
@@ -184,7 +188,7 @@ struct ProductEvaluator<ProductOp<Lhs, Rhs>>
 	explicit ProductEvaluator(const Op& expr) :
 		lhsE{ expr.getLhs() },
 		rhsE{ expr.getRhs() },
-		m( expr.resultRows(), expr.resultCols() )
+		m( MatrixType(expr.resultRows(), expr.resultCols()) )
 	{
 		productEntireImpl<ThisType, LhsE, RhsE, value_type>(*this, lhsE, rhsE);
 	}
@@ -194,20 +198,32 @@ struct ProductEvaluator<ProductOp<Lhs, Rhs>>
 	size_type rows() const noexcept { return lhsE.rows(); }
 	size_type cols() const noexcept { return rhsE.cols(); }
 
-	value_type& evaluate(size_type row, size_type col)
+	value_type& evaluateRef(size_type row, size_type col)
 	{
-		return m(row, col);
+		return m.evaluateRef(row, col);
 	}
 
 	value_type evaluate(size_type row, size_type col) const
 	{
-		return m(row, col);
+		return m.evaluate(row, col);
+	}
+
+	template<class Packet>
+	Packet packet(size_type row, size_type col) const
+	{
+		return m.packet<Packet>(row, col);
+	}
+
+	template<class Packet>
+	void writePacket(size_type row, size_type col, const Packet& p)
+	{
+		return m.writePacket<Packet>(row, col);
 	}
 
 protected:
 	LhsE lhsE;
 	RhsE rhsE;
-	MatrixType m;
+	Evaluator<MatrixType> m;
 };
 
 template<class Expr>
