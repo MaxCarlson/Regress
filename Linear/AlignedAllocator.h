@@ -1,6 +1,6 @@
 #pragma once
 #include <memory>
-
+#include <malloc.h>
 namespace impl
 {
 
@@ -20,26 +20,22 @@ struct AlignedAllocator
 		Alignment = 16 < alignof(void*) ? alignof(void*) : 16
 	};
 
-	template<class T = Type>
-	static inline T* allocate(size_type size, size_type alignment = Alignment)
+	static inline Type* allocate(size_type size, Alignment)
 	{
-		if (alignment < alignof(void*))
-			alignment = alignof(void*);
-
-		size_type space	= size + alignment - 1;
-		void* mem		= operator new(space + sizeof(void*));
-		void* aligMem	= reinterpret_cast<void*>(reinterpret_cast<char*>(mem) + sizeof(void*));
-
-		std::align(alignment, size, aligMem, space);
-
-		*(reinterpret_cast<void**>(aligMem) - 1) = mem;
-
-		return reinterpret_cast<T*>(aligMem);
+		#ifdef _MSC_VER
+			return reinterpret_cast<Type*>(_aligned_malloc(size * sizeof(Type), Alignment));
+		#else
+			return std::aligned_alloc(size * sizeof(Type), Alignment);
+		#endif
 	}
 
-	template<class T>
-	static inline void deallocate(T* ptr, size_type) {
-		operator delete(*(reinterpret_cast<void**>(ptr) - 1));
+	static inline void deallocate(Type* ptr, size_type) 
+	{
+		#ifdef _MSC_VER		
+			_aligned_free(ptr);
+		#else
+			std::free(ptr);
+		#endif
 	}
 
 	bool operator==(const AlignedAllocator& other) const noexcept { return true; }

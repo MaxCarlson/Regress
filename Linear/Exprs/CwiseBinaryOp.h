@@ -190,8 +190,9 @@ public:
 // Matrix m; m operator(x) constant 
 // (e.g.) m + 2; m / 2; etc
 template<class Type, class Expr>
-struct Constant
+class Constant
 {
+public:
 	using size_type			= typename Expr::size_type;
 	using value_type		= Type;
 	using ThisPacketTraits	= PacketTraits<Type>;

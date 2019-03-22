@@ -11,8 +11,8 @@ class Stopwatch
 	}
 public:
 	Stopwatch() :
-		begin{},
-		end{}
+		begin{ now() },
+		end{ begin }
 	{}
 
 	void start()
@@ -27,7 +27,9 @@ public:
 
 	void printCurrent()
 	{
-		std::cout << std::chrono::duration_cast<Measure>(now() - begin).count() << '\n';
+		auto n = now();
+		auto count = std::chrono::duration_cast<Measure>(n - begin).count();
+		std::cout << count << '\n';
 	}
 
 private:

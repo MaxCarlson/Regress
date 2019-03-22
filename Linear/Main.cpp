@@ -7,18 +7,9 @@
 using Eigen::MatrixXd;
 
 
-
 int main()
 {
-	float ar1[4] = { 1, 2, 3, 4 };
-	float ar2[4] = { 5, 6, 7, 8 };
-
-	__m128 first;
-	__m128 second;
-	first	= _mm_load_ps(ar1);
-	second	= _mm_load_ps(ar2);
-
-	///*
+	/*
 	MatrixXd mat;
 	mat.resize(2, 2);
 	auto mm = mat * mat;
@@ -53,18 +44,14 @@ int main()
 	// {19, 26, 33} *	{3, 4}, =	{262, 340}
 	// {29, 40, 51}		{5, 6},		{404, 524}
 
-	Stopwatch<std::chrono::nanoseconds> s;
-	s.start();
-
-	auto* ptr = impl::AlignedAllocator<int>::allocate(25);
-	impl::AlignedAllocator<int>::deallocate(ptr, 10);
-
+	//Stopwatch<std::chrono::nanoseconds> s;
+	//s.start();
 
 	//auto v = 2 * rhst;
 	Matrix<int> vv = bigger * bigger;
-	s.printCurrent();
-	s.start();
-
+	//s.printCurrent();
+	//s.start();
+	
 	/*
 	Eigen::MatrixXi t;
 	t.resize(5, 5);
