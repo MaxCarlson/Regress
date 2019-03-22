@@ -108,7 +108,7 @@ public:
 	template<class Packet>
 	Packet packetOp(const Packet& p1, const Packet& p2) const
 	{
-		return psub(p1, p2);
+		return impl::psub(p1, p2);
 	}
 };
 
@@ -132,7 +132,7 @@ public:
 	template<class Packet>
 	Packet packetOp(const Packet& p1, const Packet& p2) const
 	{
-		return pmul(p1, p2);
+		return impl::pmul(p1, p2);
 	}
 };
 
@@ -156,7 +156,7 @@ public:
 	template<class Packet>
 	Packet packetOp(const Packet& p1, const Packet& p2) const
 	{
-		return pdiv(p1, p2);
+		return impl::pdiv(p1, p2);
 	}
 };
 
@@ -182,7 +182,7 @@ public:
 	template<class Packet>
 	Packet packetOp(const Packet& p1, const Packet& p2) const
 	{
-		return pmul(p1, p2);
+		return impl::pmul(p1, p2);
 	}
 };
 

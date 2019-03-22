@@ -7,6 +7,7 @@
 #include "Exprs\Transpose.h"
 #include "Evaluators\Evaluators.h" // TODO: Move these to MatrixBase
 #include "Evaluators\Assignment.h"
+#include "Evaluators\Packets.h"
 
 //namespace regress{ // TODO: Wrap proj in namespaces
 
@@ -86,7 +87,7 @@ public:
 
 	Type* data()				noexcept { return vals.data(); }
 	const Type* data()	const	noexcept { return vals.data(); }
-	size_type size()	const	noexcept { return vals.size(); }
+	size_type size()	const	noexcept { return static_cast<size_type>(vals.size()); }
 	size_type rows()	const	noexcept { return nrows; }
 	size_type cols()	const	noexcept { return ncols; }
 

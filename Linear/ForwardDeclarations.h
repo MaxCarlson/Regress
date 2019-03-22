@@ -2,6 +2,7 @@
 #include <memory>
 #include <xmmintrin.h>
 #include <emmintrin.h>
+#include <smmintrin.h>
 
 namespace impl
 {
@@ -104,4 +105,7 @@ void pstore(Type* to, const Packet& ptr);
 
 template<class Packet>
 Packet padd(const Packet& p1, const Packet& p2);
+
+template<class Packet>
+Packet pdiv(const Packet& p1, const Packet& p2);
 }

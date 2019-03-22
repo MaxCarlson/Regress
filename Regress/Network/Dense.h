@@ -148,7 +148,10 @@ inline void Dense<T>::calcDeltas(Matrix<T>& outWeights, Matrix<T>& outErrors, Ma
 template<class T>
 inline void Dense<T>::updateWeights(double lr)
 {
-	weights -= deltas * lr;
+	//
+	// TODO: Implement -=
+	//
+	//weights -= deltas * lr;
 }
 
 
