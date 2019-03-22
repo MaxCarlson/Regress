@@ -84,7 +84,7 @@ public:
 	template<class Packet>
 	Packet packetOp(const Packet& p1, const Packet& p2) const
 	{
-		return padd(p1, p2);
+		return impl::padd(p1, p2);
 	}
 };
 

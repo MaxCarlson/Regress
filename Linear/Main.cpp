@@ -2,9 +2,10 @@
 #include "Stopwatch.h"
 #include "Matrix.h" 
 #include <Eigen\Dense>
+#include "Evaluators\Packets.h"
+
 using Eigen::MatrixXd;
 
-#include "Evaluators\Packets.h"
 
 
 int main()
@@ -21,6 +22,9 @@ int main()
 	MatrixXd mat;
 	mat.resize(2, 2);
 	auto mm = mat * mat;
+	auto mmm = mat - mat;
+	auto mmmm = mat / 2;
+
 	mat = mm;
 	//*/
 
@@ -54,7 +58,11 @@ int main()
 	//Stopwatch s;
 	//s.start();
 
-	auto v = 2 + rhst;
+	auto v = 2 * rhst;
+	auto vvv = 2 + lhst;
+	auto vvvv = 2 - lhst;
+	auto vvvvv = 2 / lhst;
+
 	Matrix<int> vv = v;
 	//s.printCurrent();
 
