@@ -125,7 +125,9 @@ struct Assignment<Dest, ProductOp<Lhs, Rhs>, Type>
 	{
 		using ExprEval = Evaluator<ExprType>;
 		
-		dest.resize(expr.resultRows(), expr.resultCols());
+		// Note:  No need to resize when we're just moving the temporary in below
+		// BUG: Why does resizing this then deleting it result in an error with AlignedAlloc?
+		//dest.resize(expr.resultRows(), expr.resultCols());
 
 		ExprEval					exprE{ expr };
 		ActualDest<Dest, ExprEval>	actDest{ dest };

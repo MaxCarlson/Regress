@@ -121,6 +121,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="AlignedAllocator.h" />
     <ClInclude Include="Evaluators\Assignment.h" />
     <ClInclude Include="Evaluators\Evaluators.h" />
     <ClInclude Include="Evaluators\Packets.h" />

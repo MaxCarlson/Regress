@@ -56,6 +56,10 @@ int main()
 	Stopwatch<std::chrono::nanoseconds> s;
 	s.start();
 
+	auto* ptr = impl::AlignedAllocator<int>::allocate(25);
+	impl::AlignedAllocator<int>::deallocate(ptr, 10);
+
+
 	//auto v = 2 * rhst;
 	Matrix<int> vv = bigger * bigger;
 	s.printCurrent();
