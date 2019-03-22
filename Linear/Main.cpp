@@ -24,27 +24,7 @@ int main()
 	mat = mm;
 	//*/
 
-	///*
-	Matrix<int> lhs = {
-		{1, 2},
-		{3, 4},
-		{5, 6},
-	};
-
-	Matrix<int> rhs = {
-		{1, 2, 3},
-		{4, 5, 6}
-	};
-	//*/
-
-
 	MatrixT<int> lhst = {
-		{1, 2},
-		{3, 4},
-		{5, 6},
-	};
-
-	MatrixT<int, true> lhstc = {
 		{1, 2},
 		{3, 4},
 		{5, 6},
@@ -74,21 +54,9 @@ int main()
 	Stopwatch s;
 	s.start();
 
-	auto v = bigger + bigger.transpose();
+	auto v = rhst * lhst.transpose().transpose();
 	MatrixT<int> vv = v;
 	s.printCurrent();
-
-	s.start();
-	auto a = lhs * rhs * lhs + lhs;
-	Matrix<int> aa = a;
-	s.printCurrent();
-
-	//auto a = lhst * rhst * lhst + lhst * rhst * lhst;
-	//MatrixT<int> val = a;
-	//Matrix<int> val2 = lhs * rhs * lhs + lhs * rhs * lhs;
-
-
-
 
 	return 0;
 }

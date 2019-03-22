@@ -21,24 +21,15 @@ public:
 	template<class Matrix>
 	void assign(Matrix& to) const
 	{
-		/*
-		auto rit	= derived().begin();
-		to.resize(derived().resultRows(), derived().resultCols());
-		for (auto lit = to.begin(); lit != to.end(); ++lit, ++rit)
-			*lit = *rit;
-		*/
 		impl::Assignment<Matrix, Derived, value_type>::run(to, derived());
 	}
 
-	void analyze() {}
-
 	// Matrix Operators
-
 	template<class OtherDerived>
 	const CwiseBinaryOp<impl::AddOp<value_type>, Derived, OtherDerived>
 		operator+(const MatrixBase<OtherDerived>& other) const
 	{
-		regress_assert(derived().rows() == other.derived.rows() && derived().cols() == other.derived.cols());
+		regress_assert(derived().rows() == other.derived().rows() && derived().cols() == other.derived().cols());
 		return CwiseBinaryOp{ impl::AddOp<value_type>{}, derived(), other.derived() };
 	}
 
@@ -46,6 +37,7 @@ public:
 	const CwiseBinaryOp<impl::SubOp<value_type>, Derived, OtherDerived>
 		operator-(const MatrixBase<OtherDerived>& other) const
 	{
+		regress_assert(derived().rows() == other.derived().rows() && derived().cols() == other.derived().cols());
 		return CwiseBinaryOp{ impl::SubOp<value_type>{}, derived(), other.derived() };
 	}
 
@@ -53,6 +45,7 @@ public:
 	const ProductOp<Derived, OtherDerived>
 		operator*(const MatrixBase<OtherDerived>& other) const
 	{
+		regress_assert(derived().cols() == other.derived().rows());
 		return ProductOp{ derived(), other.derived() };
 	}
 
