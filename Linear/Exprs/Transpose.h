@@ -23,10 +23,11 @@ public:
 	using Base				= MatrixBase<TransposeOp<Expr>>;
 	using size_type			= typename Base::size_type;
 	using value_type		= typename Traits<ThisType>::value_type;
+	using ExprT				= typename RefSelector<Expr>::type;
 
 private:
 
-	const Expr&	expr;
+	ExprT expr;
 
 public:
 

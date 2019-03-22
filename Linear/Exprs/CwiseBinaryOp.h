@@ -34,10 +34,13 @@ public:
 	using value_type		= typename Traits<ThisType>::value_type;
 	using Type				= typename Op::value_type;
 
+	using LhsT = typename RefSelector<Lhs>::type;
+	using RhsT = typename RefSelector<Rhs>::type;
+
 private:
 
-	const Lhs&	lhs;
-	const Rhs&	rhs;
+	LhsT		lhs;
+	RhsT		rhs;
 	const Op	op;
 
 public:

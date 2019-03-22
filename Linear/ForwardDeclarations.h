@@ -48,9 +48,7 @@ class CwiseProductOp;
 // Wrapper for non-MatrixBase op's (e.g. Matrix a = a * 2;)
 template<class Type, class Expr>
 class Constant;
-}
-
-// End Types of CwiseBinaryOp's
+} // End Types of CwiseBinaryOp's
 
 template<class Lhs, class Rhs>
 class ProductOp;
@@ -64,13 +62,7 @@ struct RefSelector
 {
 	// If T is an expression type will be by value, otherwise (e.g. for Matrix) 
 	// it type is const T&
-	using type = std::conditional_t<T::IsExpr, T, const T&>;
-};
-
-template<class T>
-struct IteratorSelector
-{
-	using type = std::conditional_t<T::IsExpr, typename T::ExprIterator, typename T::const_iterator>;
+	using type = std::conditional_t<std::is_base_of_v<MatrixBase<T>, T>, const T&, T>;
 };
 
 namespace impl
