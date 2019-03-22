@@ -18,7 +18,7 @@ template<class Derived>
 class MatrixBase;
 
 template<class, bool>
-class MatrixT;
+class Matrix;
 
 template<class T>
 struct Traits

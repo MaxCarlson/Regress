@@ -131,7 +131,6 @@
     <ClInclude Include="ExprOperators.h" />
     <ClInclude Include="ForwardDeclarations.h" />
     <ClInclude Include="Matrix.h" />
-    <ClInclude Include="MatrixT.h" />
     <ClInclude Include="Exprs\ProductOp.h" />
     <ClInclude Include="RegressAssert.h" />
     <ClInclude Include="Stopwatch.h" />

@@ -17,10 +17,10 @@ struct Evaluator : public EvaluatorBase<Expr>
 // Specialization for Matrix
 // Note: Capable of wrapping a non-const matrix and still using evaluateRef for assignment
 template<class Type, bool MajorOrder>
-struct Evaluator<MatrixT<Type, MajorOrder>>
-	: public EvaluatorBase<MatrixT<Type, MajorOrder>>
+struct Evaluator<Matrix<Type, MajorOrder>>
+	: public EvaluatorBase<Matrix<Type, MajorOrder>>
 {
-	using MatrixType	= MatrixT<Type, MajorOrder>;
+	using MatrixType	= Matrix<Type, MajorOrder>;
 	using size_type		= typename MatrixType::size_type;
 	using value_type	= Type;
 
@@ -178,7 +178,7 @@ struct ProductEvaluator<ProductOp<Lhs, Rhs>>
 			&& LhsE::Packetable && RhsE::Packetable
 	};
 
-	using MatrixType	= MatrixT<value_type, MajorOrder>;
+	using MatrixType	= Matrix<value_type, MajorOrder>;
 
 
 	explicit ProductEvaluator(const Op& expr) :

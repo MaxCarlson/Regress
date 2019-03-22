@@ -1,7 +1,6 @@
 #include "Matrix.h"
 #include "Stopwatch.h"
-
-#include "MatrixT.h" // Testing
+#include "Matrix.h" 
 #include <Eigen\Dense>
 using Eigen::MatrixXd;
 
@@ -24,18 +23,18 @@ int main()
 	mat = mm;
 	//*/
 
-	MatrixT<int> lhst = {
+	Matrix<int> lhst = {
 		{1, 2},
 		{3, 4},
 		{5, 6},
 	};
 
-	MatrixT<int> rhst = {
+	Matrix<int> rhst = {
 		{1, 2, 3},
 		{4, 5, 6}
 	};
 
-	MatrixT<int> bigger = {
+	Matrix<int> bigger = {
 		{1, 2, 3, 4, 1},
 		{3, 4, 4, 5, 1},
 		{5, 6, 6, 7, 1},
@@ -51,12 +50,12 @@ int main()
 	// {19, 26, 33} *	{3, 4}, =	{262, 340}
 	// {29, 40, 51}		{5, 6},		{404, 524}
 
-	Stopwatch s;
-	s.start();
+	//Stopwatch s;
+	//s.start();
 
-	auto v = rhst * lhst.transpose().transpose();
-	MatrixT<int> vv = v;
-	s.printCurrent();
+	auto v = 2 + rhst;
+	Matrix<int> vv = v;
+	//s.printCurrent();
 
 	return 0;
 }

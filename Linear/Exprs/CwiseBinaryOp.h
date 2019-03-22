@@ -4,9 +4,19 @@
 template<class Op, class Lhs, class Rhs>
 struct Traits<CwiseBinaryOp<Op, Lhs, Rhs>>
 {
-	using value_type = typename Lhs::value_type;
-	using ExprType = Lhs;
-	static constexpr bool MajorOrder = ExprType::MajorOrder;
+	using value_type	= typename Lhs::value_type;
+	using ExprType		= Lhs;
+	enum
+	{
+		MajorOrder = ExprType::MajorOrder
+	};
+};
+
+template<class Type, class Expr>
+struct Traits<impl::Constant<Type, Expr>>
+{
+	using value_type	= Type;
+	enum { MajorOrder	= Expr::MajorOrder };
 };
 
 template<class Op, class Lhs, class Rhs>
@@ -23,22 +33,19 @@ public:
 	using size_type			= typename Base::size_type;
 	using value_type		= typename Traits<ThisType>::value_type;
 	using Type				= typename Op::value_type;
-	using LhsT				= typename RefSelector<Lhs>::type;
-	using RhsT				= typename RefSelector<Rhs>::type;
-
 
 private:
 
-	const LhsT&	lhs;
-	const RhsT&	rhs;
+	const Lhs&	lhs;
+	const Rhs&	rhs;
 	const Op	op;
 
 public:
 
-	CwiseBinaryOp(Op op, const Lhs& lhsa, const Rhs& rhsa) :
+	CwiseBinaryOp(Op op, const Lhs& lhs, const Rhs& rhs) :
 		op{ op },
-		lhs{ lhsa },
-		rhs{ rhsa }
+		lhs{ lhs },
+		rhs{ rhs }
 	{}
 
 	const Op& getOp() const { return op; }
@@ -143,7 +150,11 @@ public:
 		return lit / rit;
 	}
 
-	// TODO: Conditional packeting
+	template<class Packet>
+	Packet packetOp(const Packet& p1, const Packet& p2) const
+	{
+		return pdiv(p1, p2);
+	}
 };
 
 template<class Type>
@@ -186,7 +197,8 @@ struct Constant
 	enum
 	{
 		IsExpr		= true,
-		Packetable	= PacketTraits<Type>::Packetable
+		Packetable	= PacketTraits<Type>::Packetable,
+		MajorOrder	= Expr::MajorOrder
 	};
 
 	Constant(const Type& t, const Expr& expr) :

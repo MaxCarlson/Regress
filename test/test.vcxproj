@@ -171,9 +171,6 @@
     <ProjectReference Include="..\Linear\Linear.vcxproj">
       <Project>{ca69fb72-878a-4f5f-82ff-e249802130bc}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\Regress\Regress.vcxproj">
-      <Project>{ee100ec3-03f5-4472-a85f-73cadab0a01d}</Project>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -107,7 +107,7 @@ inline void Dense<T>::calcDeltasOutput(Matrix<T>& target, ErrorFunction errorFun
 	errorPrime(errors, target, output, errorFunc); 
 	
 	const auto& prevOutput = *this->inputs[0]->getOutput();
-	deltas = ~prevOutput * errors.cwiseProduct(actPrime);
+	deltas = prevOutput.transpose() * errors.cwiseProduct(actPrime);
 
 	for (auto& in : this->inputs)
 		in->calcDeltas(weights, errors, actPrime, lr);
@@ -131,7 +131,7 @@ inline void Dense<T>::calcDeltas(Matrix<T>& outWeights, Matrix<T>& outErrors, Ma
 	
 	const auto& inNet = *this->inputs[0]->getNet();
 
-	errors = outErrors * ~outWeights;
+	errors = outErrors * outWeights.transpose();
 	deltas = errors.cwiseProduct(actPrime);
 
 	// TODO: Get transpose operator working with expressions

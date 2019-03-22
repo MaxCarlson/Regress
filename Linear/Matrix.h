@@ -1,73 +1,77 @@
 #pragma once
 #include <vector>
 #include <iostream>
-#include "Expr.h"
-#include "ExprOperators.h" // Matrix doesn't rely on ExprOperators, it's here to make it easy to use Matrix
 #include "MatrixBase.h"
+#include "Exprs\CwiseBinaryOp.h"
+#include "Exprs\ProductOp.h"
+#include "Exprs\Transpose.h"
+#include "Evaluators\Evaluators.h" // TODO: Move these to MatrixBase
+#include "Evaluators\Assignment.h"
 
 //namespace regress{ // TODO: Wrap proj in namespaces
 
-/*
-template<class Iter, class Type>
-class MatrixExpr;
-template<class LIt, class RIt, class Op, class Type>
-class MatBinExpr;
-template<class Type>
-class MatrixCwiseProductOp;
-*/
+// Partial specilization of traits that allows us
+// to get matrix's Type inside MatrixBase
+template<class Type, bool MajorOrder>
+struct Traits<Matrix<Type, MajorOrder>>
+{
+	using value_type = Type;
+	using MatrixType = Matrix<Type, MajorOrder>;
+	static constexpr bool MajorOrder = MajorOrder;
+};
 
 // TODO: Add a storage abstraction so we can have multiple things point to the same memory, such as view slices
 // TODO: Add template param for using Column Major Order
 
 // without duplications
 template<class Type, bool MajorOrder = false>
-class Matrix 
+class Matrix : public MatrixBase<Matrix<Type, MajorOrder>>
 {
 public:
+	using Base			= MatrixBase<Matrix<Type, MajorOrder>>;
 	using ThisType		= Matrix<Type, MajorOrder>;
 	using Storage		= std::vector<Type>;
 	using size_type		= int;
 	using value_type	= Type;
 
-
-	template<bool>				
+	template<bool>
 	class nonMajorOrderIteratorBase;	// TODO: Both of these names are long
 	template<bool>
 	class arrayOrderIteratorBase;
 	template<bool>
 	class inOrderIterator;
 
-	using inorder_iterator			= inOrderIterator<false>; 
-	using inorder_const_iterator	= inOrderIterator<true>;
+	using inorder_iterator = inOrderIterator<false>;
+	using inorder_const_iterator = inOrderIterator<true>;
 
-	using col_iterator			= std::conditional_t<MajorOrder, 
+	using col_iterator = std::conditional_t<MajorOrder,
 		arrayOrderIteratorBase<false>, nonMajorOrderIteratorBase<false>>;
-	using col_const_iterator	= std::conditional_t<MajorOrder,
+	using col_const_iterator = std::conditional_t<MajorOrder,
 		arrayOrderIteratorBase<true>, nonMajorOrderIteratorBase<true>>;
 
-	using row_iterator			= std::conditional_t<MajorOrder, 
+	using row_iterator = std::conditional_t<MajorOrder,
 		nonMajorOrderIteratorBase<false>, arrayOrderIteratorBase<false>>;
-	using row_const_iterator	= std::conditional_t<MajorOrder,
+	using row_const_iterator = std::conditional_t<MajorOrder,
 		nonMajorOrderIteratorBase<true>, arrayOrderIteratorBase<true>>;
 
-	using iterator				= std::conditional_t<MajorOrder, 
+	using iterator = std::conditional_t<MajorOrder,
 		col_iterator, row_iterator>;
-	using const_iterator		= std::conditional_t<MajorOrder, 
+	using const_iterator = std::conditional_t<MajorOrder,
 		col_const_iterator, row_const_iterator>;
 
-	using minor_iterator		= std::conditional_t<MajorOrder, 
+	using minor_iterator = std::conditional_t<MajorOrder,
 		row_iterator, col_iterator>;
-	using minor_const_iterator	= std::conditional_t<MajorOrder,
+	using minor_const_iterator = std::conditional_t<MajorOrder,
 		row_const_iterator, col_const_iterator>;
 
 
 
 	static constexpr bool MajorOrder = MajorOrder;
-
+	static constexpr bool IsExpr = false;
 private:
 	size_type	nrows;
 	size_type	ncols;
-	Storage		vals;			
+	Storage		vals;
 
 
 public:
@@ -78,14 +82,19 @@ public:
 
 	// Handles assignment from expressions
 	template<class Expr>
-	Matrix(Expr expr); // TODO: Look into expense of this copy
+	Matrix(const Expr& expr); // TODO: Look into expense of this copy
 
-	size_type size() const noexcept { return vals.size(); }
-	size_type rows() const noexcept { return nrows; }
-	size_type cols() const noexcept { return ncols; }
+	Type* data()				noexcept { return vals.data(); }
+	const Type* data()	const	noexcept { return vals.data(); }
+	size_type size()	const	noexcept { return vals.size(); }
+	size_type rows()	const	noexcept { return nrows; }
+	size_type cols()	const	noexcept { return ncols; }
 
 	Type& operator()(size_type row, size_type col);
 	const Type& operator()(size_type row, size_type col) const;
+
+	Type& index(size_type i)				noexcept { return vals[i]; }
+	const Type& index(size_type i) const	noexcept { return vals[i]; }
 
 	bool operator==(const Matrix& other) const;
 	bool operator!=(const Matrix& other) const;
@@ -132,6 +141,13 @@ public:
 	row_const_iterator	row_cbegin()	const noexcept { return { 0,		this }; }
 	row_const_iterator	row_cend()		const noexcept { return { size(),	this }; }
 
+private:
+	arrayOrderIteratorBase<false>		ao_begin()			noexcept { return { 0, this }; }
+	arrayOrderIteratorBase<true>		ao_begin()	const	noexcept { return { 0, this }; }
+	nonMajorOrderIteratorBase<false>	nmo_begin()			noexcept { return { 0, this }; }
+	nonMajorOrderIteratorBase<true>		nmo_begin()	const	noexcept { return { 0, this }; }
+public:
+
 	// Apply a function to every member of the Matrix
 	// [](Type& t) { ...do something... return; }
 	template<class Func>
@@ -144,51 +160,9 @@ public:
 	void unaryExprPara(Func&& func) const;
 
 	void resize(size_type numRows, size_type numCols);
-	Matrix transpose() const;
 	Type sum() const;
 
 	void addColumn(size_type idx, Type val = {});
-
-	// These return Matrix Expressions so no temporary matricies are created
-	// TODO: Theres a bug that's not letting these be delcared outside of the class, fix
-	inline MatrixExpr<MatBinExpr<
-		typename Matrix<Type, MajorOrder>::const_iterator,
-		typename Matrix<Type, MajorOrder>::const_iterator,
-		MatrixCwiseProductOp<Type>, Type>, Type>
-	cwiseProduct(const Matrix<Type, MajorOrder>& rhs) noexcept
-	{
-		using ExprType = MatBinExpr<
-			typename Matrix<Type, MajorOrder>::const_iterator,
-			typename Matrix<Type, MajorOrder>::const_iterator,
-			MatrixCwiseProductOp<Type>, Type>;
-		return MatrixExpr<ExprType, Type>{ExprType{
-			cbegin(),
-			rhs.begin(),
-			rows(),
-			rhs.rows(),
-			rhs.cols() },
-			MatrixOpBase::Op::CWISE_PRODUCT};
-	}	
-
-	template<class Iter>
-	inline MatrixExpr<MatBinExpr<
-		typename Matrix<Type, MajorOrder>::const_iterator,
-		MatrixExpr<Iter, Type>,
-		MatrixCwiseProductOp<Type>, Type>, Type>
-	cwiseProduct(const Matrix<Type, MajorOrder>& rhs) noexcept
-	{
-		using ExprType = MatBinExpr<
-			typename Matrix<Type, MajorOrder>::const_iterator,
-			MatrixExpr<Iter, Type>,
-			MatrixCwiseProductOp<Type>, Type>;
-		return MatrixExpr<ExprType, Type>{ExprType{
-			cbegin(),
-			rhs,
-			rows(),
-			rhs.lhsRows(),
-			rhs.rhsCols() },
-			MatrixOpBase::Op::CWISE_PRODUCT};
-	}
 
 	template<class T, bool MajorOrder>
 	inline friend std::ostream& operator<<(std::ostream& out, const Matrix& m);
@@ -201,25 +175,23 @@ public:
 
 		using iterator_category = std::random_access_iterator_tag;
 
-		using ContainerType		= std::conditional_t<isConst,
+		using ContainerType = std::conditional_t<isConst,
 			const ThisType, ThisType>;
 
-		using ContainerPtr		= std::conditional_t<isConst,
+		using ContainerPtr = std::conditional_t<isConst,
 			const ThisType*, ThisType*>;
 
-		using reference			= std::conditional_t<isConst,
+		using reference = std::conditional_t<isConst,
 			const Type&, Type&>;
 
-		using pointer			= std::conditional_t<isConst,
+		using pointer = std::conditional_t<isConst,
 			const Type*, Type*>;
 
-		using Siterator			= std::conditional_t<isConst, 
+		using Siterator = std::conditional_t<isConst,
 			typename Storage::const_iterator,
 			typename Storage::iterator>;
 
 		using value_type = Type;
-
-		inline void analyzeExpr(ExprAnalyzer<Type, MajorOrder>&, size_type pOp) {}
 	};
 
 	// An iterator that iterates through columns instead of rows
@@ -235,7 +207,7 @@ public:
 		using value_type		= typename Base::value_type;
 		using reference			= typename Base::reference;
 		using pointer			= typename Base::pointer;
-			
+
 	private:
 		size_type		idx;
 		ContainerPtr	cont;
@@ -245,6 +217,12 @@ public:
 		nonMajorOrderIteratorBase(size_type idx, ContainerPtr cont) :
 			idx{ idx },
 			cont{ cont }
+		{}
+
+		template<bool isConst>
+		nonMajorOrderIteratorBase(const arrayOrderIteratorBase<isConst>& it) :
+			idx{it - it.matPtr()->ao_begin()},
+			cont{it.matPtr()}
 		{}
 
 		ContainerPtr matPtr() const { return cont; }
@@ -289,12 +267,17 @@ public:
 			return *this;
 		}
 
+		size_type operator-(const nonMajorOrderIteratorBase& other) const
+		{
+			return idx - other.idx;
+		}
+
 	private:
 		reference index() const noexcept
 		{
 			if (MajorOrder)
 				return cont->operator()(idx / cont->ncols, idx % cont->ncols);
-			
+
 			return cont->operator()(idx % cont->nrows, idx / cont->nrows);
 		}
 	public:
@@ -352,7 +335,7 @@ public:
 		using pointer			= typename Base::pointer;
 		using It				= typename Base::Siterator;
 		using ThisType			= arrayOrderIteratorBase<isConst>;
-		
+
 	private:
 		It				it;
 		ContainerPtr	cont;
@@ -363,6 +346,12 @@ public:
 		arrayOrderIteratorBase(size_type idx, ContainerPtr cont) :
 			it{ cont->vals.begin() + idx },
 			cont{ cont }
+		{}
+
+		template<bool isConst>
+		arrayOrderIteratorBase(const nonMajorOrderIteratorBase<isConst>& it) :
+			it{ cont->vals.begin() + (it - it.matPtr()->nmo_begin()) },
+			cont{ it.matPtr() }
 		{}
 
 		ContainerPtr matPtr() const { return cont; }
@@ -402,7 +391,12 @@ public:
 			it -= i;
 			return *this;
 		}
-		
+
+		size_type operator-(const ThisType& other) const
+		{
+			return it - other.it;
+		}
+
 		reference operator*() const
 		{
 			return *it;
@@ -445,18 +439,18 @@ public:
 
 	// An iterator that always traverses the Matrix left-right, top-bottom
 	template<bool isConst>
-	class inOrderIterator : public std::conditional_t<MajorOrder, 
-		nonMajorOrderIteratorBase<isConst>, 
+	class inOrderIterator : public std::conditional_t<MajorOrder,
+		nonMajorOrderIteratorBase<isConst>,
 		arrayOrderIteratorBase<isConst>>
 	{
 	public:
-		using Base				= std::conditional_t<MajorOrder,
+		using Base = std::conditional_t<MajorOrder,
 			nonMajorOrderIteratorBase<isConst>,
 			arrayOrderIteratorBase<isConst>>;
 
 		using iterator_category = typename Base::iterator_category;
-		using ContainerPtr		= typename Base::ContainerPtr;
-		using value_type		= typename Base::value_type;
+		using ContainerPtr = typename Base::ContainerPtr;
+		using value_type = typename Base::value_type;
 
 		inOrderIterator(size_type idx, ContainerPtr ptr) :
 			Base{ idx, ptr }
@@ -479,8 +473,8 @@ inline Matrix<Type, MajorOrder>::Matrix(const std::initializer_list<std::initial
 {
 	auto v = std::begin(vals);
 
-	if(MajorOrder)
-		for(int i = 0; i < ncols; ++i)
+	if (MajorOrder)
+		for (int i = 0; i < ncols; ++i)
 			for (auto it = std::begin(m); it != std::end(m); ++it, ++v)
 				*v = *(std::begin(*it) + i);
 	else
@@ -491,16 +485,14 @@ inline Matrix<Type, MajorOrder>::Matrix(const std::initializer_list<std::initial
 
 template<class Type, bool MajorOrder>
 template<class Expr>
-inline Matrix<Type, MajorOrder>::Matrix(Expr expr)
+inline Matrix<Type, MajorOrder>::Matrix(const Expr& expr)
 {
-	ExprAnalyzer ea{ *this };
-	expr.analyzeExpr(ea, MatrixOpBase::NONE);
 	expr.assign(*this);
 }
 
 template<class Type, bool MajorOrder>
 inline Type & Matrix<Type, MajorOrder>::operator()(size_type row, size_type col)
-{	
+{
 	return MajorOrder ? vals[col * nrows + row] : vals[row * ncols + col];
 }
 
@@ -565,7 +557,7 @@ inline void Matrix<Type, MajorOrder>::unaryExprPara(Func && func) const
 }
 
 template<class Type, bool MajorOrder>
-inline void Matrix<Type, MajorOrder>::resize(size_type numRows, size_type numCols) 
+inline void Matrix<Type, MajorOrder>::resize(size_type numRows, size_type numCols)
 {
 	nrows = numRows;
 	ncols = numCols;
@@ -581,7 +573,6 @@ inline Type Matrix<Type, MajorOrder>::sum() const
 	return sum;
 }
 
-// TODO: This will need split code when we have columnMajorOrder template param
 // TODO: This is a seriously non-optimal algorithm
 template<class Type, bool MajorOrder>
 inline void Matrix<Type, MajorOrder>::addColumn(size_type idx, Type val)
@@ -605,7 +596,7 @@ inline void Matrix<Type, MajorOrder>::addColumn(size_type idx, Type val)
 		return;
 	}
 
-	int i	= 0;
+	int i = 0;
 	auto it = std::begin(tmp);
 	for (auto v = std::begin(vals);;)
 	{
@@ -623,7 +614,7 @@ inline void Matrix<Type, MajorOrder>::addColumn(size_type idx, Type val)
 			*it = std::move(*v);
 			++v;
 		}
-	
+
 		if (i++ >= ncols)
 			i = 0;
 		++it;
@@ -631,66 +622,11 @@ inline void Matrix<Type, MajorOrder>::addColumn(size_type idx, Type val)
 	*this = std::move(tmp);
 }
 
-
-template<class Type, bool MajorOrder>
-inline Matrix<Type, MajorOrder> Matrix<Type, MajorOrder>::transpose() const
-{
-	return Matrix<Type>{ ~(*this) };
-}
-
-// All operations below this point return a Matrix Expression
-// (only Expressions that can't be handled outside are here,
-// the rest are in ExprOperators)
-
-/*
-
-template<class Type, bool MajorOrder>
-inline MatrixExpr<MatBinExpr<
-	typename Matrix<Type, MajorOrder>::const_iterator,
-	typename Matrix<Type, MajorOrder>::const_iterator,
-	MatrixCwiseProductOp<Type>, Type>, Type> 
-	Matrix<Type, MajorOrder>::cwiseProduct(const Matrix<Type, MajorOrder>& rhs) noexcept
-{
-	using ExprType = MatBinExpr<
-		typename Matrix<Type, MajorOrder>::const_iterator,
-		typename Matrix<Type, MajorOrder>::const_iterator,
-		MatrixCwiseProductOp<Type>, Type>;
-	return MatrixExpr<ExprType, Type>{ExprType{
-		cbegin(),
-		rhs.begin(),
-		rows(),
-		rhs.rows(),
-		rhs.cols() },
-		MatrixOpBase::Op::CWISE_PRODUCT};
-}
-
-template<class Type, bool MajorOrder>
-template<class Iter>
-inline MatrixExpr<MatBinExpr<
-	typename Matrix<Type, MajorOrder>::const_iterator,
-	MatrixExpr<Iter, Type>,
-	MatrixCwiseProductOp<Type>, Type>, Type>
-	Matrix<Type, MajorOrder>::cwiseProduct(const Matrix<Type, MajorOrder>& rhs) noexcept
-{
-	using ExprType = MatBinExpr<
-		typename Matrix<Type, MajorOrder>::const_iterator,
-		MatrixExpr<Iter, Type>,
-		MatrixCwiseProductOp<Type>, Type>;
-	return MatrixExpr<ExprType, Type>{ExprType{
-		cbegin(),
-		rhs,
-		rows(),
-		rhs.lhsRows(),
-		rhs.rhsCols() },
-		MatrixOpBase::Op::CWISE_PRODUCT};
-}
-*/
-
 template<class Type, bool MajorOrder>
 inline std::ostream & operator<<(std::ostream & out, const Matrix<Type, MajorOrder>& m)
 {
-	using Mat	= Matrix<Type, MajorOrder>;
-	using It	= typename Mat::inorder_const_iterator;
+	using Mat = Matrix<Type, MajorOrder>;
+	using It = typename Mat::inorder_const_iterator;
 
 	int i = 0;
 	for (It it = m.ino_cbegin(); it != m.ino_cend(); ++it)
@@ -704,3 +640,4 @@ inline std::ostream & operator<<(std::ostream & out, const Matrix<Type, MajorOrd
 }
 
 //} // End: namespace::regress
+

@@ -145,8 +145,8 @@ namespace test
 		template<class Mat>
 		void transposeImpl(const Mat& lhs, const Mat& lhs1)
 		{
-			Mat res1 = ~lhs;
-			Mat res2 = ~lhs1;
+			Mat res1 = lhs.transpose();
+			Mat res2 = lhs1.transpose();
 
 			Mat res1v = { {1, 3, 5}, {2, 4, 6} };
 			Mat res2v = { {1, 4, 7}, {2, 5, 8}, {3, 6, 9} };
@@ -164,12 +164,12 @@ namespace test
 		template<class Mat>
 		void mixedImpl(const Mat& lhs, const Mat& lhs1, const Mat& rhs)
 		{
-			Mat res1 = ~lhs + rhs;
-			Mat res2 = ~rhs * ~lhs;
-			Mat res3 = (~rhs * ~lhs) * lhs1;
-			Mat res4 = (~rhs * ~lhs) - lhs1;
-			Mat res5 = ((~rhs * ~lhs) - lhs1) * 2;
-			Mat res6 = ((~rhs * ~lhs) - lhs1) + (lhs * rhs - lhs1);
+			Mat res1 = lhs.transpose() + rhs;
+			Mat res2 = rhs.transpose() * lhs.transpose();
+			Mat res3 = (rhs.transpose() * lhs.transpose()) * lhs1;
+			Mat res4 = (rhs.transpose() * lhs.transpose()) - lhs1;
+			Mat res5 = ((rhs.transpose() * lhs.transpose()) - lhs1) * 2;
+			Mat res6 = ((rhs.transpose() * lhs.transpose()) - lhs1) + (lhs * rhs - lhs1);
 
 			Mat res1v = { {2, 5, 8}, {6, 9, 12} };
 			Mat res2v = { {9, 19, 29}, {12, 26, 40}, {15, 33, 51} };
