@@ -22,9 +22,6 @@ int main()
 	MatrixXd mat;
 	mat.resize(2, 2);
 	auto mm = mat * mat;
-	auto mmm = mat - mat;
-	auto mmmm = mat / 2;
-
 	mat = mm;
 	//*/
 
@@ -44,6 +41,7 @@ int main()
 		{3, 4, 4, 5, 1},
 		{5, 6, 6, 7, 1},
 		{5, 6, 6, 7, 1},
+		{5, 6, 6, 7, 1}
 	};
 
 	// lhs * rhs * lhs
@@ -55,16 +53,24 @@ int main()
 	// {19, 26, 33} *	{3, 4}, =	{262, 340}
 	// {29, 40, 51}		{5, 6},		{404, 524}
 
-	//Stopwatch s;
-	//s.start();
+	Stopwatch<std::chrono::nanoseconds> s;
+	s.start();
 
-	auto v = 2 * rhst;
-	auto vvv = 2 + lhst;
-	auto vvvv = 2 - lhst;
-	auto vvvvv = 2 / lhst;
+	//auto v = 2 * rhst;
+	Matrix<int> vv = bigger * bigger;
+	s.printCurrent();
+	s.start();
 
-	Matrix<int> vv = v;
-	//s.printCurrent();
+	/*
+	Eigen::MatrixXi t;
+	t.resize(5, 5);
+	Eigen::MatrixXi tt;
+	tt.noalias() = t * t * t * t;
+	s.printCurrent();
+	s.start();
+	*/
+
+
 
 	return 0;
 }

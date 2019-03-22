@@ -21,7 +21,6 @@ public:
 	Derived& derived()				{ return static_cast<Derived&>(*this); }
 	const Derived& derived() const	{ return static_cast<const Derived&>(*this); }
 
-
 	template<class Matrix>
 	void assign(Matrix& to) const
 	{
@@ -54,7 +53,6 @@ public:
 	}
 
 	// Other Matrix Functions that return Expressions
-
 	template<class OtherDerived>
 	const CwiseBinaryOp<impl::CwiseProductOp<value_type>, Derived, OtherDerived>
 		cwiseProduct(const MatrixBase<OtherDerived>& other) const
@@ -70,7 +68,7 @@ public:
 
 	// Scalar Operators 
 	// (enabled on objects that aren't derived from MatrixBase)
-
+	// Right hand scalar matrix operators
 	template<class Scalar,
 		class = std::enable_if_t<!std::is_base_of_v<MatrixBase<Scalar>, Scalar>>>
 	const CwiseBinaryOp<impl::AddOp<value_type>, Derived, impl::Constant<Scalar, Derived>>
@@ -79,10 +77,6 @@ public:
 		return CwiseBinaryOp{ impl::AddOp<value_type>{}, derived(), 
 			impl::Constant<Scalar, Derived>{scalar, derived()} };
 	}
-
-	template<class Scalar, class DerivedT, class>
-	friend const CwiseBinaryOp<impl::AddOp<typename DerivedT::value_type>, impl::Constant<Scalar, DerivedT>, DerivedT>
-		operator+(const Scalar& scalar, const MatrixBase<DerivedT>& d);
 
 	template<class Scalar,
 		class = std::enable_if_t<!std::is_base_of_v<MatrixBase<Scalar>, Scalar>>>
@@ -93,10 +87,6 @@ public:
 			impl::Constant<Scalar, Derived>{scalar, derived()} };
 	}
 
-	template<class Scalar, class DerivedT, class>
-	friend const CwiseBinaryOp<impl::AddOp<typename DerivedT::value_type>, impl::Constant<Scalar, DerivedT>, DerivedT>
-		operator-(const Scalar& scalar, const MatrixBase<DerivedT>& d);
-
 	template<class Scalar,
 		class = std::enable_if_t<!std::is_base_of_v<MatrixBase<Scalar>, Scalar>>>
 		const CwiseBinaryOp<impl::MulOp<value_type>, Derived, impl::Constant<Scalar, Derived>>
@@ -106,10 +96,6 @@ public:
 			impl::Constant<Scalar, Derived>{scalar, derived()} };
 	}
 
-	template<class Scalar, class DerivedT, class>
-	friend const CwiseBinaryOp<impl::AddOp<typename DerivedT::value_type>, impl::Constant<Scalar, DerivedT>, DerivedT>
-		operator*(const Scalar& scalar, const MatrixBase<DerivedT>& d);
-
 	template<class Scalar,
 		class = std::enable_if_t<!std::is_base_of_v<MatrixBase<Scalar>, Scalar>>>
 		const CwiseBinaryOp<impl::DivOp<value_type>, Derived, impl::Constant<Scalar, Derived>>
@@ -118,6 +104,19 @@ public:
 		return CwiseBinaryOp{ impl::DivOp<value_type>{}, derived(),
 			impl::Constant<Scalar, Derived>{scalar, derived()} };
 	}
+
+	// Left hand scalar matrix operators
+	template<class Scalar, class DerivedT, class>
+	friend const CwiseBinaryOp<impl::AddOp<typename DerivedT::value_type>, impl::Constant<Scalar, DerivedT>, DerivedT>
+		operator+(const Scalar& scalar, const MatrixBase<DerivedT>& d);
+
+	template<class Scalar, class DerivedT, class>
+	friend const CwiseBinaryOp<impl::AddOp<typename DerivedT::value_type>, impl::Constant<Scalar, DerivedT>, DerivedT>
+		operator-(const Scalar& scalar, const MatrixBase<DerivedT>& d);
+
+	template<class Scalar, class DerivedT, class>
+	friend const CwiseBinaryOp<impl::AddOp<typename DerivedT::value_type>, impl::Constant<Scalar, DerivedT>, DerivedT>
+		operator*(const Scalar& scalar, const MatrixBase<DerivedT>& d);
 
 	template<class Scalar, class DerivedT, class>
 	friend const CwiseBinaryOp<impl::AddOp<typename DerivedT::value_type>, impl::Constant<Scalar, DerivedT>, DerivedT>
