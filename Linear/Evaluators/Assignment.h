@@ -4,31 +4,62 @@
 namespace impl
 {
 
-enum class LoopTraits { Coeff, Packet, Index};
+enum class LoopTraits { Default, Packet, Index};
 
-template<class Kernel, LoopTraits... Args>
+template<class Kernel, LoopTraits trait>
 struct AssignmentLoop
 {};
 
 template<class Kernel>
-struct AssignmentLoop<Kernel, LoopTraits::Coeff>
+struct AssignmentLoop<Kernel, LoopTraits::Default>
 {
+	static void run(Kernel& kernel)
+	{
+		using size_type	= typename Kernel::size_type;
+		
+		const size_type outer = kernel.outerSize();
+		const size_type inner = kernel.innerSize();
 
+		for (size_type i = 0; i < outer; ++i)
+			for (size_type j = 0; j < inner; ++j)
+				kernel.assignOuterInner(i, j);
+	}
 };
 
 template<class Kernel>
-void assignmentLoopCoeff(Kernel& kernel)
+struct AssignmentLoop<Kernel, LoopTraits::Packet>
 {
-	const size_type outer = kernel.outerSize();
-	const size_type inner = kernel.innerSize();
+	using size_type = typename Kernel::size_type;
+	using Traits = PacketTraits<typename Kernel::value_type>;
+	using PacketType = typename Traits::type;
 
-	for (int i = 0; i < outer; ++i)
-		for (int j = 0; j < inner; ++j)
-			kernel.assignOuterInner(i, j);
-}
+	enum
+	{
+		Stride = Traits::Stride,
+	};
+
+	static void run(Kernel& kernel)
+	{
+		const size_type outer		= kernel.outerSize();
+		const size_type inner		= kernel.innerSize();
+		const size_type maxInner	= inner - inner % Stride;
+
+		// TODO: Detect non-aligned memory / do non-aligned memory up to aligned block
+
+		// Do aligned ops
+		for (size_type i = 0; i < outer; ++i)
+			for (size_type j = 0; j < maxInner; j += Stride)
+				kernel.assignPacketOuterInner<PacketType>(i, j);
+
+		// Do leftovers
+		for (size_type i = 0; i < outer; ++i)
+			for (size_type j = maxInner; j < inner; ++j)
+				kernel.assignOuterInner(i, j);
+	}
+};
 
 template<class Kernel>
-void assignmentLoopCoeffPacket(Kernel& kernel)
+struct AssignmentLoop<Kernel, LoopTraits::Index>
 {
 	using size_type		= typename Kernel::size_type;
 	using Traits		= PacketTraits<typename Kernel::value_type>;
@@ -39,22 +70,11 @@ void assignmentLoopCoeffPacket(Kernel& kernel)
 		Stride = Traits::Stride,
 	};
 
-	const size_type outer		= kernel.outerSize();
-	const size_type inner		= kernel.innerSize();
-	const size_type maxInner	= inner - inner % Stride;
-
-	// TODO: Detect non-aligned memory / do non-aligned memory up to aligned block
-
-	// Do aligned ops
-	for (size_type i = 0; i < outer; ++i)
-		for (size_type j = 0; j < maxInner; j += Stride)
-			kernel.assignPacketOuterInner<PacketType>(i, j);
-
-	// Do leftovers
-	for (size_type i = 0; i < outer; ++i)
-		for (size_type j = maxInner; j < inner; ++j)
-			kernel.assignOuterInner(i, j);
-}
+	static void run(Kernel& kernel)
+	{
+		// TODO: Detect non-aligned memory
+	}
+};
 
 template<class... Args>
 struct Assignment {};
@@ -62,6 +82,7 @@ struct Assignment {};
 template<class DestImpl, class ExprImpl>
 struct AssignmentKernel
 {
+	using ThisType		= AssignmentKernel<DestImpl, ExprImpl>;
 	using size_type		= typename DestImpl::size_type;
 	using value_type	= typename DestImpl::value_type;
 	enum
@@ -72,7 +93,8 @@ struct AssignmentKernel
 		Indexable	= Packetable && DestImpl::Indexable && ExprImpl::Indexable
 	};
 
-	//static constexpr LoopTraits loopTraits
+	static constexpr LoopTraits LoopType = Indexable ? LoopTraits::Index 
+		: Packetable ? LoopTraits::Packet : LoopTraits::Default;
 
 	AssignmentKernel(DestImpl& destImpl, ExprImpl& exprImpl) :
 		destImpl{ destImpl },
@@ -81,6 +103,11 @@ struct AssignmentKernel
 
 	size_type outerSize() const { return MajorOrder ? destImpl.cols() : destImpl.rows(); }
 	size_type innerSize() const { return MajorOrder ? destImpl.rows() : destImpl.cols(); }
+
+	void run()
+	{
+		AssignmentLoop<ThisType, LoopType>::run(*this);
+	}
 
 	static constexpr size_type rowIndex(size_type outer, size_type inner)
 	{
@@ -189,11 +216,7 @@ struct Assignment<Dest, CwiseBinaryOp<Op, Lhs, Rhs>, Type>
 		ActualDest<Dest, ExprEval>	destE{ dest };
 		AssignmentKernel			kernel{ destE, exprE };
 
-		// TODO: Specialize AssignmentKernel for this stuff
-		if constexpr(ExprEval::Packetable)
-			assignmentLoopCoeffPacket(kernel);
-		else
-			assignmentLoopCoeff(kernel);
+		kernel.run();
 	}
 };
 
@@ -212,11 +235,7 @@ struct Assignment<Dest, TransposeOp<Expr>, Type>
 		ActualDest<Dest, ExprEval>	destE{ dest };
 		AssignmentKernel			kernel{ destE, exprE };
 
-		// TODO: Specialize AssignmentKernel for this stuff
-		if constexpr (ExprEval::Packetable)
-			assignmentLoopCoeffPacket(kernel);
-		else
-			assignmentLoopCoeff(kernel);
+		kernel.run();
 	}
 };
 
