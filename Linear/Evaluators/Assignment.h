@@ -212,7 +212,7 @@ private:
 	DestEval dest;
 };
 
-template<class Dest, class Lhs, class Rhs, class Type, class Func> // TODO: Specilaize for +=, etc
+template<class Dest, class Lhs, class Rhs, class Type, class Func> 
 struct Assignment<Dest, ProductOp<Lhs, Rhs>, Type, Func>
 {
 	using ExprType = ProductOp<Lhs, Rhs>;
@@ -231,7 +231,7 @@ struct Assignment<Dest, ProductOp<Lhs, Rhs>, Type, Func>
 	}
 };
 
-template<class Dest, class Op, class Lhs, class Rhs, class Type, class Func> // TODO: Specilaize for +=, etc
+template<class Dest, class Op, class Lhs, class Rhs, class Type, class Func>
 struct Assignment<Dest, CwiseBinaryOp<Op, Lhs, Rhs>, Type, Func>
 {
 	using ExprType = CwiseBinaryOp<Op, Lhs, Rhs>;
@@ -250,7 +250,7 @@ struct Assignment<Dest, CwiseBinaryOp<Op, Lhs, Rhs>, Type, Func>
 	}
 };
 
-template<class Dest, class Expr, class Type, class Func> // TODO: Specilaize for +=, etc
+template<class Dest, class Expr, class Type, class Func> 
 struct Assignment<Dest, TransposeOp<Expr>, Type, Func>
 {
 	using ExprType = TransposeOp<Expr>;

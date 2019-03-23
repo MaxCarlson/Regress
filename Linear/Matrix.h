@@ -87,31 +87,17 @@ public:
 	Matrix(size_type nrows, size_type ncols);
 	Matrix(const std::initializer_list<std::initializer_list<Type>>& m);
 
-	/*
-	Matrix(const Matrix& other) noexcept :
-		nrows{ other.nrows },
-		ncols{ other.ncols },
-		vals{ other.vals }
-	{}
-
-	Matrix(Matrix&& other) noexcept :
-		nrows{ other.nrows },
-		ncols{ other.ncols },
-		vals{ std::move(other.vals) }
-	{}
-
-	Matrix& operator=(Matrix&& other) noexcept 
-	{
-		nrows = other.nrows;
-		ncols = other.ncols;
-		vals = std::move(other.vals);
-		return *this;
-	}
-	//*/
-
 	// Handles assignment from expressions
 	template<class Expr>
-	Matrix(const Expr& expr); // TODO: Look into expense of this copy
+	Matrix(const Expr& expr); 
+
+	template<class Expr>
+	Matrix& operator+=(const Expr& expr);
+	template<class Expr>
+	Matrix& operator-=(const Expr& expr);
+	template<class Expr>
+	Matrix& operator*=(const Expr& expr);
+
 
 	Type* data()				noexcept { return vals.data(); }
 	const Type* data()	const	noexcept { return vals.data(); }
@@ -512,11 +498,36 @@ inline Matrix<Type, MajorOrder>::Matrix(const std::initializer_list<std::initial
 				*v = *jt;
 }
 
+
 template<class Type, bool MajorOrder>
 template<class Expr>
 inline Matrix<Type, MajorOrder>::Matrix(const Expr& expr)
 {
-	expr.assign(*this, impl::Equals<Type>{});
+	this->assign(expr, impl::Equals<Type>{});
+}
+
+template<class Type, bool MajorOrder>
+template<class Expr>
+inline Matrix<Type, MajorOrder>& Matrix<Type, MajorOrder>::operator+=(const Expr& expr)
+{
+	this->assign(expr, impl::PlusEquals<Type>{});
+	return *this;
+}
+
+template<class Type, bool MajorOrder>
+template<class Expr>
+inline Matrix<Type, MajorOrder>& Matrix<Type, MajorOrder>::operator-=(const Expr & expr)
+{
+	this->assign(expr, impl::MinusEquals<Type>{});
+	return *this;
+}
+
+template<class Type, bool MajorOrder>
+template<class Expr>
+inline Matrix<Type, MajorOrder>& Matrix<Type, MajorOrder>::operator*=(const Expr & expr)
+{
+	static_assert("Matrix *= operator not implemented yet!");
+	return *this;
 }
 
 template<class Type, bool MajorOrder>

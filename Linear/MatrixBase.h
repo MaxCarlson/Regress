@@ -1,6 +1,7 @@
 #pragma once
 #include "ForwardDeclarations.h"
 #include "RegressAssert.h"
+#include "Evaluators\AssignmentFunctors.h"
 
 template<class Derived>
 class MatrixBase : public BaseExpr<Derived>
@@ -21,15 +22,21 @@ public:
 	//MatrixBase(MatrixBase&& other) = delete;
 	//MatrixBase(const MatrixBase& other) = delete;
 
-
 	Derived& derived()				{ return static_cast<Derived&>(*this); }
 	const Derived& derived() const	{ return static_cast<const Derived&>(*this); }
 
-	template<class Matrix, class Func>
-	void assign(Matrix& to, const Func& func) const
+	template<class OtherDerived, class Func>
+	void assign(const OtherDerived& from, const Func& func)
 	{
-		impl::Assignment<Matrix, Derived, value_type, Func>::run(to, derived(), func);
+		impl::Assignment<Derived, OtherDerived, value_type, Func>::run(derived(), from, func);
 	}
+
+	//template<class OtherDerived>
+	//Derived& operator+=(const MatrixBase<OtherDerived>& other)
+	//{
+	//	assign(other, impl::PlusEquals<value_type>{});
+	//	return derived();
+	//}
 
 	// Matrix Operators
 	template<class OtherDerived>
@@ -110,6 +117,7 @@ public:
 	}
 
 	// Left hand scalar matrix operators
+	// TODO: Should these even exist?
 	template<class Scalar, class DerivedT, class>
 	friend const CwiseBinaryOp<impl::AddOp<typename DerivedT::value_type>, impl::Constant<Scalar, DerivedT>, DerivedT>
 		operator+(const Scalar& scalar, const MatrixBase<DerivedT>& d);

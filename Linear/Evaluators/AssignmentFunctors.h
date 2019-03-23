@@ -26,6 +26,12 @@ struct PlusEquals
 	{
 		to += from;
 	}
+
+	template<class Packet>
+	inline void operator()(Type* to, const Packet& from) const noexcept
+	{
+		impl::pstore<Packet>(to, impl::padd<Packet>(impl::pload<Packet>(to), from));
+	}
 };
 
 template<class Type>
@@ -34,6 +40,12 @@ struct MinusEquals
 	inline void operator()(Type& to, const Type& from) const noexcept
 	{
 		to -= from;
+	}
+
+	template<class Packet>
+	inline void operator()(Type* to, const Packet& from) const noexcept
+	{
+		impl::pstore<Packet>(to, impl::psub<Packet>(impl::pload<Packet>(to), from));
 	}
 };
 

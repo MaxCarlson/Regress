@@ -56,6 +56,7 @@ int main()
 	Matrix<int> vv = bigger * bigger + bigger;
 	//s.printCurrent();
 	//s.start();
+	vv -= bigger + bigger;
 
 	std::cout << vv << '\n';
 
