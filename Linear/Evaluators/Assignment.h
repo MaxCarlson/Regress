@@ -83,10 +83,10 @@ struct AssignmentLoop<Kernel, LoopTraits::Index>
 template<class... Args>
 struct Assignment {};
 
-template<class DestImpl, class ExprImpl>
+template<class DestImpl, class ExprImpl, class Func>
 struct AssignmentKernel
 {
-	using ThisType		= AssignmentKernel<DestImpl, ExprImpl>;
+	using ThisType		= AssignmentKernel<DestImpl, ExprImpl, Func>;
 	using size_type		= typename DestImpl::size_type;
 	using value_type	= typename DestImpl::value_type;
 	enum
@@ -100,9 +100,10 @@ struct AssignmentKernel
 	static constexpr LoopTraits LoopType = Indexable ? LoopTraits::Index
 		: Packetable ? LoopTraits::Packet : LoopTraits::Default;
 
-	AssignmentKernel(DestImpl& destImpl, ExprImpl& exprImpl) :
+	AssignmentKernel(DestImpl& destImpl, ExprImpl& exprImpl, const Func& func) :
 		destImpl{ destImpl },
-		exprImpl{ exprImpl }
+		exprImpl{ exprImpl },
+		func{ func }
 	{}
 
 	size_type size()		const { return destImpl.size(); }
@@ -146,8 +147,9 @@ struct AssignmentKernel
 	}
 
 private:
-	DestImpl& destImpl;
-	ExprImpl& exprImpl;
+	const Func&		func;
+	DestImpl&		destImpl;
+	ExprImpl&		exprImpl;
 };
 
 template<class Dest, class ExprEval>
@@ -200,12 +202,12 @@ private:
 	DestEval dest;
 };
 
-template<class Dest, class Lhs, class Rhs, class Type> // TODO: Specilaize for +=, etc
-struct Assignment<Dest, ProductOp<Lhs, Rhs>, Type>
+template<class Dest, class Lhs, class Rhs, class Type, class Func> // TODO: Specilaize for +=, etc
+struct Assignment<Dest, ProductOp<Lhs, Rhs>, Type, Func>
 {
 	using ExprType = ProductOp<Lhs, Rhs>;
 
-	inline static void run(Dest& dest, const ExprType& expr)
+	inline static void run(Dest& dest, const ExprType& expr, const Func& func)
 	{
 		using ExprEval = Evaluator<ExprType>;
 		
@@ -219,12 +221,12 @@ struct Assignment<Dest, ProductOp<Lhs, Rhs>, Type>
 	}
 };
 
-template<class Dest, class Op, class Lhs, class Rhs, class Type> // TODO: Specilaize for +=, etc
-struct Assignment<Dest, CwiseBinaryOp<Op, Lhs, Rhs>, Type>
+template<class Dest, class Op, class Lhs, class Rhs, class Type, class Func> // TODO: Specilaize for +=, etc
+struct Assignment<Dest, CwiseBinaryOp<Op, Lhs, Rhs>, Type, Func>
 {
 	using ExprType = CwiseBinaryOp<Op, Lhs, Rhs>;
 
-	inline static void run(Dest& dest, const ExprType& expr)
+	inline static void run(Dest& dest, const ExprType& expr, const Func& func)
 	{
 		using ExprEval = Evaluator<ExprType>;
 
@@ -232,18 +234,18 @@ struct Assignment<Dest, CwiseBinaryOp<Op, Lhs, Rhs>, Type>
 
 		ExprEval					exprE{ expr };
 		ActualDest<Dest, ExprEval>	destE{ dest };
-		AssignmentKernel			kernel{ destE, exprE };
+		AssignmentKernel			kernel{ destE, exprE, func };
 
 		kernel.run();
 	}
 };
 
-template<class Dest, class Expr, class Type> // TODO: Specilaize for +=, etc
-struct Assignment<Dest, TransposeOp<Expr>, Type>
+template<class Dest, class Expr, class Type, class Func> // TODO: Specilaize for +=, etc
+struct Assignment<Dest, TransposeOp<Expr>, Type, Func>
 {
 	using ExprType = TransposeOp<Expr>;
 
-	inline static void run(Dest& dest, const ExprType& expr)
+	inline static void run(Dest& dest, const ExprType& expr, const Func& func)
 	{
 		using ExprEval = Evaluator<ExprType>;
 
@@ -251,7 +253,7 @@ struct Assignment<Dest, TransposeOp<Expr>, Type>
 
 		ExprEval					exprE{ expr };
 		ActualDest<Dest, ExprEval>	destE{ dest };
-		AssignmentKernel			kernel{ destE, exprE };
+		AssignmentKernel			kernel{ destE, exprE, func };
 
 		kernel.run();
 	}

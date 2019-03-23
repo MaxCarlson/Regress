@@ -85,7 +85,7 @@ struct TransposeEvaluator;
 template<class... Args>
 struct Assignment;
 
-template<class DestImpl, class ExprImpl>
+template<class DestImpl, class ExprImpl, class Func>
 struct AssignmentKernel;
 }
 

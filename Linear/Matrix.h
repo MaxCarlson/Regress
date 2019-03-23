@@ -9,6 +9,7 @@
 #include "Evaluators\Assignment.h"
 #include "Instructions\Packets.h"
 #include "AlignedAllocator.h"
+#include "Evaluators\AssignmentFunctors.h"
 
 //namespace regress{ // TODO: Wrap proj in namespaces
 
@@ -515,7 +516,7 @@ template<class Type, bool MajorOrder>
 template<class Expr>
 inline Matrix<Type, MajorOrder>::Matrix(const Expr& expr)
 {
-	expr.assign(*this);
+	expr.assign(*this, impl::Equals<Type>{});
 }
 
 template<class Type, bool MajorOrder>

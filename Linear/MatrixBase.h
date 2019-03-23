@@ -25,10 +25,10 @@ public:
 	Derived& derived()				{ return static_cast<Derived&>(*this); }
 	const Derived& derived() const	{ return static_cast<const Derived&>(*this); }
 
-	template<class Matrix>
-	void assign(Matrix& to) const
+	template<class Matrix, class Func>
+	void assign(Matrix& to, const Func& func) const
 	{
-		impl::Assignment<Matrix, Derived, value_type>::run(to, derived());
+		impl::Assignment<Matrix, Derived, value_type, Func>::run(to, derived(), func);
 	}
 
 	// Matrix Operators

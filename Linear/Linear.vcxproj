@@ -123,6 +123,7 @@
   <ItemGroup>
     <ClInclude Include="AlignedAllocator.h" />
     <ClInclude Include="Evaluators\Assignment.h" />
+    <ClInclude Include="Evaluators\AssignmentFunctors.h" />
     <ClInclude Include="Evaluators\Evaluators.h" />
     <ClInclude Include="Instructions\AVX\PacketInstructions.h" />
     <ClInclude Include="Instructions\PacketHelper.h" />
