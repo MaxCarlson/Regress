@@ -17,6 +17,10 @@ public:
 		IsExpr		= true // We will override this in anything not an expression 
 	};
 
+	//MatrixBase() = default;
+	//MatrixBase(MatrixBase&& other) = delete;
+	//MatrixBase(const MatrixBase& other) = delete;
+
 
 	Derived& derived()				{ return static_cast<Derived&>(*this); }
 	const Derived& derived() const	{ return static_cast<const Derived&>(*this); }

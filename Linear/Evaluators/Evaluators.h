@@ -33,10 +33,6 @@ struct Evaluator<Matrix<Type, MajorOrder>>
 		m{ m }
 	{}
 
-	explicit Evaluator(MatrixType&& m) noexcept :
-		m{ m }
-	{}
-
 	value_type& evaluateRef(size_type row, size_type col)
 	{
 		return const_cast<MatrixType&>(m)(row, col);
@@ -188,42 +184,44 @@ struct ProductEvaluator<ProductOp<Lhs, Rhs>>
 	explicit ProductEvaluator(const Op& expr) :
 		lhsE{ expr.getLhs() },
 		rhsE{ expr.getRhs() },
-		m( MatrixType(expr.resultRows(), expr.resultCols()) )
+		matrix(expr.resultRows(), expr.resultCols()),
+		matrixEval{ matrix }
 	{
 		productEntireImpl<ThisType, LhsE, RhsE, value_type>(*this, lhsE, rhsE);
 	}
 
-	MatrixType&& moveMatrix() { return std::move(m); }
+	MatrixType&& moveMatrix() { return std::move(matrix); }
 
 	size_type rows() const noexcept { return lhsE.rows(); }
 	size_type cols() const noexcept { return rhsE.cols(); }
 
 	value_type& evaluateRef(size_type row, size_type col)
 	{
-		return m.evaluateRef(row, col);
+		return matrixEval.evaluateRef(row, col);
 	}
 
 	value_type evaluate(size_type row, size_type col) const
 	{
-		return m.evaluate(row, col);
+		return matrixEval.evaluate(row, col);
 	}
 
 	template<class Packet>
 	Packet packet(size_type row, size_type col) const
 	{
-		return m.packet<Packet>(row, col);
+		return matrixEval.packet<Packet>(row, col);
 	}
 
 	template<class Packet>
 	void writePacket(size_type row, size_type col, const Packet& p)
 	{
-		return m.writePacket<Packet>(row, col);
+		return matrixEval.writePacket<Packet>(row, col);
 	}
 
 protected:
 	LhsE lhsE;
 	RhsE rhsE;
-	Evaluator<MatrixType> m;
+	MatrixType matrix;
+	Evaluator<MatrixType> matrixEval;
 };
 
 template<class Expr>

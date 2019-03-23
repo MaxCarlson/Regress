@@ -86,7 +86,13 @@ public:
 	Matrix(size_type nrows, size_type ncols);
 	Matrix(const std::initializer_list<std::initializer_list<Type>>& m);
 
-	///*
+	/*
+	Matrix(const Matrix& other) noexcept :
+		nrows{ other.nrows },
+		ncols{ other.ncols },
+		vals{ other.vals }
+	{}
+
 	Matrix(Matrix&& other) noexcept :
 		nrows{ other.nrows },
 		ncols{ other.ncols },
