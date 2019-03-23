@@ -27,7 +27,7 @@ int main()
 		{4, 5, 6}
 	};
 
-	Matrix<int> bigger = {
+	Matrix<int, true> bigger = {
 		{1, 2, 3, 4, 1},
 		{3, 4, 4, 5, 1},
 		{5, 6, 6, 7, 1},
@@ -48,7 +48,7 @@ int main()
 	//s.start();
 
 	//auto v = 2 * rhst;
-	Matrix<int> vv = bigger * bigger + bigger;
+	Matrix<int, true> vv = bigger * bigger + bigger;
 	//s.printCurrent();
 	//s.start();
 

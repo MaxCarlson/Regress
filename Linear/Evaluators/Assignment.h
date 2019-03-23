@@ -36,7 +36,7 @@ void assignmentLoopCoeffPacket(Dest& dest, const Expr& expr)
 	// TODO: Detect non-aligned memory / do non-aligned memory up to aligned block
 
 	// Do aligned ops
-	for (size_type i = 0; i < maxRow; ++i)
+	for (size_type i = 0; i < rows; ++i)
 		for (size_type j = 0; j < maxCol; j += Stride)
 			dest.writePacket<PacketType>(i, j, expr.packet<PacketType>(i, j));
 	
@@ -44,18 +44,18 @@ void assignmentLoopCoeffPacket(Dest& dest, const Expr& expr)
 	for(size_type i = 0; i < rows; ++i)
 		for (size_type j = maxCol; j < cols; ++j)
 			dest.evaluateRef(i, j) = expr.evaluate(i, j);
-	*/
+	//*/
 
+	//*
 	size_type outer = dest.outerSize();
 	size_type inner = dest.innerSize();
 
-	size_type maxOuter = outer - outer % Stride;
 	size_type maxInner = inner - inner % Stride;
 
 	// TODO: Detect non-aligned memory / do non-aligned memory up to aligned block
 
 	// Do aligned ops
-	for (size_type i = 0; i < maxOuter; ++i)
+	for (size_type i = 0; i < outer; ++i)
 		for (size_type j = 0; j < maxInner; j += Stride)
 			dest.assignPacketOuterInner<PacketType>(i, j);
 
@@ -63,6 +63,7 @@ void assignmentLoopCoeffPacket(Dest& dest, const Expr& expr)
 	for (size_type i = 0; i < outer; ++i)
 		for (size_type j = maxInner; j < inner; ++j)
 			dest.assignRefOuterInner(i, j);
+	//*/
 
 }
 
@@ -198,6 +199,7 @@ struct Assignment<Dest, CwiseBinaryOp<Op, Lhs, Rhs>, Type>
 
 		// TODO: Specialize AssignmentKernel for this stuff
 		if constexpr(ExprEval::Packetable)
+			//assignmentLoopCoeffPacket(destE, exprE);
 			assignmentLoopCoeffPacket(kernel, exprE);
 		else
 			assignmentLoopCoeff(destE, exprE);
