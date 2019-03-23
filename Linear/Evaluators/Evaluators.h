@@ -56,9 +56,9 @@ struct Evaluator<Matrix<Type, MajorOrder>>
 	}
 
 	template<class Packet>
-	Packet packet(size_type index) const
+	Packet packet(size_type idx) const
 	{
-		return pload<Packet>(&m.index(index));
+		return pload<Packet>(&m.index(idx));
 	}
 
 	template<class Packet>
@@ -68,9 +68,9 @@ struct Evaluator<Matrix<Type, MajorOrder>>
 	}
 
 	template<class Packet>
-	void writePacket(size_type index, const Packet& p) 
+	void writePacket(size_type idx, const Packet& p)
 	{
-		return pstore(const_cast<value_type*>(&m.index(index)), p);
+		return pstore(const_cast<value_type*>(&m.index(idx)), p);
 	}
 
 	void set(MatrixType&& other)
@@ -111,9 +111,6 @@ struct BinaryEvaluator<CwiseBinaryOp<Func, Lhs, Rhs>>
 			&& LhsE::Packetable && RhsE::Packetable && Func::Packetable,
 		Indexable		= LhsMajorOrder == RhsMajorOrder && Packetable 
 			&& LhsE::Indexable && RhsE::Indexable
-
-		// TODO: We need to add Lhse::MajorOrderLeft && right for this to work
-		//Indexable = LhsE::MajorOrder == RhsE::MajorOrder && LhsE::Indexable && RhsE::Indexable
 	};
 
 	explicit BinaryEvaluator(const Expr& expr) :
@@ -137,6 +134,12 @@ struct BinaryEvaluator<CwiseBinaryOp<Func, Lhs, Rhs>>
 		return op.packetOp<Packet>(lhs.template packet<Packet>(row, col), rhs.template packet<Packet>(row, col));
 	}
 
+	template<class Packet>
+	Packet packet(size_type idx) const
+	{
+		return op.packetOp<Packet>(lhs.template packet<Packet>(idx), rhs.template packet<Packet>(idx));
+	}
+
 protected:
 	const Func op;
 	LhsE lhs;
@@ -145,6 +148,7 @@ protected:
 
 // Evaluates the entire expression
 // TODO: Look into FMA instructions!
+// TODO: Move to assignment / integrate with Evaluators better
 // TODO: Add an impl that only evaluates for an index
 template<class Dest, class LhsE, class RhsE, class Type>
 void productEntireImpl(Dest& dest, const LhsE& lhsE, const RhsE& rhsE)
@@ -227,13 +231,25 @@ struct ProductEvaluator<ProductOp<Lhs, Rhs>>
 	template<class Packet>
 	Packet packet(size_type row, size_type col) const
 	{
-		return matrixEval.packet<Packet>(row, col);
+		return matrixEval.template packet<Packet>(row, col);
+	}
+
+	template<class Packet>
+	Packet packet(size_type idx) const
+	{
+		return matrixEval.template packet<Packet>(idx);
 	}
 
 	template<class Packet>
 	void writePacket(size_type row, size_type col, const Packet& p)
 	{
-		return matrixEval.writePacket<Packet>(row, col);
+		return matrixEval.template writePacket<Packet>(row, col);
+	}
+
+	template<class Packet>
+	void writePacket(size_type idx, const Packet& p)
+	{
+		return matrixEval.template writePacket<Packet>(idx);
 	}
 
 protected:
@@ -336,6 +352,12 @@ struct ConstantEvaluator<Constant<Type, Expr>>
 
 	template<class Packet>
 	Packet packet(size_type row, size_type col) const
+	{
+		return expr.packet();
+	}
+
+	template<class Packet>
+	Packet packet(size_type idx) const
 	{
 		return expr.packet();
 	}

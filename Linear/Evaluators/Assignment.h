@@ -75,8 +75,8 @@ struct AssignmentLoop<Kernel, LoopTraits::Index>
 		// TODO: Detect non-aligned memory
 
 		size_type size = kernel.size();
-		//for(size_type idx = 0; idx < size; ++idx)
-		//	kernel.
+		for (size_type idx = 0; idx < size; ++idx)
+			kernel.assignPacket<PacketType>(idx);
 	}
 };
 
@@ -97,8 +97,8 @@ struct AssignmentKernel
 		Indexable	= Packetable && DestImpl::Indexable && ExprImpl::Indexable
 	};
 
-	static constexpr LoopTraits LoopType = LoopTraits::Packet;// Indexable ? LoopTraits::Index
-		//: Packetable ? LoopTraits::Packet : LoopTraits::Default;
+	static constexpr LoopTraits LoopType = Indexable ? LoopTraits::Index
+		: Packetable ? LoopTraits::Packet : LoopTraits::Default;
 
 	AssignmentKernel(DestImpl& destImpl, ExprImpl& exprImpl) :
 		destImpl{ destImpl },
@@ -140,9 +140,9 @@ struct AssignmentKernel
 	}
 
 	template<class Packet>
-	void assignIndex(size_type index)
+	void assignPacket(size_type index)
 	{
-		destImpl.template writeIndex<Packet>(index, exprImpl.template index<Packet>(index));
+		destImpl.template writePacket<Packet>(index, exprImpl.template packet<Packet>(index));
 	}
 
 private:
@@ -183,6 +183,12 @@ struct ActualDest
 	void writePacket(size_type row, size_type col, const Packet& p) 
 	{
 		dest.template writePacket<Packet>(row, col, p);
+	}
+
+	template<class Packet>
+	void writePacket(size_type idx, const Packet& p)
+	{
+		dest.template writePacket<Packet>(idx, p);
 	}
 
 	void set(Dest&& src)
