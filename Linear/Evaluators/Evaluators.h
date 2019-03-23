@@ -26,6 +26,7 @@ struct Evaluator<Matrix<Type, MajorOrder>>
 
 	enum
 	{
+		MajorOrder	= MajorOrder,
 		Packetable	= PacketTraits<Type>::Packetable,
 		Indexable	= Packetable
 	};

@@ -12,7 +12,12 @@ int main()
 	/*
 	MatrixXd mat;
 	mat.resize(2, 2);
-	auto mm = mat * mat;
+	mat(0, 0) = 1;
+	mat(0, 1) = 2;
+	mat(1, 0) = 3;
+	mat(1, 1) = 4;
+
+	auto mm = mat * mat.transpose();
 	mat = mm;
 	//*/
 

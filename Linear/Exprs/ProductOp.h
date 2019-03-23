@@ -38,6 +38,7 @@ class ProductOp : public MatrixBase<ProductOp<Lhs, Rhs>>
 public:
 	enum
 	{
+		// TODO: Lhs/Rhs MajorOrders
 		MajorOrder = Traits<Lhs>::MajorOrder
 	};
 

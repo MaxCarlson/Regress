@@ -4,22 +4,34 @@
 namespace impl
 {
 
-template<class Dest>
-void assignmentLoopCoeff(Dest& dest)
+enum class LoopTraits { Coeff, Packet, Index};
+
+template<class Kernel, LoopTraits... Args>
+struct AssignmentLoop
+{};
+
+template<class Kernel>
+struct AssignmentLoop<Kernel, LoopTraits::Coeff>
 {
-	// TODO: Index based assignement
-	// TODO: Correct major order assignement
-	// TODO: OpenMp
-	for (int i = 0; i < dest.outerSize(); ++i)
-		for (int j = 0; j < dest.innerSize(); ++j)
-			dest.assignOuterInner(i, j);
+
+};
+
+template<class Kernel>
+void assignmentLoopCoeff(Kernel& kernel)
+{
+	const size_type outer = kernel.outerSize();
+	const size_type inner = kernel.innerSize();
+
+	for (int i = 0; i < outer; ++i)
+		for (int j = 0; j < inner; ++j)
+			kernel.assignOuterInner(i, j);
 }
 
-template<class Dest>
-void assignmentLoopCoeffPacket(Dest& dest)
+template<class Kernel>
+void assignmentLoopCoeffPacket(Kernel& kernel)
 {
-	using size_type		= typename Dest::size_type;
-	using Traits		= PacketTraits<typename Dest::value_type>;
+	using size_type		= typename Kernel::size_type;
+	using Traits		= PacketTraits<typename Kernel::value_type>;
 	using PacketType	= typename Traits::type;
 
 	enum
@@ -27,22 +39,21 @@ void assignmentLoopCoeffPacket(Dest& dest)
 		Stride = Traits::Stride,
 	};
 
-	size_type outer = dest.outerSize();
-	size_type inner = dest.innerSize();
-
-	size_type maxInner = inner - inner % Stride;
+	const size_type outer		= kernel.outerSize();
+	const size_type inner		= kernel.innerSize();
+	const size_type maxInner	= inner - inner % Stride;
 
 	// TODO: Detect non-aligned memory / do non-aligned memory up to aligned block
 
 	// Do aligned ops
 	for (size_type i = 0; i < outer; ++i)
 		for (size_type j = 0; j < maxInner; j += Stride)
-			dest.assignPacketOuterInner<PacketType>(i, j);
+			kernel.assignPacketOuterInner<PacketType>(i, j);
 
 	// Do leftovers
 	for (size_type i = 0; i < outer; ++i)
 		for (size_type j = maxInner; j < inner; ++j)
-			dest.assignOuterInner(i, j);
+			kernel.assignOuterInner(i, j);
 }
 
 template<class... Args>
@@ -51,12 +62,17 @@ struct Assignment {};
 template<class DestImpl, class ExprImpl>
 struct AssignmentKernel
 {
-	using size_type = typename DestImpl::size_type;
-	using value_type = typename DestImpl::value_type;
+	using size_type		= typename DestImpl::size_type;
+	using value_type	= typename DestImpl::value_type;
 	enum
 	{
-		MajorOrder = DestImpl::MajorOrder
+		MajorOrder	= DestImpl::MajorOrder,
+		Packetable	= std::is_same_v<value_type, typename ExprImpl::value_type>
+			&& DestImpl::Packetable && ExprImpl::Packetable,
+		Indexable	= Packetable && DestImpl::Indexable && ExprImpl::Indexable
 	};
+
+	//static constexpr LoopTraits loopTraits
 
 	AssignmentKernel(DestImpl& destImpl, ExprImpl& exprImpl) :
 		destImpl{ destImpl },
@@ -99,16 +115,16 @@ private:
 template<class Dest, class ExprEval>
 struct ActualDest
 {
-	using DestType = std::conditional_t<ExprEval::MajorOrder != Dest::MajorOrder,
-		TransposeEvaluator<Dest>, Evaluator<Dest>>;
+	using DestEval		= Evaluator<Dest>;
 	using size_type		= typename Dest::size_type;
 	using value_type	= typename Dest::value_type;
 
 	enum
 	{
-		MajorOrder = Dest::MajorOrder
+		MajorOrder	= DestEval::MajorOrder,
+		Packetable	= DestEval::Packetable,
+		Indexable	= DestEval::Indexable
 	};
-
 
 	ActualDest(Dest& dest) :
 		dest{ dest }
@@ -136,7 +152,7 @@ struct ActualDest
 	//size_type inner() const noexcept { return MajorOrder ? rows() : cols(); }
 
 private:
-	DestType dest;
+	DestEval dest;
 };
 
 template<class Dest, class Lhs, class Rhs, class Type> // TODO: Specilaize for +=, etc
