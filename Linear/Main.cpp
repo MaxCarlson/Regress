@@ -27,7 +27,7 @@ int main()
 		{4, 5, 6}
 	};
 
-	Matrix<int, true> bigger = {
+	Matrix<int> bigger = {
 		{1, 2, 3, 4, 1},
 		{3, 4, 4, 5, 1},
 		{5, 6, 6, 7, 1},
@@ -48,12 +48,20 @@ int main()
 	//s.start();
 
 	//auto v = 2 * rhst;
-	Matrix<int, true> vv = bigger * bigger + bigger.transpose();
+	Matrix<int> vv = (bigger * bigger + bigger.transpose()) + (bigger * bigger + bigger.transpose());
+	Matrix<int> res7v = { {48, 61, 64, 75, 16}, {67, 86, 91, 108, 23},
+			{96, 122, 129, 154, 31}, {97, 123, 130, 155, 32}, {94, 119, 124, 149, 26} };
+
+	Matrix<int> ll = res7v * 2;
+
+
 	//s.printCurrent();
 	//s.start();
 
 	std::cout << vv << '\n';
-	
+	std::cout << ll << '\n';
+	bool b = vv == ll;
+
 	/*
 	Eigen::MatrixXi t;
 	t.resize(5, 5);

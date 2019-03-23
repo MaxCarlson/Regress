@@ -192,6 +192,7 @@ namespace test
 			Mat res5 = ((rhs.transpose() * lhs.transpose()) - lhs1) * 2;
 			Mat res6 = ((rhs.transpose() * lhs.transpose()) - lhs1) + (lhs * rhs - lhs1);
 			Mat res7 = big * big + big.transpose();
+			Mat res8 = (big * big + big.transpose()) + (big * big + big.transpose());
 
 			Mat res1v = { {2, 5, 8}, {6, 9, 12} };
 			Mat res2v = { {9, 19, 29}, {12, 26, 40}, {15, 33, 51} };
@@ -201,6 +202,7 @@ namespace test
 			Mat res6v = { {16, 27, 38}, {23, 42, 61}, {30, 57, 84} };
 			Mat res7v = { {48, 61, 64, 75, 16}, {67, 86, 91, 108, 23},
 			{96, 122, 129, 154, 31}, {97, 123, 130, 155, 32}, {94, 119, 124, 149, 26} };
+			Mat res8v = 2 * res7v;
 
 			Assert::IsTrue(res1 == res1v);
 			Assert::IsTrue(res2 == res2v);
@@ -209,6 +211,7 @@ namespace test
 			Assert::IsTrue(res5 == res5v);
 			Assert::IsTrue(res6 == res6v);
 			Assert::IsTrue(res7 == res7v);
+			Assert::IsTrue(res8 == res8v);
 		}
 
 		TEST_METHOD(Mixed)

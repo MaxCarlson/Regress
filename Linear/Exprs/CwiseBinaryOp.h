@@ -132,7 +132,7 @@ public:
 	template<class Packet>
 	Packet packetOp(const Packet& p1, const Packet& p2) const
 	{
-		return impl::pmul(p1, p2);
+		return impl::pmul<Packet>(p1, p2);
 	}
 };
 
