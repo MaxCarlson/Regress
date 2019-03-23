@@ -22,7 +22,7 @@ struct AlignedAllocator
 	
 	enum
 	{
-		Alignment = 16
+		Alignment = 32
 	};
 
 	AlignedAllocator() = default;

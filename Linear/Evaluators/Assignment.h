@@ -29,9 +29,9 @@ struct AssignmentLoop<Kernel, LoopTraits::Default>
 template<class Kernel>
 struct AssignmentLoop<Kernel, LoopTraits::Packet>
 {
-	using size_type = typename Kernel::size_type;
-	using Traits = PacketTraits<typename Kernel::value_type>;
-	using PacketType = typename Traits::type;
+	using size_type		= typename Kernel::size_type;
+	using Traits		= PacketTraits<typename Kernel::value_type>;
+	using PacketType	= typename Traits::type;
 
 	enum
 	{
@@ -65,10 +65,10 @@ struct AssignmentLoop<Kernel, LoopTraits::Index>
 	using Traits		= PacketTraits<typename Kernel::value_type>;
 	using PacketType	= typename Traits::type;
 
-	enum
-	{
-		Stride = Traits::Stride,
-	};
+	//enum
+	//{
+	//	Stride = Traits::Stride,
+	//};
 
 	static void run(Kernel& kernel)
 	{

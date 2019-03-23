@@ -19,7 +19,6 @@ struct PacketTraits<float> : public DefaultPacketTraits<float>
 	{
 		Stride		= 4,
 		Packetable	= true,
-		HasDivide	= false
 	};
 };
 
@@ -46,14 +45,15 @@ struct PacketTraits<int> : public DefaultPacketTraits<int>
 	{
 		Stride		= 4,
 		Packetable	= true,
+		HasDivide	= false
 	};
 };
 #endif
 
 // Specialized intrinsic templates
-template<> inline Packet4f pload<Packet4f, float	>(const float*		from) { return _mm_load_ps(from); }
-template<> inline Packet4i pload<Packet4i, int		>(const int*		from) { return _mm_load_si128(reinterpret_cast<const __m128i*>(from)); }
-template<> inline Packet2d pload<Packet2d, double	> (const double*	from) { return _mm_load_pd(from); }
+template<> inline Packet4f pload<Packet4f, float>(const float*		from) { return _mm_load_ps(from); }
+template<> inline Packet4i pload<Packet4i, int>(const int*			from) { return _mm_load_si128(reinterpret_cast<const __m128i*>(from)); }
+template<> inline Packet2d pload<Packet2d, double> (const double*	from) { return _mm_load_pd(from); }
 
 //template<> Packet4f pload1<Packet4f, float	>(const float*		from) { return _mm_load1_ps(from); }
 //template<> Packet2d pload1<Packet2d, double	>(const double*	from) { return _mm_load1_pd(from); }
@@ -74,7 +74,6 @@ template<> inline Packet4f pmul<Packet4f>(const Packet4f& p1, const Packet4f& p2
 template<> inline Packet2d pmul<Packet2d>(const Packet2d& p1, const Packet2d& p2) { return _mm_mul_pd(p1, p2); }
 template<> inline Packet4i pmul<Packet4i>(const Packet4i& p1, const Packet4i& p2) { return _mm_mullo_epi32(p1, p2); }
 
-// TODO: We're going to need to do some traits stuff so no integer div is called
 template<> inline Packet4f pdiv<Packet4f>(const Packet4f& p1, const Packet4f& p2) { return _mm_div_ps(p1, p2); }
 template<> inline Packet2d pdiv<Packet2d>(const Packet2d& p1, const Packet2d& p2) { return _mm_div_pd(p1, p2); }
 

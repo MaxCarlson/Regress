@@ -129,10 +129,7 @@
     <ClInclude Include="Instructions\Packets.h" />
     <ClInclude Include="Instructions\SSE\PacketInstructions.h" />
     <ClInclude Include="Exprs\CwiseBinaryOp.h" />
-    <ClInclude Include="Expr.h" />
-    <ClInclude Include="Exprs\ExprIterator.h" />
     <ClInclude Include="MatrixBase.h" />
-    <ClInclude Include="ExprOperators.h" />
     <ClInclude Include="ForwardDeclarations.h" />
     <ClInclude Include="Matrix.h" />
     <ClInclude Include="Exprs\ProductOp.h" />

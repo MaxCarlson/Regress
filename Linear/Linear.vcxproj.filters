@@ -15,12 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Expr.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ExprOperators.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="RegressAssert.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -34,9 +28,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Exprs\CwiseBinaryOp.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Exprs\ExprIterator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Exprs\ProductOp.h">
