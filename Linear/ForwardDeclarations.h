@@ -84,6 +84,9 @@ struct TransposeEvaluator;
 // Assignment
 template<class... Args>
 struct Assignment;
+
+template<class DestImpl, class ExprImpl>
+struct AssignmentKernel;
 }
 
 // Instrinsic wrappers

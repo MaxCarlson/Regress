@@ -16,13 +16,13 @@ int main()
 	mat = mm;
 	//*/
 
-	Matrix<int> lhst = {
+	Matrix<int> lhs = {
 		{1, 2},
 		{3, 4},
 		{5, 6},
 	};
 
-	Matrix<int> rhst = {
+	Matrix<int> rhs = {
 		{1, 2, 3},
 		{4, 5, 6}
 	};
@@ -51,6 +51,8 @@ int main()
 	Matrix<int> vv = bigger * bigger + bigger;
 	//s.printCurrent();
 	//s.start();
+
+	std::cout << vv << '\n';
 	
 	/*
 	Eigen::MatrixXi t;
