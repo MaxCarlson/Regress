@@ -7,6 +7,9 @@
 namespace impl
 {
 using size_type = int;
+
+template<class Type>
+struct AlignedAllocator;
 }
 
 template<class Derived>

@@ -47,12 +47,9 @@ int main()
 	//Stopwatch<std::chrono::nanoseconds> s;
 	//s.start();
 
-	//auto v = 2 * rhst;
-	Matrix<int> vv = (bigger * bigger + bigger.transpose()) + (bigger * bigger + bigger.transpose());
-	Matrix<int> res7v = { {48, 61, 64, 75, 16}, {67, 86, 91, 108, 23},
-			{96, 122, 129, 154, 31}, {97, 123, 130, 155, 32}, {94, 119, 124, 149, 26} };
 
-	Matrix<int> ll = res7v * 2;
+	//auto v = 2 * rhst;
+	Matrix<int> vv = (bigger * bigger + bigger.transpose())
 
 
 	//s.printCurrent();

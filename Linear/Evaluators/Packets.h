@@ -108,7 +108,7 @@ template<> inline Packet4i psub<Packet4i>(const Packet4i& p1, const Packet4i& p2
 
 template<> inline Packet4f pmul<Packet4f>(const Packet4f& p1, const Packet4f& p2) { return _mm_mul_ps(p1, p2); }
 template<> inline Packet2d pmul<Packet2d>(const Packet2d& p1, const Packet2d& p2) { return _mm_mul_pd(p1, p2); }
-template<> inline Packet4i pmul<Packet4i>(const Packet4i& p1, const Packet4i& p2) { return _mm_mul_epi32(p1, p2); }
+template<> inline Packet4i pmul<Packet4i>(const Packet4i& p1, const Packet4i& p2) { return _mm_mullo_epi32(p1, p2); }
 
 // TODO: We're going to need to do some traits stuff so no integer div is called
 template<> inline Packet4f pdiv<Packet4f>(const Packet4f& p1, const Packet4f& p2) { return _mm_div_ps(p1, p2); }

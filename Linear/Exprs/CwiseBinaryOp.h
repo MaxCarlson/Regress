@@ -259,7 +259,7 @@ private:
 	const Type& t;
 	const Expr& expr;
 	PacketType p;
-	std::vector<Type> mem;
+	std::vector<Type, AlignedAllocator<Type>> mem;
 };
 
 } // End impl::
