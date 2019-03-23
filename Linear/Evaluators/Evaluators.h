@@ -35,6 +35,10 @@ struct Evaluator<Matrix<Type, MajorOrder>>
 		m{ m }
 	{}
 
+	size_type size() const noexcept { return m.size(); }
+	size_type rows() const noexcept { return m.rows(); }
+	size_type cols() const noexcept { return m.cols(); }
+
 	value_type& evaluateRef(size_type row, size_type col)
 	{
 		return const_cast<MatrixType&>(m)(row, col);
@@ -68,9 +72,6 @@ struct Evaluator<Matrix<Type, MajorOrder>>
 	{
 		return pstore(const_cast<value_type*>(&m.index(index)), p);
 	}
-
-	size_type rows() const noexcept { return m.rows(); }
-	size_type cols() const noexcept { return m.cols(); }
 
 	void set(MatrixType&& other)
 	{
@@ -121,6 +122,10 @@ struct BinaryEvaluator<CwiseBinaryOp<Func, Lhs, Rhs>>
 		rhs{ expr.getRhs() }
 	{}
 
+	size_type size() const noexcept { return lhs.size(); } // Sizes do match here
+	size_type rows() const noexcept { return lhs.rows(); }
+	size_type cols() const noexcept { return rhs.cols(); }
+
 	value_type evaluate(size_type row, size_type col) const
 	{
 		return op(lhs.evaluate(row, col), rhs.evaluate(row, col));
@@ -132,9 +137,6 @@ struct BinaryEvaluator<CwiseBinaryOp<Func, Lhs, Rhs>>
 		return op.packetOp<Packet>(lhs.template packet<Packet>(row, col), rhs.template packet<Packet>(row, col));
 	}
 
-	size_type rows() const noexcept { return lhs.rows(); }
-	size_type cols() const noexcept { return rhs.cols(); }
-
 protected:
 	const Func op;
 	LhsE lhs;
@@ -142,6 +144,7 @@ protected:
 };
 
 // Evaluates the entire expression
+// TODO: Look into FMA instructions!
 // TODO: Add an impl that only evaluates for an index
 template<class Dest, class LhsE, class RhsE, class Type>
 void productEntireImpl(Dest& dest, const LhsE& lhsE, const RhsE& rhsE)
@@ -207,6 +210,7 @@ struct ProductEvaluator<ProductOp<Lhs, Rhs>>
 
 	MatrixType&& moveMatrix() { return std::move(matrix); }
 
+	size_type size() const noexcept { return matrix.size(); } // Sizes do match here
 	size_type rows() const noexcept { return lhsE.rows(); }
 	size_type cols() const noexcept { return rhsE.cols(); }
 
@@ -271,6 +275,8 @@ struct TransposeEvaluator<TransposeOp<Expr>>
 		exprE{ expr.getExpr() }
 	{}
 
+
+	size_type size() const noexcept { return exprE.size(); }
 	size_type rows() const noexcept { return exprE.cols(); }
 	size_type cols() const noexcept { return exprE.rows(); }
 

@@ -1,8 +1,5 @@
 #pragma once
 #include <memory>
-#include <xmmintrin.h>
-#include <emmintrin.h>
-#include <smmintrin.h>
 
 namespace impl
 {

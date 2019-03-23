@@ -125,6 +125,7 @@
     <ClInclude Include="Evaluators\Assignment.h" />
     <ClInclude Include="Evaluators\Evaluators.h" />
     <ClInclude Include="Instructions\AVX\PacketInstructions.h" />
+    <ClInclude Include="Instructions\PacketHelper.h" />
     <ClInclude Include="Instructions\Packets.h" />
     <ClInclude Include="Instructions\SSE\PacketInstructions.h" />
     <ClInclude Include="Exprs\CwiseBinaryOp.h" />

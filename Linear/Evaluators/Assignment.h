@@ -73,6 +73,10 @@ struct AssignmentLoop<Kernel, LoopTraits::Index>
 	static void run(Kernel& kernel)
 	{
 		// TODO: Detect non-aligned memory
+
+		size_type size = kernel.size();
+		//for(size_type idx = 0; idx < size; ++idx)
+		//	kernel.
 	}
 };
 
@@ -93,16 +97,17 @@ struct AssignmentKernel
 		Indexable	= Packetable && DestImpl::Indexable && ExprImpl::Indexable
 	};
 
-	static constexpr LoopTraits LoopType = Indexable ? LoopTraits::Index 
-		: Packetable ? LoopTraits::Packet : LoopTraits::Default;
+	static constexpr LoopTraits LoopType = LoopTraits::Packet;// Indexable ? LoopTraits::Index
+		//: Packetable ? LoopTraits::Packet : LoopTraits::Default;
 
 	AssignmentKernel(DestImpl& destImpl, ExprImpl& exprImpl) :
 		destImpl{ destImpl },
 		exprImpl{ exprImpl }
 	{}
 
-	size_type outerSize() const { return MajorOrder ? destImpl.cols() : destImpl.rows(); }
-	size_type innerSize() const { return MajorOrder ? destImpl.rows() : destImpl.cols(); }
+	size_type size()		const { return destImpl.size(); }
+	size_type outerSize()	const { return MajorOrder ? destImpl.cols() : destImpl.rows(); }
+	size_type innerSize()	const { return MajorOrder ? destImpl.rows() : destImpl.cols(); }
 
 	void run()
 	{
@@ -134,6 +139,12 @@ struct AssignmentKernel
 		destImpl.template writePacket<Packet>(row, col, exprImpl.template packet<Packet>(row, col));
 	}
 
+	template<class Packet>
+	void assignIndex(size_type index)
+	{
+		destImpl.template writeIndex<Packet>(index, exprImpl.template index<Packet>(index));
+	}
+
 private:
 	DestImpl& destImpl;
 	ExprImpl& exprImpl;
@@ -157,6 +168,12 @@ struct ActualDest
 		dest{ dest }
 	{}
 
+	size_type size() const noexcept { return dest.size(); }
+	size_type rows() const noexcept { return dest.rows(); }
+	size_type cols() const noexcept { return dest.cols(); }
+	//size_type outer() const noexcept { return MajorOrder ? cols() : rows(); }
+	//size_type inner() const noexcept { return MajorOrder ? rows() : cols(); }
+
 	value_type& evaluateRef(size_type row, size_type col)
 	{
 		return dest.evaluateRef(row, col);
@@ -172,11 +189,6 @@ struct ActualDest
 	{
 		dest.set(std::move(src));
 	}
-
-	size_type rows() const noexcept { return dest.rows(); }
-	size_type cols() const noexcept { return dest.cols(); }
-	//size_type outer() const noexcept { return MajorOrder ? cols() : rows(); }
-	//size_type inner() const noexcept { return MajorOrder ? rows() : cols(); }
 
 private:
 	DestEval dest;
