@@ -129,7 +129,7 @@ struct AssignmentKernel
 	{
 		auto row = rowIndex(outer, inner);
 		auto col = colIndex(outer, inner);
-		destImpl.evaluateRef(row, col) = exprImpl.evaluate(row, col);
+		func(destImpl.evaluateRef(row, col), exprImpl.evaluate(row, col));
 	}
 
 	template<class Packet>
@@ -137,13 +137,15 @@ struct AssignmentKernel
 	{
 		auto row = rowIndex(outer, inner);
 		auto col = colIndex(outer, inner);
-		destImpl.template writePacket<Packet>(row, col, exprImpl.template packet<Packet>(row, col));
+		func(&destImpl.evaluateRef(row, col), exprImpl.template packet<Packet>(row, col));
+		//destImpl.template writePacket<Packet>(row, col, exprImpl.template packet<Packet>(row, col));
 	}
 
 	template<class Packet>
 	void assignPacket(size_type index)
 	{
-		destImpl.template writePacket<Packet>(index, exprImpl.template packet<Packet>(index));
+		func(&destImpl.evaluateRef(index), exprImpl.template packet<Packet>(index));
+		//destImpl.template writePacket<Packet>(index, exprImpl.template packet<Packet>(index));
 	}
 
 private:
@@ -152,6 +154,9 @@ private:
 	ExprImpl&		exprImpl;
 };
 
+// TODO: Right now this serves no purpose but should in the future when
+// we need to transpose things to get the proper result
+// (DestEval can become TransposeEvaluator<Dest> instead if needed)
 template<class Dest, class ExprEval>
 struct ActualDest
 {
@@ -179,6 +184,11 @@ struct ActualDest
 	value_type& evaluateRef(size_type row, size_type col)
 	{
 		return dest.evaluateRef(row, col);
+	}
+
+	value_type& evaluateRef(size_type idx)
+	{
+		return dest.evaluateRef(idx);
 	}
 
 	template<class Packet>

@@ -44,9 +44,19 @@ struct Evaluator<Matrix<Type, MajorOrder>>
 		return const_cast<MatrixType&>(m)(row, col);
 	}
 
+	value_type& evaluateRef(size_type idx)
+	{
+		return const_cast<MatrixType&>(m).index(idx);
+	}
+
 	value_type evaluate(size_type row, size_type col) const
 	{
 		return m(row, col);
+	}
+
+	value_type evaluate(size_type idx) const
+	{
+		return m.index(idx);
 	}
 
 	template<class Packet>
@@ -126,6 +136,11 @@ struct BinaryEvaluator<CwiseBinaryOp<Func, Lhs, Rhs>>
 	value_type evaluate(size_type row, size_type col) const
 	{
 		return op(lhs.evaluate(row, col), rhs.evaluate(row, col));
+	}
+
+	value_type evaluate(size_type idx) const
+	{
+		return op(lhs.evaluate(idx), rhs.evaluate(idx));
 	}
 
 	template<class Packet>
@@ -223,9 +238,19 @@ struct ProductEvaluator<ProductOp<Lhs, Rhs>>
 		return matrixEval.evaluateRef(row, col);
 	}
 
+	value_type& evaluateRef(size_type idx)
+	{
+		return matrixEval.evaluateRef(idx);
+	}
+
 	value_type evaluate(size_type row, size_type col) const
 	{
 		return matrixEval.evaluate(row, col);
+	}
+
+	value_type evaluate(size_type idx) const
+	{
+		return matrixEval.evaluate(idx);
 	}
 
 	template<class Packet>
@@ -301,9 +326,19 @@ struct TransposeEvaluator<TransposeOp<Expr>>
 		return exprE.evaluateRef(col, row);
 	}
 
+	value_type& evaluateRef(size_type idx)
+	{
+		return exprE.evaluateRef(idx);
+	}
+
 	value_type evaluate(size_type row, size_type col) const
 	{
 		return exprE.evaluate(col, row);
+	}
+
+	value_type evaluate(size_type idx) const
+	{
+		return exprE.evaluate(idx);
 	}
 
 	// TODO: This definitely does NOT work
@@ -350,14 +385,19 @@ struct ConstantEvaluator<Constant<Type, Expr>>
 		return expr.evaluate();
 	}
 
+	value_type evaluate(size_type) const
+	{
+		return expr.evaluate();
+	}
+
 	template<class Packet>
-	Packet packet(size_type row, size_type col) const
+	Packet packet(size_type, size_type) const
 	{
 		return expr.packet();
 	}
 
 	template<class Packet>
-	Packet packet(size_type idx) const
+	Packet packet(size_type) const
 	{
 		return expr.packet();
 	}

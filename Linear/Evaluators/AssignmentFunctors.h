@@ -7,13 +7,13 @@ namespace impl
 template<class Type>
 struct Equals
 {
-	inline void operator()(Type& to, const Type& from)
+	inline void operator()(Type& to, const Type& from) const noexcept
 	{
 		to = from;
 	}
 
 	template<class Packet>
-	inline void operator()(Packet& to, const Packet& from)
+	inline void operator()(Type* to, const Packet& from) const noexcept
 	{
 		impl::pstore<Packet>(to, from);
 	}
@@ -22,7 +22,7 @@ struct Equals
 template<class Type>
 struct PlusEquals
 {
-	inline void operator()(Type& to, const Type& from)
+	inline void operator()(Type& to, const Type& from) const noexcept
 	{
 		to += from;
 	}
@@ -31,7 +31,7 @@ struct PlusEquals
 template<class Type>
 struct MinusEquals
 {
-	inline void operator()(Type& to, const Type& from)
+	inline void operator()(Type& to, const Type& from) const noexcept
 	{
 		to -= from;
 	}
@@ -40,7 +40,7 @@ struct MinusEquals
 template<class Type>
 struct TimesEquals
 {
-	inline void operator()(Type& to, const Type& from)
+	inline void operator()(Type& to, const Type& from) const noexcept
 	{
 		to *= from;
 	}
@@ -49,7 +49,7 @@ struct TimesEquals
 template<class Type>
 struct DivideEquals
 {
-	inline void operator()(Type& to, const Type& from)
+	inline void operator()(Type& to, const Type& from) const noexcept
 	{
 		to /= from;
 	}
