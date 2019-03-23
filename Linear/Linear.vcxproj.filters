@@ -51,13 +51,19 @@
     <ClInclude Include="Evaluators\Assignment.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Evaluators\Packets.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Matrix.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="AlignedAllocator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Instructions\AVX\PacketInstructions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Instructions\Packets.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Instructions\SSE\PacketInstructions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

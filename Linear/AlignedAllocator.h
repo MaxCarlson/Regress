@@ -25,6 +25,11 @@ struct AlignedAllocator
 		Alignment = 16
 	};
 
+	AlignedAllocator() = default;
+
+	template<class Other>
+	AlignedAllocator(const AlignedAllocator<Other>& o) {}
+
 	static inline Type* allocate(size_type size)
 	{
 		#ifdef _MSC_VER

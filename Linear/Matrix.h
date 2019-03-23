@@ -7,7 +7,7 @@
 #include "Exprs\Transpose.h"
 #include "Evaluators\Evaluators.h" // TODO: Move these to MatrixBase
 #include "Evaluators\Assignment.h"
-#include "Evaluators\Packets.h"
+#include "Instructions\Packets.h"
 #include "AlignedAllocator.h"
 
 //namespace regress{ // TODO: Wrap proj in namespaces

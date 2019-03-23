@@ -77,7 +77,7 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <PreprocessorDefinitions>_ITERATOR_DEBUG_LEVEL=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>C:\Users\C-60\Desktop\cppPrograms\Regress\Linear;C:\Users\C-60\Downloads\eigen-eigen-323c052e1731\eigen-eigen-323c052e1731;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
@@ -112,7 +112,7 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <PreprocessorDefinitions>_ITERATOR_DEBUG_LEVEL=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>C:\Users\C-60\Desktop\cppPrograms\Regress\Linear;C:\Users\C-60\Downloads\eigen-eigen-323c052e1731\eigen-eigen-323c052e1731;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
@@ -124,7 +124,9 @@
     <ClInclude Include="AlignedAllocator.h" />
     <ClInclude Include="Evaluators\Assignment.h" />
     <ClInclude Include="Evaluators\Evaluators.h" />
-    <ClInclude Include="Evaluators\Packets.h" />
+    <ClInclude Include="Instructions\AVX\PacketInstructions.h" />
+    <ClInclude Include="Instructions\Packets.h" />
+    <ClInclude Include="Instructions\SSE\PacketInstructions.h" />
     <ClInclude Include="Exprs\CwiseBinaryOp.h" />
     <ClInclude Include="Expr.h" />
     <ClInclude Include="Exprs\ExprIterator.h" />

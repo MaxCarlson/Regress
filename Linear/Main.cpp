@@ -2,7 +2,7 @@
 #include "Stopwatch.h"
 #include "Matrix.h" 
 #include <Eigen\Dense>
-#include "Evaluators\Packets.h"
+#include "Instructions\Packets.h"
 
 using Eigen::MatrixXd;
 
@@ -46,18 +46,15 @@ int main()
 
 	//Stopwatch<std::chrono::nanoseconds> s;
 	//s.start();
-
+	int ar[8] = { 1, 2, 3, 4, 5, 6, 7, 8 };
+	__m256i a = _mm256_load_si256(reinterpret_cast<__m256i*>(ar));
 
 	//auto v = 2 * rhst;
-	Matrix<int> vv = (bigger * bigger + bigger.transpose())
-
-
+	Matrix<int> vv = (bigger * bigger + bigger.transpose());
 	//s.printCurrent();
 	//s.start();
 
 	std::cout << vv << '\n';
-	std::cout << ll << '\n';
-	bool b = vv == ll;
 
 	/*
 	Eigen::MatrixXi t;
