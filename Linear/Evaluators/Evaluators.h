@@ -26,7 +26,8 @@ struct Evaluator<Matrix<Type, MajorOrder>>
 
 	enum
 	{
-		Packetable = PacketTraits<Type>::Packetable
+		Packetable	= PacketTraits<Type>::Packetable,
+		Indexable	= Packetable
 	};
 	
 	explicit Evaluator(const MatrixType& m) noexcept :
@@ -101,9 +102,13 @@ struct BinaryEvaluator<CwiseBinaryOp<Func, Lhs, Rhs>>
 
 	enum
 	{
-		MajorOrder = Lhs::MajorOrder,
-		Packetable = std::is_same_v<typename Lhs::value_type, typename Rhs::value_type>
+		MajorOrder		= Lhs::MajorOrder,
+		LhsMajorOrder	= Lhs::MajorOrder,
+		RhsMajorOrder	= Rhs::MajorOrder,
+		Packetable		= std::is_same_v<typename Lhs::value_type, typename Rhs::value_type>
 			&& LhsE::Packetable && RhsE::Packetable && Func::Packetable,
+		Indexable		= LhsMajorOrder == RhsMajorOrder && Packetable 
+			&& LhsE::Indexable && RhsE::Indexable
 
 		// TODO: We need to add Lhse::MajorOrderLeft && right for this to work
 		//Indexable = LhsE::MajorOrder == RhsE::MajorOrder && LhsE::Indexable && RhsE::Indexable
@@ -173,9 +178,18 @@ struct ProductEvaluator<ProductOp<Lhs, Rhs>>
 
 	enum 
 	{
-		MajorOrder = Lhs::MajorOrder,
-		Packetable = std::is_same_v<typename Lhs::value_type, typename Rhs::value_type>
-			&& LhsE::Packetable && RhsE::Packetable
+		MajorOrder		= Lhs::MajorOrder,
+		LhsMajorOrder	= Lhs::MajorOrder,
+		RhsMajorOrder	= Rhs::MajorOrder,
+
+		// TODO: We need two traits here, (Packetable, Indexable) and (Packetable/Indexable after evaluation)
+		// due to the fact that we could encounter a situation where we could not packet/index
+		// to evaluate this expression, but after evaluation we could packet
+
+		Packetable		= std::is_same_v<typename Lhs::value_type, typename Rhs::value_type>
+			&& LhsE::Packetable && RhsE::Packetable,
+		Indexable		= LhsMajorOrder == RhsMajorOrder && Packetable
+			&& LhsE::Indexable && RhsE::Indexable
 	};
 
 	using MatrixType	= Matrix<value_type, MajorOrder>;
@@ -245,8 +259,9 @@ struct TransposeEvaluator<TransposeOp<Expr>>
 
 	enum
 	{
-		MajorOrder = Expr::MajorOrder,
-		Packetable = false //ExprE::Packetable 
+		MajorOrder	= Expr::MajorOrder,
+		Packetable	= false,
+		Indexable	= false
 	};
 
 	// TODO: This should probably be derived from UnaryEvaluator
@@ -258,9 +273,9 @@ struct TransposeEvaluator<TransposeOp<Expr>>
 	size_type rows() const noexcept { return exprE.cols(); }
 	size_type cols() const noexcept { return exprE.rows(); }
 
-	value_type& evaluate(size_type row, size_type col)
+	value_type& evaluateRef(size_type row, size_type col)
 	{
-		return exprE.evaluate(col, row);
+		return exprE.evaluateRef(col, row);
 	}
 
 	value_type evaluate(size_type row, size_type col) const
@@ -299,7 +314,8 @@ struct ConstantEvaluator<Constant<Type, Expr>>
 
 	enum
 	{
-		Packetable = ThisExpr::Packetable
+		Packetable	= ThisExpr::Packetable,
+		Indexable	= Packetable
 	};
 
 	explicit ConstantEvaluator(const ThisExpr& expr) :

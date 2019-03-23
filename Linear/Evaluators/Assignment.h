@@ -4,19 +4,19 @@
 namespace impl
 {
 
-template<class Dest, class Expr>
-void assignmentLoopCoeff(Dest& dest, const Expr& expr)
+template<class Dest>
+void assignmentLoopCoeff(Dest& dest)
 {
 	// TODO: Index based assignement
 	// TODO: Correct major order assignement
 	// TODO: OpenMp
-	for (int i = 0; i < dest.rows(); ++i)
-		for (int j = 0; j < dest.cols(); ++j)
-			dest.evaluateRef(i, j) = expr.evaluate(i, j);
+	for (int i = 0; i < dest.outerSize(); ++i)
+		for (int j = 0; j < dest.innerSize(); ++j)
+			dest.assignOuterInner(i, j);
 }
 
-template<class Dest, class Expr>
-void assignmentLoopCoeffPacket(Dest& dest, const Expr& expr)
+template<class Dest>
+void assignmentLoopCoeffPacket(Dest& dest)
 {
 	using size_type		= typename Dest::size_type;
 	using Traits		= PacketTraits<typename Dest::value_type>;
@@ -42,7 +42,7 @@ void assignmentLoopCoeffPacket(Dest& dest, const Expr& expr)
 	// Do leftovers
 	for (size_type i = 0; i < outer; ++i)
 		for (size_type j = maxInner; j < inner; ++j)
-			dest.assignRefOuterInner(i, j);
+			dest.assignOuterInner(i, j);
 }
 
 template<class... Args>
@@ -76,7 +76,7 @@ struct AssignmentKernel
 		return MajorOrder ? outer : inner;
 	}
 
-	void assignRefOuterInner(size_type outer, size_type inner)
+	void assignOuterInner(size_type outer, size_type inner)
 	{
 		auto row = rowIndex(outer, inner);
 		auto col = colIndex(outer, inner);
@@ -171,15 +171,13 @@ struct Assignment<Dest, CwiseBinaryOp<Op, Lhs, Rhs>, Type>
 
 		ExprEval					exprE{ expr };
 		ActualDest<Dest, ExprEval>	destE{ dest };
-
-
-		AssignmentKernel kernel{ destE, exprE };
+		AssignmentKernel			kernel{ destE, exprE };
 
 		// TODO: Specialize AssignmentKernel for this stuff
 		if constexpr(ExprEval::Packetable)
-			assignmentLoopCoeffPacket(kernel, exprE);
+			assignmentLoopCoeffPacket(kernel);
 		else
-			assignmentLoopCoeff(destE, exprE);
+			assignmentLoopCoeff(kernel);
 	}
 };
 
@@ -196,14 +194,13 @@ struct Assignment<Dest, TransposeOp<Expr>, Type>
 
 		ExprEval					exprE{ expr };
 		ActualDest<Dest, ExprEval>	destE{ dest };
-
-		AssignmentKernel kernel{ destE, exprE };
+		AssignmentKernel			kernel{ destE, exprE };
 
 		// TODO: Specialize AssignmentKernel for this stuff
 		if constexpr (ExprEval::Packetable)
-			assignmentLoopCoeffPacket(kernel, exprE);
+			assignmentLoopCoeffPacket(kernel);
 		else
-			assignmentLoopCoeff(destE, exprE);
+			assignmentLoopCoeff(kernel);
 	}
 };
 

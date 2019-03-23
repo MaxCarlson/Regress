@@ -50,7 +50,7 @@ int main()
 	__m256i a = _mm256_load_si256(reinterpret_cast<__m256i*>(ar));
 
 	//auto v = 2 * rhst;
-	Matrix<int> vv = (bigger * bigger + bigger.transpose());
+	Matrix<int> vv = bigger * bigger + bigger.transpose();
 	//s.printCurrent();
 	//s.start();
 
