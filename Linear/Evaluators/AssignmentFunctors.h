@@ -37,6 +37,8 @@ struct PlusEquals
 template<class Type>
 struct MinusEquals
 {
+	using OpType = impl::SubOp<Type>;
+
 	inline void operator()(Type& to, const Type& from) const noexcept
 	{
 		to -= from;

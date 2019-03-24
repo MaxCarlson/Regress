@@ -549,7 +549,6 @@ inline bool Matrix<Type, MajorOrder>::operator==(const Matrix& other) const
 		|| cols() != other.cols())
 		return false;
 
-	// TODO: Revisit and paralellize
 	for (int i = 0; i < vals.size(); ++i)
 		if (vals[i] != other.vals[i])
 			return false;

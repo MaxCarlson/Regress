@@ -65,17 +65,22 @@ struct AssignmentLoop<Kernel, LoopTraits::Index>
 	using Traits		= PacketTraits<typename Kernel::value_type>;
 	using PacketType	= typename Traits::type;
 
-	//enum
-	//{
-	//	Stride = Traits::Stride,
-	//};
+	enum
+	{
+		Stride = Traits::Stride,
+	};
 
 	static void run(Kernel& kernel)
 	{
 		// TODO: Detect non-aligned memory
 
-		size_type size = kernel.size();
-		for (size_type idx = 0; idx < size; ++idx)
+		const size_type size			= kernel.size();
+		const size_type maxVectorized	= size - size % Stride;
+
+		for (size_type idx = 0; idx < maxVectorized; idx += Stride)
+			kernel.assignPacket<PacketType>(idx);
+
+		for(size_type idx = maxVectorized; idx < size; ++idx)
 			kernel.assignPacket<PacketType>(idx);
 	}
 };
@@ -269,5 +274,26 @@ struct Assignment<Dest, TransposeOp<Expr>, Type, Func>
 	}
 };
 
+template<class Dest, class Type, bool MajorOrder, class Func>
+struct Assignment<Dest, Matrix<Type, MajorOrder>, Type, Func>
+{
+	using MatrixType	= Matrix<Type, MajorOrder>;
+	using ExprType		= CwiseBinaryOp<typename Func::OpType, Dest, MatrixType>;
+
+	inline static void run(Dest& dest, const MatrixType& matrix, const Func& func)
+	{
+		using ExprEval = Evaluator<MatrixType>;
+
+		//ExprType expr{ typename Func::OpType{}, dest, matrix };
+
+		//dest.resize(expr.resultRows(), expr.resultCols());
+
+		ExprEval					exprE{ matrix };
+		ActualDest<Dest, ExprEval>	destE{ dest };
+		AssignmentKernel			kernel{ destE, exprE, func };
+
+		kernel.run();
+	}
+};
 
 } // End impl::
