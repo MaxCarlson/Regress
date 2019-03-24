@@ -1,5 +1,6 @@
 #pragma once
 #include "ForwardDeclarations.h"
+#include "ProductEvaluators.h"
 
 namespace impl
 {
@@ -38,6 +39,8 @@ struct Evaluator<Matrix<Type, MajorOrder>>
 	size_type size() const noexcept { return m.size(); }
 	size_type rows() const noexcept { return m.rows(); }
 	size_type cols() const noexcept { return m.cols(); }
+	size_type outer() const noexcept { return MajorOrder ? m.cols() : m.rows(); }
+	size_type inner() const noexcept { return MajorOrder ? m.rows() : m.cols(); }
 
 	value_type& evaluateRef(size_type row, size_type col)
 	{
@@ -132,6 +135,8 @@ struct BinaryEvaluator<CwiseBinaryOp<Func, Lhs, Rhs>>
 	size_type size() const noexcept { return lhs.size(); } // Sizes do match here
 	size_type rows() const noexcept { return lhs.rows(); }
 	size_type cols() const noexcept { return rhs.cols(); }
+	size_type outer() const noexcept { return lhs.outer(); } 
+	size_type inner() const noexcept { return lhs.inner(); } // Lhs/Rhs Outer/inner match
 
 	value_type evaluate(size_type row, size_type col) const
 	{
@@ -159,129 +164,6 @@ protected:
 	const Func op;
 	LhsE lhs;
 	RhsE rhs;
-};
-
-// Evaluates the entire expression
-// TODO: Look into FMA instructions!
-// TODO: Move to assignment / integrate with Evaluators better
-// TODO: Add an impl that only evaluates for an index
-template<class Dest, class LhsE, class RhsE, class Type>
-void productEntireImpl(Dest& dest, const LhsE& lhsE, const RhsE& rhsE)
-{
-	for (int i = 0; i < lhsE.rows(); ++i)
-		for (int j = 0; j < rhsE.cols(); ++j)
-		{
-			Type sum = 0;
-			for(int h = 0; h < rhsE.rows(); ++h)
-				sum += lhsE.evaluate(i, h) * rhsE.evaluate(h, j); 
-			dest.evaluateRef(i, j) = sum;
-		}
-}
-
-template<class Lhs, class Rhs>
-struct Evaluator<ProductOp<Lhs, Rhs>>
-	: public ProductEvaluator<ProductOp<Lhs, Rhs>>
-{
-	using Op	= ProductOp<Lhs, Rhs>;
-	using Base	= ProductEvaluator<Op>;
-	explicit Evaluator(const Op& op) : Base(op) {}
-};
-
-// Basic ProductEvaluator that creates a temporary
-// TODO: ProductEvaluator with no temporary
-template<class Lhs, class Rhs>
-struct ProductEvaluator<ProductOp<Lhs, Rhs>>
-	: public EvaluatorBase<ProductOp<Lhs, Rhs>>
-{
-	using ThisType		= ProductEvaluator<ProductOp<Lhs, Rhs>>;
-	using Op			= ProductOp<Lhs, Rhs>;
-	using LhsE			= Evaluator<Lhs>;
-	using RhsE			= Evaluator<Rhs>;
-	using value_type	= typename Op::value_type;
-
-	enum 
-	{
-		MajorOrder		= Lhs::MajorOrder,
-		LhsMajorOrder	= Lhs::MajorOrder,
-		RhsMajorOrder	= Rhs::MajorOrder,
-
-		// TODO: We need two traits here, (Packetable, Indexable) and (Packetable/Indexable after evaluation)
-		// due to the fact that we could encounter a situation where we could not packet/index
-		// to evaluate this expression, but after evaluation we could packet
-
-		Packetable		= std::is_same_v<typename Lhs::value_type, typename Rhs::value_type>
-			&& LhsE::Packetable && RhsE::Packetable,
-		Indexable		= LhsMajorOrder == RhsMajorOrder && Packetable
-			&& LhsE::Indexable && RhsE::Indexable
-	};
-
-	using MatrixType	= Matrix<value_type, MajorOrder>;
-
-
-	explicit ProductEvaluator(const Op& expr) :
-		lhsE{ expr.getLhs() },
-		rhsE{ expr.getRhs() },
-		matrix(expr.resultRows(), expr.resultCols()),
-		matrixEval{ matrix }
-	{
-		productEntireImpl<ThisType, LhsE, RhsE, value_type>(*this, lhsE, rhsE);
-	}
-
-	MatrixType&& moveMatrix() { return std::move(matrix); }
-
-	size_type size() const noexcept { return matrix.size(); } // Sizes do match here
-	size_type rows() const noexcept { return lhsE.rows(); }
-	size_type cols() const noexcept { return rhsE.cols(); }
-
-	value_type& evaluateRef(size_type row, size_type col)
-	{
-		return matrixEval.evaluateRef(row, col);
-	}
-
-	value_type& evaluateRef(size_type idx)
-	{
-		return matrixEval.evaluateRef(idx);
-	}
-
-	value_type evaluate(size_type row, size_type col) const
-	{
-		return matrixEval.evaluate(row, col);
-	}
-
-	value_type evaluate(size_type idx) const
-	{
-		return matrixEval.evaluate(idx);
-	}
-
-	template<class Packet>
-	Packet packet(size_type row, size_type col) const
-	{
-		return matrixEval.template packet<Packet>(row, col);
-	}
-
-	template<class Packet>
-	Packet packet(size_type idx) const
-	{
-		return matrixEval.template packet<Packet>(idx);
-	}
-
-	template<class Packet>
-	void writePacket(size_type row, size_type col, const Packet& p)
-	{
-		return matrixEval.template writePacket<Packet>(row, col);
-	}
-
-	template<class Packet>
-	void writePacket(size_type idx, const Packet& p)
-	{
-		return matrixEval.template writePacket<Packet>(idx);
-	}
-
-protected:
-	LhsE lhsE;
-	RhsE rhsE;
-	MatrixType matrix;
-	Evaluator<MatrixType> matrixEval;
 };
 
 template<class Expr>
@@ -320,6 +202,8 @@ struct TransposeEvaluator<TransposeOp<Expr>>
 	size_type size() const noexcept { return exprE.size(); }
 	size_type rows() const noexcept { return exprE.cols(); }
 	size_type cols() const noexcept { return exprE.rows(); }
+	size_type outer() const noexcept { return exprE.inner(); }
+	size_type inner() const noexcept { return exprE.outer(); }
 
 	value_type& evaluateRef(size_type row, size_type col)
 	{

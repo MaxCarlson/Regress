@@ -69,6 +69,13 @@ struct RefSelector
 namespace impl
 {
 // Evaluators
+
+template<class Expr>
+struct EvaluatorBase;
+
+template<class Expr>
+struct Evaluator;
+
 template<class Arg>
 struct ConstantEvaluator;
 

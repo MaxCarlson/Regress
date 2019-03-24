@@ -204,14 +204,14 @@ namespace test
 			{96, 122, 129, 154, 31}, {97, 123, 130, 155, 32}, {94, 119, 124, 149, 26} };
 			Mat res8v = 2 * res7v;
 
-			Assert::IsTrue(res1 == res1v);
-			Assert::IsTrue(res2 == res2v);
-			Assert::IsTrue(res3 == res3v);
-			Assert::IsTrue(res4 == res4v);
-			Assert::IsTrue(res5 == res5v);
-			Assert::IsTrue(res6 == res6v);
-			Assert::IsTrue(res7 == res7v);
-			Assert::IsTrue(res8 == res8v);
+			Assert::IsTrue(res1 == res1v, L"res1");
+			Assert::IsTrue(res2 == res2v, L"res2");
+			Assert::IsTrue(res3 == res3v, L"res3");
+			Assert::IsTrue(res4 == res4v, L"res4");
+			Assert::IsTrue(res5 == res5v, L"res5");
+			Assert::IsTrue(res6 == res6v, L"res6");
+			Assert::IsTrue(res7 == res7v, L"res7");
+			Assert::IsTrue(res8 == res8v, L"res8");
 		}
 
 		TEST_METHOD(Mixed)

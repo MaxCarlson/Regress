@@ -125,6 +125,7 @@
     <ClInclude Include="Evaluators\Assignment.h" />
     <ClInclude Include="Evaluators\AssignmentFunctors.h" />
     <ClInclude Include="Evaluators\Evaluators.h" />
+    <ClInclude Include="Evaluators\ProductEvaluators.h" />
     <ClInclude Include="Instructions\AVX\PacketInstructions.h" />
     <ClInclude Include="Instructions\PacketHelper.h" />
     <ClInclude Include="Instructions\Packets.h" />

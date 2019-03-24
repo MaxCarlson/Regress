@@ -17,8 +17,8 @@ struct AssignmentLoop<Kernel, LoopTraits::Default>
 	{
 		using size_type	= typename Kernel::size_type;
 		
-		const size_type outer = kernel.outerSize();
-		const size_type inner = kernel.innerSize();
+		const size_type outer = kernel.outer();
+		const size_type inner = kernel.inner();
 
 		for (size_type i = 0; i < outer; ++i)
 			for (size_type j = 0; j < inner; ++j)
@@ -40,8 +40,8 @@ struct AssignmentLoop<Kernel, LoopTraits::Packet>
 
 	static void run(Kernel& kernel)
 	{
-		const size_type outer		= kernel.outerSize();
-		const size_type inner		= kernel.innerSize();
+		const size_type outer		= kernel.outer();
+		const size_type inner		= kernel.inner();
 		const size_type maxInner	= inner - inner % Stride;
 
 		// TODO: Detect non-aligned memory / do non-aligned memory up to aligned block
@@ -111,9 +111,9 @@ struct AssignmentKernel
 		func{ func }
 	{}
 
-	size_type size()		const { return destImpl.size(); }
-	size_type outerSize()	const { return MajorOrder ? destImpl.cols() : destImpl.rows(); }
-	size_type innerSize()	const { return MajorOrder ? destImpl.rows() : destImpl.cols(); }
+	size_type size()	const noexcept { return destImpl.size(); }
+	size_type outer()	const noexcept { return destImpl.outer(); }
+	size_type inner()	const noexcept { return destImpl.inner(); }
 
 	void run()
 	{
@@ -186,8 +186,8 @@ struct ActualDest
 	size_type size() const noexcept { return dest.size(); }
 	size_type rows() const noexcept { return dest.rows(); }
 	size_type cols() const noexcept { return dest.cols(); }
-	//size_type outer() const noexcept { return MajorOrder ? cols() : rows(); }
-	//size_type inner() const noexcept { return MajorOrder ? rows() : cols(); }
+	size_type outer() const noexcept { return dest.outer(); }
+	size_type inner() const noexcept { return dest.inner(); }
 
 	value_type& evaluateRef(size_type row, size_type col)
 	{

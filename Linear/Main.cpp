@@ -6,9 +6,11 @@
 
 using Eigen::MatrixXd;
 
+#include <immintrin.h>
 
 int main()
 {
+
 	/*
 	MatrixXd mat;
 	mat.resize(2, 2);
@@ -52,22 +54,20 @@ int main()
 	//Stopwatch<std::chrono::nanoseconds> s;
 	//s.start();
 
-	//auto v = 2 * rhst;
-	Matrix<int> vv = bigger * bigger + bigger;
+	Matrix<int> vv = bigger + bigger + bigger + bigger;
 	//s.printCurrent();
-	//s.start();
-	vv -= bigger;
 
 	std::cout << vv << '\n';
 
 	/*
 	Eigen::MatrixXi t;
 	t.resize(5, 5);
-	Eigen::MatrixXi tt;
-	tt.noalias() = t * t * t * t;
+	s.start();
+
+	Eigen::MatrixXi tt = t + t + t + t;
 	s.printCurrent();
 	s.start();
-	*/
+	//*/
 
 
 
