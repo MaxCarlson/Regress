@@ -219,5 +219,32 @@ namespace test
 			mixedImpl(lhs, lhs1, rhs, bigger);
 			mixedImpl(lhsc, lhs1c, rhsc, biggerc);
 		}
+
+		template<class Mat>
+		void equalityMathImpl(const Mat& lhs, const Mat& lhs1, const Mat& rhs, const Mat& big)
+		{
+			Mat res1 = lhs;
+			res1 += res1;
+
+			Mat res2 = rhs;
+			res2 -= rhs + rhs;
+
+			Mat res3 = big;
+			res3 += big;
+
+			Mat res1v = lhs * 2;
+			Mat res2v = rhs * -1;
+			Mat res3v = big * 2;
+
+			Assert::IsTrue(res1 == res1v, L"res1");
+			Assert::IsTrue(res2 == res2v, L"res2");
+			Assert::IsTrue(res3 == res3v, L"res3");
+		}
+
+		TEST_METHOD(EqualityMath)
+		{
+			equalityMathImpl(lhs, lhs1, rhs, bigger);
+			equalityMathImpl(lhsc, lhs1c, rhsc, biggerc);
+		}
 	};
 }
