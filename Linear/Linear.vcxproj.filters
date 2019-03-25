@@ -66,6 +66,12 @@
     <ClInclude Include="Evaluators\ProductEvaluators.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Evaluators\ProductHelpers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="System\Cache.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">

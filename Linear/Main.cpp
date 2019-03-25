@@ -13,13 +13,13 @@ int main()
 
 	/*
 	MatrixXd mat;
-	mat.resize(2, 2);
+	mat.resize(25, 25);
 	mat(0, 0) = 1;
 	mat(0, 1) = 2;
 	mat(1, 0) = 3;
 	mat(1, 1) = 4;
 
-	auto mm = mat * mat * mat;
+	auto mm = mat * mat * mat.transpose();
 	mat = mm;
 	//*/
 

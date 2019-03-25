@@ -126,6 +126,7 @@
     <ClInclude Include="Evaluators\AssignmentFunctors.h" />
     <ClInclude Include="Evaluators\Evaluators.h" />
     <ClInclude Include="Evaluators\ProductEvaluators.h" />
+    <ClInclude Include="Evaluators\ProductHelpers.h" />
     <ClInclude Include="Instructions\AVX\PacketInstructions.h" />
     <ClInclude Include="Instructions\PacketHelper.h" />
     <ClInclude Include="Instructions\Packets.h" />
@@ -138,6 +139,7 @@
     <ClInclude Include="RegressAssert.h" />
     <ClInclude Include="Stopwatch.h" />
     <ClInclude Include="Exprs\Transpose.h" />
+    <ClInclude Include="System\Cache.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp" />
