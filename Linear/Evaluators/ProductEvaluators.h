@@ -44,9 +44,25 @@ struct ProductLoop<Dest, LhsE, RhsE, ProductLoopTraits::PACKET>
 
 	inline static void run(Dest& dest, const LhsE& lhsE, const RhsE& rhsE)
 	{
-		const size_type lOuterSize = lhsE.rows();
-		const size_type rInnerSize = rhsE.cols();
-		const size_type rOuterSize = rhsE.rows();
+		const size_type lRows = lhsE.rows();
+		const size_type lCols = lhsE.cols();
+		const size_type rCols = rhsE.cols();
+		const size_type rRows = rhsE.rows();
+
+		// TODO: Calculate from type size/cache size
+		constexpr size_type kBs = 4;
+		constexpr size_type iBs = 4;
+
+		// For each vertical panel of lhs
+		for (size_type ii = 0; ii < lCols; ii += blockSize)
+		{
+			const size_type maxI = std::min(ii + blockSize, lCols) - blockSize;
+
+			for (size_type kk = 0; kk < rRows; kk += blockSize)
+			{
+				const size_type maxK = std::min(kk + blockSize, lCols) - blockSize;
+			}
+		}
 	}
 };
 
@@ -59,9 +75,6 @@ struct Evaluator<ProductOp<Lhs, Rhs>>
 	explicit Evaluator(const Op& op) : Base(op) {}
 };
 
-//
-// TODO: In matrix mul chains look into reordering for max effeciency
-//
 // Basic ProductEvaluator that creates a temporary
 // TODO: ProductEvaluator with no temporary
 template<class Lhs, class Rhs>
@@ -110,6 +123,10 @@ struct ProductEvaluator<ProductOp<Lhs, Rhs>>
 	size_type outer() const noexcept { return matrixEval.outer(); }
 	size_type inner() const noexcept { return matrixEval.inner(); }
 
+
+	//
+	// TODO: In matrix mul chains look into reordering for max effeciency
+	//
 	size_type numOps() const noexcept { return lhsE.rows() * lhsE.cols() * rhsE.cols(); }
 
 	value_type& evaluateRef(size_type row, size_type col)

@@ -19,7 +19,7 @@ int main()
 	mat(1, 0) = 3;
 	mat(1, 1) = 4;
 
-	auto mm = mat * mat.transpose();
+	auto mm = mat * mat * mat;
 	mat = mm;
 	//*/
 
@@ -54,7 +54,7 @@ int main()
 	//Stopwatch<std::chrono::nanoseconds> s;
 	//s.start();
 
-	Matrix<int> vv = bigger + bigger + bigger + bigger;
+	Matrix<int> vv = bigger * bigger;
 	//s.printCurrent();
 
 	std::cout << vv << '\n';
