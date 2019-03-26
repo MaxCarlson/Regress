@@ -11,9 +11,9 @@ struct CacheInfo
 	size_t l1, l2, l3;
 
 	CacheInfo() :
-		l1{ 32000 },
-		l2{ 256000 },
-		l3{ 6000000 }
+		l1{ 32 * 1024 },
+		l2{ 256 * 1024 },
+		l3{ 4096 * 1024 } // Default sizes
 	{
 		// Registers EAX, EBX, ECX, EDX
 		int abcd[4];
@@ -52,11 +52,11 @@ private:
 				//Cache Size in Bytes	= (Ways + 1) ×(Partitions + 1) ×(Line Size + 1) ×(Sets + 1) 
 				//						= (EBX[31:22] + 1) ×(EBX[21:12] + 1) ×(EBX[11:0] + 1 ×(ECX + 1)
 
-				int cacheLevel = (abcd[0] & 0xE0) >> 5;
-				unsigned int ways = abcd[1] >> 22;
-				unsigned int parts = (abcd[1] & 0x003FF000) >> 12;
-				unsigned int lines = (abcd[1] & 0x00000FFF);
-				unsigned int sets = abcd[2];
+				int cacheLevel		= (abcd[0] & 0xE0) >> 5;
+				unsigned int ways	= abcd[1] >> 22;
+				unsigned int parts	= (abcd[1] & 0x003FF000) >> 12;
+				unsigned int lines	= (abcd[1] & 0x00000FFF);
+				unsigned int sets	= abcd[2];
 
 				auto cacheSize = (ways + 1) * (parts + 1) * (lines + 1) * (sets + 1);
 
@@ -72,4 +72,9 @@ private:
 			}
 		}
 	}
-}
+};
+
+static const CacheInfo cacheInfo;
+
+
+} // End impl::

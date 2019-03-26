@@ -1,6 +1,5 @@
 #pragma once
 #include "ForwardDeclarations.h"
-#include <intrin.h>
 
 namespace impl
 {
@@ -22,9 +21,6 @@ struct ProductLoop<Dest, LhsE, RhsE, ProductLoopTraits::COEFF>
 		const size_type lOuterSize = lhsE.rows();
 		const size_type rInnerSize = rhsE.cols();
 		const size_type rOuterSize = rhsE.rows();
-
-		CacheInfo inf{};
-
 
 		for (size_type i = 0; i < lOuterSize; ++i)
 			for (size_type j = 0; j < rInnerSize; ++j)
@@ -51,20 +47,29 @@ struct ProductLoop<Dest, LhsE, RhsE, ProductLoopTraits::PACKET>
 		const size_type rCols = rhsE.cols();
 
 		// TODO: Calculate from type size/l2 cache size
-		constexpr size_type iBs = 4;
-		constexpr size_type kBs = 4;
+		size_type mc = 4;
+		size_type kc = 4;
+		size_type nr = 4;
 
 		//std::aligned_storage_t<lhsB, Alignment> lhsBlock;
 
 		// For each vertical panel of lhs
-		for (size_type ii = 0; ii < lCols; ii += iBs)
+		for (size_type p = 0; p < lCols; p += kc)
 		{
-			const size_type maxI = std::min(ii + iBs, lCols) - iBs;
+			const size_type kcB = std::min(p + kc, lCols) - p;
 
-			// TODO: Eventually pack depth wise as well
-			for (size_type kk = 0; kk < rRows; kk += kBs)
+			// Width of vertical panel
+			for (size_type i = 0; i < lRows; i += mc) 
 			{
-				const size_type maxK = std::min(kk + kBs, lCols) - kBs;
+				const size_type mcB = std::min(i + mc, lRows) - i;
+
+				// Pack lhs block
+
+				// For each kc x nr vertical panel of rhs
+				for (size_type j = 0; j < rCols; j += nr)
+				{
+					const size_type nrB = std::min(j + nr, rCols) - j;
+				}
 			}
 		}
 	}
