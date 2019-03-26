@@ -74,7 +74,5 @@ int main()
 	s.start();
 	//*/
 
-
-
 	return 0;
 }

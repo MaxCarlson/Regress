@@ -18,6 +18,11 @@ struct DefaultPacketTraits
 
 	enum
 	{
+#ifdef REGRESS_SSE
+		Alignment	= 16,
+#elif REGRESS_AVX
+		Alignment	= 32,
+#endif
 		Size		= sizeof(Type),
 		Stride		= 0,
 		Packetable	= false,

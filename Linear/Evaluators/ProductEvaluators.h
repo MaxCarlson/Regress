@@ -1,5 +1,6 @@
 #pragma once
 #include "ForwardDeclarations.h"
+#include "ProductHelpers.h"
 
 namespace impl
 {
@@ -38,6 +39,13 @@ struct ProductLoop<Dest, LhsE, RhsE, ProductLoopTraits::PACKET>
 {
 	using size_type		= typename Dest::size_type;
 	using value_type	= typename Dest::value_type;
+	using Traits		= PacketTraits<value_type>;
+	using PacketType	= typename Traits::type;
+
+	enum
+	{
+		Alignment = Traits::Alignment
+	};
 
 	inline static void run(Dest& dest, const LhsE& lhsE, const RhsE& rhsE)
 	{
@@ -47,11 +55,12 @@ struct ProductLoop<Dest, LhsE, RhsE, ProductLoopTraits::PACKET>
 		const size_type rCols = rhsE.cols();
 
 		// TODO: Calculate from type size/l2 cache size
-		size_type mc = 4;
-		size_type kc = 4;
-		size_type nr = 4;
+		size_type mc = 2;
+		size_type kc = 2;
+		size_type nr = 2;
 
-		//std::aligned_storage_t<lhsB, Alignment> lhsBlock;
+		value_type* blockA = allocStackAligned<value_type, Alignment>(mc * kc); // LhsBlock
+		value_type* blockB = allocStackAligned<value_type, Alignment>(kc * nr); // RhsBlock
 
 		// For each vertical panel of lhs
 		for (size_type p = 0; p < lCols; p += kc)

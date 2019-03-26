@@ -76,5 +76,17 @@ private:
 
 static const CacheInfo cacheInfo;
 
+static constexpr int STACK_ALLOCATION_MAX = 128 * 1024;
+
+template<class T, int Alignment>
+inline T* allocStackAligned(size_t size)
+{
+	if (size < STACK_ALLOCATION_MAX)
+	{
+		// TODO: Actually align 
+		return reinterpret_cast<T*>(_alloca(sizeof(T) * size));
+	}
+}
+
 
 } // End impl::
