@@ -51,15 +51,21 @@ int main()
 	// {19, 26, 33} *	{3, 4}, =	{262, 340}
 	// {29, 40, 51}		{5, 6},		{404, 524}
 
+	// Assuming doubles with SSE
+	// 
+	// 1 3   1 2   11 33 22 44
+	// 2 4   4 5   12 12 45 45
+	//		
+
 	//
-	// 1 2  1 2 3
-	// 3 4  4 5 6
-	// 5 6
+	// 1 2  1 2  
+	// 3 4  4 5
+	//
 
 	//Stopwatch<std::chrono::nanoseconds> s;
 	//s.start();
 
-	Matrix<int> vv = bigger * bigger;
+	Matrix<int> vv = lhs * rhs;
 	//s.printCurrent();
 
 	std::cout << vv << '\n';

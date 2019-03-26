@@ -86,6 +86,9 @@ inline T* allocStackAligned(size_t size)
 		// TODO: Actually align 
 		return reinterpret_cast<T*>(_alloca(sizeof(T) * size));
 	}
+
+	throw std::runtime_error("Attempted to allocate variable larger than stack size. Not Implemented Yet.");
+	return nullptr;
 }
 
 
