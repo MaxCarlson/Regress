@@ -26,13 +26,38 @@ namespace impl
 //
 
 template<class Type, class Lhs, class Index>
-void packLhs(Type* start, const Lhs& lhs, Index sCols, Index cols, Index sRows, Index rows)
+void packLhs(Type* blockA, const Lhs& lhs, Index sCols, Index cols, Index sRows, Index rows)
 {
-	using Traits = PacketTraits<Type>;
+	using Traits	= PacketTraits<Type>;
+	using Packet	= typename Traits::type;
 	enum
 	{
 		Stride = Traits::Stride
 	};
+
+	// TODO: Specialize for MajorOrder
+	// TODO: Loop unrolling
+
+	Index idx = 0;
+	const Index maxCols = cols - cols % Stride;
+
+	for (Index i = sRows; i < rows; ++i)
+	{
+		// Pack elements by packet
+		for (Index j = sCols; j < maxCols; j += Stride)
+		{
+			Packet p = lhs.template packet<Packet>(i, j);
+			pstore(blockA, p);
+			blockA += Stride;
+		}
+
+		// Pack elements one at a time
+		for (Index j = maxCols; j < cols; ++j)
+		{
+			*blockA = lhs.evaluate(i, j);
+			++blockA;
+		}
+	}
 }
 
 // GEneral Block Product
