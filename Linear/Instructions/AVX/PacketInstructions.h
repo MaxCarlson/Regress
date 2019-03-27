@@ -11,7 +11,7 @@ using Packet4d = __m256d;
 
 #ifdef REGRESS_AVX
 template<>
-struct PacketTraits<float> : public DefaultPacketTraits<float>
+struct PacketTraits<float> : public DefaultPacketTraits<float, Packet8f>
 {
 	using type = Packet8f;
 
@@ -23,7 +23,7 @@ struct PacketTraits<float> : public DefaultPacketTraits<float>
 };
 
 template<>
-struct PacketTraits<double> : public DefaultPacketTraits<double>
+struct PacketTraits<double> : public DefaultPacketTraits<double, Packet4d>
 {
 	using type = Packet4d;
 
@@ -37,7 +37,7 @@ struct PacketTraits<double> : public DefaultPacketTraits<double>
 
 #ifdef REGRESS_AVX2
 template<>
-struct PacketTraits<int> : public DefaultPacketTraits<int>
+struct PacketTraits<int> : public DefaultPacketTraits<int, Packet8i>
 {
 	using type = Packet8i;
 

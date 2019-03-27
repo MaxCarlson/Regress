@@ -67,7 +67,7 @@ int main()
 	//Stopwatch<std::chrono::nanoseconds> s;
 	//s.start();
 
-	Matrix<int> vv = lhs * rhs;
+	Matrix<int> vv = bigger * bigger;
 	//s.printCurrent();
 
 	std::cout << vv << '\n';

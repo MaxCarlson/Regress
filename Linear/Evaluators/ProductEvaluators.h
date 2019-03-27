@@ -68,13 +68,15 @@ struct ProductLoop<Dest, LhsE, RhsE, ProductLoopTraits::PACKET>
 		//  m x n = m x k * k x n
 		// 
 
+
 		// TODO: Calculate from type size/l2 cache size
 
 		// Blocksize along direction 
-		size_type mc = 2; // along m (rows of dest/lhs)
-		size_type kc = 2; // along k (columns of lhs, rows of rhs)
-		size_type nc = 2; // along n (columns of rhs)
+		size_type mc = 4; // along m (rows of dest/lhs)
+		size_type kc = 4; // along k (columns of lhs, rows of rhs)
+		size_type nc = 4; // along n (columns of rhs)
 
+		// TODO: Benchmark allocating on heap/thread_local/stack
 		value_type* blockA = allocStackAligned<value_type, Alignment>(mc * kc); // LhsBlock
 		value_type* blockB = allocStackAligned<value_type, Alignment>(kc * nc); // RhsBlock
 

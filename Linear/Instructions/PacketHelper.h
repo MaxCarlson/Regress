@@ -11,19 +11,16 @@
 namespace impl
 {
 // Get the packet traits of a type
-template<class Type>
+template<class ValueType, class PacketType>
 struct DefaultPacketTraits
 {
+	// The instruction packet type. (e.g. SSE double __m128d)
 	using type = void;
 
 	enum
 	{
-#ifdef REGRESS_SSE
-		Alignment	= 16,
-#elif REGRESS_AVX
-		Alignment	= 32,
-#endif
-		Size		= sizeof(Type),
+		Alignment	= alignof(PacketType),
+		Size		= sizeof(ValueType),
 		Stride		= 0,
 		Packetable	= false,
 		HasDivide	= true

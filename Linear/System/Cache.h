@@ -81,12 +81,16 @@ static constexpr int STACK_ALLOCATION_MAX = 128 * 1024;
 template<class T, int Alignment>
 inline T* allocStackAligned(size_t size)
 {
-	if (size < STACK_ALLOCATION_MAX)
+	if (size + Alignment < STACK_ALLOCATION_MAX)
 	{
 		// TODO: Actually align 
-		return reinterpret_cast<T*>(_alloca(sizeof(T) * size));
+		// TODO: Don't waste memory every time 
+		size_t space = sizeof(T) * size + Alignment;
+		void* ptr = _alloca(space);
+		return reinterpret_cast<T*>(std::align(Alignment, space, ptr, space));
 	}
 
+	// TODO: If alloced on heap need a wrapper to dealloc / incase exception happens
 	throw std::runtime_error("Attempted to allocate variable larger than stack size. Not Implemented Yet.");
 	return nullptr;
 }
