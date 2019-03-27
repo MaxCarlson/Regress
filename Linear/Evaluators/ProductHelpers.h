@@ -19,14 +19,12 @@ namespace impl
 // 1 3   1 2   11 33 22 44
 // 2 4   4 5   12 12 45 45
 //		
-
-//
 // 1 2  1 2		11 22 33 44
 // 3 4  4 5		12 45 12 45
 //
 
 template<class Type, class Lhs, class Index>
-void packLhs(Type* blockA, const Lhs& lhs, Index sCols, Index cols, Index sRows, Index rows)
+void packLhs(Type* blockA, const Lhs& lhs, Index sRows, Index rows, Index sCols, Index cols)
 {
 	using Traits	= PacketTraits<Type>;
 	using Packet	= typename Traits::type;
@@ -58,6 +56,12 @@ void packLhs(Type* blockA, const Lhs& lhs, Index sCols, Index cols, Index sRows,
 			++blockA;
 		}
 	}
+}
+
+template<class Type, class Lhs, class Index>
+void packRhs(Type* blockB, const Lhs& lhs, Index sCols, Index cols, Index sRows, Index rows)
+{
+
 }
 
 // GEneral Block Product

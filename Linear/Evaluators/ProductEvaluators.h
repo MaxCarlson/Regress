@@ -80,28 +80,29 @@ struct ProductLoop<Dest, LhsE, RhsE, ProductLoopTraits::PACKET>
 		StackAlignedWrapper<value_type> blockA{ mc * kc }; // LhsBlock
 		StackAlignedWrapper<value_type> blockB{ kc * nc }; // RhsBlock
 
-		// For each vertical panel of lhs
-		for (size_type p = 0; p < lCols; p += kc)
+		// Height (in rows) of lhs's vertical panel
+		for (size_type m = 0; m < lRows; m += mc)
 		{
-			const size_type endP = std::min(p + kc, lCols) - p;
+			const size_type endM = std::min(m + mc, lRows) - m;
 
-			// Width of lhs's vertical panel
-			for (size_type i = 0; i < lRows; i += mc) 
+			// Width (in cols) of lhs's veritcal panel
+			// Also height (in rows) of rhs's horizontal panel 
+			for (size_type k = 0; k < lCols; k += kc)
 			{
-				const size_type endI = std::min(i + mc, lRows) - i;
+				const size_type endK = std::min(k + kc, lCols) - k;
 
 				// Pack lhs block
-				packLhs(blockA.ptr, lhsE, p, endP, i, endI);
+				packLhs(blockA.ptr, lhsE, m, endM, k, endK);
 
 				// For each kc x nc vertical panel of rhs
-				for (size_type j = 0; j < rCols; j += nc)
+				for (size_type n = 0; n < rCols; n += nc)
 				{
-					const size_type endJ = std::min(j + nc, rCols) - j;
+					const size_type endN = std::min(n + nc, rCols) - n;
 
 					// Pack Rhs
-					//
+					packRhs(blockB.ptr, rhsE, k, endK, n, endN);
 
-					testGepb(dest, lhsE, rhsE, i, j, p, endI, endJ, endP);
+					testGepb(dest, lhsE, rhsE, m, n, k, endM, endN, endK);
 				}
 			}
 		}
@@ -153,7 +154,7 @@ struct ProductEvaluator<ProductOp<Lhs, Rhs>>
 		matrix(expr.resultRows(), expr.resultCols()),
 		matrixEval{ matrix }
 	{
-		using LoopType = ProductLoop<Evaluator<MatrixType>, LhsE, RhsE, ProductLoopTraits::PACKET>;
+		using LoopType = ProductLoop<Evaluator<MatrixType>, LhsE, RhsE, ProductLoopTraits::PACKET>; // TODO: Just for testing, switch back 
 		LoopType::run(matrixEval, lhsE, rhsE);
 	}
 
