@@ -35,17 +35,6 @@ struct ProductLoop<Dest, LhsE, RhsE, ProductLoopTraits::COEFF>
 	}
 };
 
-template<class Dest, class Lhs, class Rhs, class Index>
-void testGepb(Dest& dest, const Lhs& lhs, const Rhs& rhs, Index ii, Index jj, Index pp, Index endI, Index endJ, Index endP)
-{
-	for(Index p = pp; p < pp + endP; ++p)
-		for(Index i = ii; i < ii + endI; ++i)
-			for (Index j = jj; j < jj + endJ; ++j)
-			{
-				dest.evaluateRef(i, j) += lhs.evaluate(i, p) * rhs.evaluate(p, j);
-			}
-}
-
 template<class Dest, class LhsE, class RhsE>
 struct ProductLoop<Dest, LhsE, RhsE, ProductLoopTraits::PACKET>
 {
@@ -56,6 +45,17 @@ struct ProductLoop<Dest, LhsE, RhsE, ProductLoopTraits::PACKET>
 
 	enum { Alignment = Traits::Alignment };
 
+	template<class Index>
+	static void testGepb(Dest& dest, const LhsE& lhs, const RhsE& rhs, Index ii, Index jj, Index pp, Index endI, Index endJ, Index endP)
+	{
+		for (Index p = pp; p < pp + endP; ++p)
+			for (Index i = ii; i < ii + endI; ++i)
+				for (Index j = jj; j < jj + endJ; ++j)
+				{
+					dest.evaluateRef(i, j) += lhs.evaluate(i, p) * rhs.evaluate(p, j);
+				}
+	}
+
 	inline static void run(Dest& dest, const LhsE& lhsE, const RhsE& rhsE)
 	{
 		const size_type lRows = lhsE.rows();
@@ -63,10 +63,17 @@ struct ProductLoop<Dest, LhsE, RhsE, ProductLoopTraits::PACKET>
 		const size_type rRows = rhsE.rows();
 		const size_type rCols = rhsE.cols();
 
+		// Matrix Model:
+		//   dest = lhsE  * rhsE
+		//  m x n = m x k * k x n
+		// 
+
 		// TODO: Calculate from type size/l2 cache size
-		size_type mc = 2;
-		size_type kc = 2;
-		size_type nc = 2;
+
+		// Blocksize along direction 
+		size_type mc = 2; // along m (rows of dest/lhs)
+		size_type kc = 2; // along k (columns of lhs, rows of rhs)
+		size_type nc = 2; // along n (columns of rhs)
 
 		value_type* blockA = allocStackAligned<value_type, Alignment>(mc * kc); // LhsBlock
 		value_type* blockB = allocStackAligned<value_type, Alignment>(kc * nc); // RhsBlock
@@ -82,7 +89,7 @@ struct ProductLoop<Dest, LhsE, RhsE, ProductLoopTraits::PACKET>
 				const size_type endI = std::min(i + mc, lRows) - i;
 
 				// Pack lhs block
-				//packLhs(blockA, lhsE, p, endP, i, endI);
+				packLhs(blockA, lhsE, p, endP, i, endI);
 
 				// For each kc x nc vertical panel of rhs
 				for (size_type j = 0; j < rCols; j += nc)

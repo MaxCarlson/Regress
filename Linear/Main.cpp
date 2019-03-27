@@ -10,10 +10,12 @@ using Eigen::MatrixXd;
 
 int main()
 {
-
+	int aa[] = { 1, 2, 3, 4 };
+	__m128i rr = impl::pload<__m128i>(aa);
+	auto aaa = impl::pbroadcast<__m128i, int>(aa);
 	/*
 	MatrixXd mat;
-	mat.resize(25, 25);
+	mat.resize(1000, 1000);
 	mat(0, 0) = 1;
 	mat(0, 1) = 2;
 	mat(1, 0) = 3;
@@ -58,8 +60,8 @@ int main()
 	//		
 
 	//
-	// 1 2  1 2  
-	// 3 4  4 5
+	// 1 2  1 2		11 22 33 44
+	// 3 4  4 5		12 45 12 45
 	//
 
 	//Stopwatch<std::chrono::nanoseconds> s;
