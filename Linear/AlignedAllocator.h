@@ -30,10 +30,11 @@ struct AlignedAllocator
 	template<class Other>
 	AlignedAllocator(const AlignedAllocator<Other>& o) {}
 
+	template<int AlignmentV = Alignment>
 	static inline Type* allocate(size_type size)
 	{
 		#ifdef _MSC_VER
-			return reinterpret_cast<Type*>(_aligned_malloc(size * sizeof(Type), Alignment));
+			return reinterpret_cast<Type*>(_aligned_malloc(size * sizeof(Type), AlignmentV));
 		#else
 			return std::aligned_alloc(size * sizeof(Type), Alignment);
 		#endif

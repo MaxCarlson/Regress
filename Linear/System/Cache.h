@@ -1,4 +1,5 @@
 #pragma once
+#include "ForwardDeclarations.h"
 #include <intrin.h>
 
 namespace impl
@@ -81,13 +82,17 @@ static constexpr int STACK_ALLOCATION_MAX = 128 * 1024;
 template<class T, int Alignment>
 inline T* allocStackAligned(size_t size)
 {
+	// BUG: Why is alloca allocating the same space twice in a row?
+	//
+	//
 	if (size + Alignment < STACK_ALLOCATION_MAX)
 	{
 		// TODO: Actually align 
 		// TODO: Don't waste memory every time 
 		size_t space = sizeof(T) * size + Alignment;
 		void* ptr = _alloca(space);
-		return reinterpret_cast<T*>(std::align(Alignment, space, ptr, space));
+		auto* rr = reinterpret_cast<T*>(std::align(Alignment, space, ptr, space));
+		return rr;
 	}
 
 	// TODO: If alloced on heap need a wrapper to dealloc / incase exception happens
@@ -95,5 +100,25 @@ inline T* allocStackAligned(size_t size)
 	return nullptr;
 }
 
+// TODO: Use allocStackAligned once working
+template<class T>
+struct StackAlignedWrapper
+{
+	using Traits = PacketTraits<T>;
+
+	template<class Size>
+	StackAlignedWrapper(Size size) :
+		ptr{ AlignedAllocator<T>::allocate<Traits::Alignment>(size) },
+		size{ (size_t)size }
+	{}
+
+	~StackAlignedWrapper()
+	{
+		AlignedAllocator<T>::deallocate(ptr, size);
+	}
+
+	T* ptr;
+	size_t size;
+};
 
 } // End impl::

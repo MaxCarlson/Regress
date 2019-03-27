@@ -77,8 +77,8 @@ struct ProductLoop<Dest, LhsE, RhsE, ProductLoopTraits::PACKET>
 		size_type nc = 4; // along n (columns of rhs)
 
 		// TODO: Benchmark allocating on heap/thread_local/stack
-		value_type* blockA = allocStackAligned<value_type, Alignment>(mc * kc); // LhsBlock
-		value_type* blockB = allocStackAligned<value_type, Alignment>(kc * nc); // RhsBlock
+		StackAlignedWrapper<value_type> blockA{ mc * kc }; // LhsBlock
+		StackAlignedWrapper<value_type> blockB{ kc * nc }; // RhsBlock
 
 		// For each vertical panel of lhs
 		for (size_type p = 0; p < lCols; p += kc)
@@ -91,7 +91,7 @@ struct ProductLoop<Dest, LhsE, RhsE, ProductLoopTraits::PACKET>
 				const size_type endI = std::min(i + mc, lRows) - i;
 
 				// Pack lhs block
-				packLhs(blockA, lhsE, p, endP, i, endI);
+				packLhs(blockA.ptr, lhsE, p, endP, i, endI);
 
 				// For each kc x nc vertical panel of rhs
 				for (size_type j = 0; j < rCols; j += nc)

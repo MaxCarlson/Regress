@@ -15,7 +15,7 @@ template<class ValueType, class PacketType>
 struct DefaultPacketTraits
 {
 	// The instruction packet type. (e.g. SSE double __m128d)
-	using type = void;
+	using type = PacketType;
 
 	enum
 	{
@@ -28,7 +28,7 @@ struct DefaultPacketTraits
 };
 
 template<class Type>
-struct PacketTraits : DefaultPacketTraits<Type>
+struct PacketTraits : DefaultPacketTraits<Type, void>
 {};
  
 // Generic intrinsic templates
