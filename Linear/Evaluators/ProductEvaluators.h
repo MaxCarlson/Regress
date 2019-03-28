@@ -68,8 +68,8 @@ struct ProductLoop<Dest, LhsE, RhsE, ProductLoopTraits::PACKET>
 		//  m x n = m x k * k x n
 		// 
 
-
-		// TODO: Calculate from type size/l2 cache size
+		// TODO: Revisit main loop order below
+		// TODO: Calculate mc/kc/nc from type size/l2 cache size
 
 		// Blocksize along direction 
 		size_type mc = 4; // along m (rows of dest/lhs)
@@ -94,7 +94,7 @@ struct ProductLoop<Dest, LhsE, RhsE, ProductLoopTraits::PACKET>
 				// Pack lhs block
 				packLhs(blockA.ptr, lhsE, m, endM, k, endK);
 
-				// For each kc x nc vertical panel of rhs
+				// For each kc x nc horizontal panel of rhs
 				for (size_type n = 0; n < rCols; n += nc)
 				{
 					const size_type endN = std::min(n + nc, rCols) - n;

@@ -13,14 +13,24 @@ namespace impl
 // {9,  12, 15}		{1, 2},		{120, 156}
 // {19, 26, 33} *	{3, 4}, =	{262, 340}
 // {29, 40, 51}		{5, 6},		{404, 524}
+//
+//
 
-// Assuming doubles with SSE
-// 
-// 1 3   1 2   11 33 22 44
-// 2 4   4 5   12 12 45 45
-//		
-// 1 2  1 2		11 22 33 44
-// 3 4  4 5		12 45 12 45
+// { 1,  2,  3,  4}	  { 1,  2,  3,  4}
+// { 5,  6,  7,  8}   { 5,  6,  7,  8}
+// { 9, 10, 11, 12} * { 9, 10, 11, 12}
+// {13, 14, 15, 16}   {13, 14, 15, 16}
+
+// Assuming floats with SSE
+//
+// 1 2 3 4		1 2 3 4		1111 2222 3333 4444 5555 ...
+// 5 6 7 8		5 6 7 8		1234 1234 1234 1234 5678 ...
+//
+// 1 2 3 4		1 5  9 13	123 4 12 3 4
+// 5 6 7 8		2 6 10 14   15913 261014
+//
+// 1 5  9 13	1 2 3 4		
+// 2 6 10 14	5 6 7 8
 //
 
 template<class Type, class Lhs, class Index>
@@ -36,7 +46,32 @@ void packLhs(Type* blockA, const Lhs& lhs, Index sRows, Index rows, Index sCols,
 	// TODO: Specialize for MajorOrder
 	// TODO: Loop unrolling
 
-	Index idx = 0;
+	for (Index j = sCols; j < cols; ++j)
+	{
+		// Cannot Pack by packet as memory is not contiguous.
+		// Look into packing into temporary and using _MM_transpose
+		// Pack elements by packet
+
+		// Pack elements one at a time
+		for (Index i = sRows; i < rows; ++i)
+		{
+			Type v = lhs.evaluate(i, j);
+			*blockA = v;
+			++blockA;
+		}
+	}
+}
+
+template<class Type, class Rhs, class Index>
+void packRhs(Type* blockB, const Rhs& rhs, Index sRows, Index rows, Index sCols, Index cols)
+{
+	using Traits = PacketTraits<Type>;
+	using Packet = typename Traits::type;
+	enum
+	{
+		Stride = Traits::Stride
+	};
+
 	const Index maxCols = cols - cols % Stride;
 
 	for (Index i = sRows; i < rows; ++i)
@@ -44,23 +79,18 @@ void packLhs(Type* blockA, const Lhs& lhs, Index sRows, Index rows, Index sCols,
 		// Pack elements by packet
 		for (Index j = sCols; j < maxCols; j += Stride)
 		{
-			Packet p = lhs.template packet<Packet>(i, j);
-			pstore(blockA, p);
-			blockA += Stride;
+			Packet p = rhs.template packet<Packet>(i, j);
+			pstore(blockB, p);
+			blockB += Stride;
 		}
 
 		// Pack elements one at a time
 		for (Index j = maxCols; j < cols; ++j)
 		{
-			*blockA = lhs.evaluate(i, j);
-			++blockA;
+			*blockB = rhs.evaluate(i, j);
+			++blockB;
 		}
 	}
-}
-
-template<class Type, class Lhs, class Index>
-void packRhs(Type* blockB, const Lhs& lhs, Index sCols, Index cols, Index sRows, Index rows)
-{
 
 }
 
