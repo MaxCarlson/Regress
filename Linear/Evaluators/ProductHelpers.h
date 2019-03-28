@@ -128,6 +128,15 @@ private:
 	Index m, n, k;
 };
 
+template<class Packet>
+__forceinline Packet pmadd(const Packet& p1, const Packet& p2, Packet& tmp)
+{
+	// ifdef for FMA instructions
+	tmp = p2;
+	tmp = pmul(p1, tmp);
+	return 
+}
+
 
 // GEneral Block Product
 // https://www.cs.utexas.edu/users/pingali/CS378/2008sp/papers/gotoPaper.pdf
@@ -141,23 +150,61 @@ private:
 // Example input format of above matrix 
 // Assuming floats with SSE
 // BlockA		BlockB		ops
-// 1 2 3 4		1 5  9 13
-// 5 6 7 8		2 6 10 14
-//
-//
-//
-//
+// 1 2 3 4		1 5  9 13	 123 4
+// 5 6 7 8		2 6 10 14	*15913 
+//							= (0,0)
 template<class Dest, class Type, class Index>
 void gebp(Dest& dest, Type* blockA, Type* blockB, Index mc, Index nc, Index kc)
 {
+	using Traits = PacketTraits<Type>;
+	using Packet = typename Traits::type;
+	enum
+	{
+		Stride = Traits::Stride
+	};
+
+	// TODO: Loop unrolling
+
+
 	// blockA size is mc * kc 
 	// Fits in l2 Cache
 
 	// blockB size is kc * nc
 	// Fits in l1 Cache
 
+	const Index ASize = mc * kc;
+	const Index BSize = kc * nc;
 
+	const Index maxA = ASize - ASize % Stride;
+	const Index maxB = BSize - BSize % Stride;
 
+	// Loop through blockA in packet size chunks
+	for (Index a = 0; a < maxA; a += Stride)
+	{
+		Packet A = pload<Packet>(blockA);
+
+		// We need to hold on to the start of blockB
+		Type* bPtr = blockB;
+
+		for (Index b = 0; b < maxB; b += Stride)
+		{
+			Packet B = pload<Packet>(bPtr);
+
+		}
+
+		for (Index b = maxB; b < BSize; ++b)
+		{
+
+		}
+
+		blockA += Stride;
+	}
+
+	for (Index a = maxA; a < ASize; ++a)
+	{
+
+		++blockA;
+	}
 }
 
 

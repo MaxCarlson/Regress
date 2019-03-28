@@ -76,6 +76,8 @@ struct ProductLoop<Dest, LhsE, RhsE, ProductLoopTraits::PACKET>
 		// TODO: Revisit main loop order below
 		// TODO: Calculate mc/kc/nc from type size/l2 cache size
 		// TODO: Benchmark allocating A/B on heap/thread_local/stack
+		// TODO: BlockB is packed from Rhs in transpose, this is probably non-ideal
+		// as it's the most commonly packed block
 
 		// Blocksize along direction 
 		size_type mc = 4; // along m (rows of dest/lhs)
