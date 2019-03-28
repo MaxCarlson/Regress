@@ -21,8 +21,17 @@ int main()
 	mat(1, 0) = 3;
 	mat(1, 1) = 4;
 
-	auto mm = mat * mat * mat.transpose();
-	mat = mm;
+	Eigen::Matrix<double, -1, -1, Eigen::RowMajor> mat1;
+	mat1.resize(1000, 1000);
+
+	Stopwatch s;
+	s.start();
+	mat = mat * mat;
+	s.printCurrent();
+	s.start();
+	mat1 = mat1 * mat1;
+
+	s.printCurrent();
 	//*/
 
 	Matrix<int> lhs = {
@@ -44,30 +53,19 @@ int main()
 		{5, 6, 6, 7, 1}
 	};
 
-	// lhs * rhs * lhs
-	// {1, 2},					{9,  12, 15}
-	// {3, 4}, * {1, 2, 3}, =	{19, 26, 33}
-	// {5, 6},   {4, 5, 6}		{29, 40, 51}
-	// 
-	// {9,  12, 15}		{1, 2},		{120, 156}
-	// {19, 26, 33} *	{3, 4}, =	{262, 340}
-	// {29, 40, 51}		{5, 6},		{404, 524}
+	Matrix<float> med = {
+		{ 1,  2,  3,  4},	
+		{ 5,  6,  7,  8},  
+		{ 9, 10, 11, 12},
+		{13, 14, 15, 16}
+	};
 
-	// Assuming doubles with SSE
-	// 
-	// 1 3   1 2   11 33 22 44
-	// 2 4   4 5   12 12 45 45
-	//		
 
-	//
-	// 1 2  1 2		11 22 33 44
-	// 3 4  4 5		12 45 12 45
-	//
 
 	//Stopwatch<std::chrono::nanoseconds> s;
 	//s.start();
 
-	Matrix<int> vv = bigger * bigger;
+	Matrix<float> vv = med * med;
 	//s.printCurrent();
 
 	std::cout << vv << '\n';

@@ -42,6 +42,7 @@ struct ProductLoop<Dest, LhsE, RhsE, ProductLoopTraits::PACKET>
 	using value_type	= typename Dest::value_type;
 	using Traits		= PacketTraits<value_type>;
 	using PacketType	= typename Traits::type;
+	using SALW			= StackAlignedWrapper<value_type>;
 
 	enum { Alignment = Traits::Alignment };
 
@@ -56,8 +57,12 @@ struct ProductLoop<Dest, LhsE, RhsE, ProductLoopTraits::PACKET>
 				}
 	}
 
+	// Paper:
+	// https://www.cs.utexas.edu/users/pingali/CS378/2008sp/papers/gotoPaper.pdf
+	//
 	inline static void run(Dest& dest, const LhsE& lhsE, const RhsE& rhsE)
 	{
+
 		const size_type lRows = lhsE.rows();
 		const size_type lCols = lhsE.cols();
 		const size_type rRows = rhsE.rows();
@@ -70,15 +75,15 @@ struct ProductLoop<Dest, LhsE, RhsE, ProductLoopTraits::PACKET>
 
 		// TODO: Revisit main loop order below
 		// TODO: Calculate mc/kc/nc from type size/l2 cache size
+		// TODO: Benchmark allocating A/B on heap/thread_local/stack
 
 		// Blocksize along direction 
 		size_type mc = 4; // along m (rows of dest/lhs)
 		size_type kc = 4; // along k (columns of lhs, rows of rhs)
 		size_type nc = 4; // along n (columns of rhs)
 
-		// TODO: Benchmark allocating on heap/thread_local/stack
-		StackAlignedWrapper<value_type> blockA{ mc * kc }; // LhsBlock
-		StackAlignedWrapper<value_type> blockB{ kc * nc }; // RhsBlock
+		SALW blockA{ mc * kc }; // LhsBlock
+		SALW blockB{ kc * nc }; // RhsBlock
 
 		// Height (in rows) of lhs's vertical panel
 		for (size_type m = 0; m < lRows; m += mc)
@@ -91,7 +96,6 @@ struct ProductLoop<Dest, LhsE, RhsE, ProductLoopTraits::PACKET>
 			{
 				const size_type endK = std::min(k + kc, lCols) - k;
 
-				// Pack lhs block
 				packLhs(blockA.ptr, lhsE, m, endM, k, endK);
 
 				// For each kc x nc horizontal panel of rhs
@@ -99,10 +103,12 @@ struct ProductLoop<Dest, LhsE, RhsE, ProductLoopTraits::PACKET>
 				{
 					const size_type endN = std::min(n + nc, rCols) - n;
 
-					// Pack Rhs
 					packRhs(blockB.ptr, rhsE, k, endK, n, endN);
 
-					testGepb(dest, lhsE, rhsE, m, n, k, endM, endN, endK);
+					GebpIndexWrapper idxWrapper{ dest, m, n, k };
+					gebp(idxWrapper, blockA.ptr, blockB.ptr, endM, endN, endK);
+				
+					//testGepb(dest, lhsE, rhsE, m, n, k, endM, endN, endK);
 				}
 			}
 		}
