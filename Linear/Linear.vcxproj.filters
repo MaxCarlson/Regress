@@ -66,10 +66,10 @@
     <ClInclude Include="Evaluators\ProductEvaluators.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Evaluators\ProductHelpers.h">
+    <ClInclude Include="System\Cache.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="System\Cache.h">
+    <ClInclude Include="Evaluators\ProductImpl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -1,6 +1,6 @@
 #pragma once
 #include "ForwardDeclarations.h"
-#include "ProductHelpers.h"
+#include "ProductImpl.h"
 #include <algorithm>
 
 namespace impl
@@ -73,6 +73,8 @@ struct ProductLoop<Dest, LhsE, RhsE, ProductLoopTraits::PACKET>
 		//  m x n = m x k * k x n
 		// 
 
+		// TODO: Switch input blocks so it works just as well for Col MajorOrder 
+		// (rhs becomes lhs, lhs -> rhs)
 		// TODO: Revisit main loop order below
 		// TODO: Calculate mc/kc/nc from type size/l2 cache size
 		// TODO: Benchmark allocating A/B on heap/thread_local/stack

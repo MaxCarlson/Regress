@@ -40,14 +40,14 @@ void packInorder(Type* block, const From& from, Index r, Index rows, Index c, In
 		for (Index j = c; j < maxCols; j += Stride)
 		{
 			Packet p = from.template packet<Packet>(i, j);
-			pstore(blockB, p);
+			pstore(block, p);
 			block += Stride;
 		}
 
 		// Pack elements one at a time
 		for (Index j = maxCols; j < cols; ++j)
 		{
-			*block = rhs.evaluate(i, j);
+			*block = from.evaluate(i, j);
 			++block;
 		}
 	}
@@ -91,13 +91,15 @@ void packTranspose(Type* block, const From& from, Index r, Index rows, Index c, 
 template<class Type, class Lhs, class Index>
 void packLhs(Type* blockA, const Lhs& lhs, Index sRows, Index rows, Index sCols, Index cols)
 {
-	packInorder(blockA, lhs, sRows, rows, sCols, cols);
+	packTranspose(blockA, lhs, sRows, rows, sCols, cols);
+	//packInorder(blockA, lhs, sRows, rows, sCols, cols);
 }
 
 template<class Type, class Rhs, class Index>
 void packRhs(Type* blockB, const Rhs& rhs, Index sRows, Index rows, Index sCols, Index cols)
 {
-	packTranspose(blockB, rhs, sRows, rows, sCols, cols);
+	packInorder(blockB, rhs, sRows, rows, sCols, cols);
+	//packTranspose(blockB, rhs, sRows, rows, sCols, cols);
 }
 
 
@@ -118,6 +120,12 @@ struct GebpIndexWrapper
 	}
 
 	template<class Packet>
+	inline Packet packet(Index row, Index col)
+	{
+		return dest.template packet<Packet>(row + m, col + n);
+	}
+
+	template<class Packet>
 	inline void writePacket(Index row, Index col, const Packet& p)
 	{
 		dest.template writePacket<Packet>(row + m, col + n, p);
@@ -129,12 +137,12 @@ private:
 };
 
 template<class Packet>
-__forceinline Packet pmadd(const Packet& p1, const Packet& p2, Packet& tmp)
+__forceinline void pmadd(const Packet& a, const Packet& b, Packet& c, Packet& tmp)
 {
-	// ifdef for FMA instructions
-	tmp = p2;
-	tmp = pmul(p1, tmp);
-	return 
+	// TODO: ifdef for FMA instructions
+	//tmp = b;
+	tmp = impl::pmul(a, b);
+	c = impl::padd(c, tmp);
 }
 
 
@@ -149,10 +157,11 @@ __forceinline Packet pmadd(const Packet& p1, const Packet& p2, Packet& tmp)
 //
 // Example input format of above matrix 
 // Assuming floats with SSE
-// BlockA		BlockB		ops
-// 1 2 3 4		1 5  9 13	 123 4
-// 5 6 7 8		2 6 10 14	*15913 
-//							= (0,0)
+// BlockA		BlockB		
+// 1 5  9 13	1 2 3 4		1111 5555
+// 2 6 10 14	5 6 7 8		1234 1234
+//							
+//
 template<class Dest, class Type, class Index>
 void gebp(Dest& dest, Type* blockA, Type* blockB, Index mc, Index nc, Index kc)
 {
@@ -164,7 +173,6 @@ void gebp(Dest& dest, Type* blockA, Type* blockB, Index mc, Index nc, Index kc)
 	};
 
 	// TODO: Loop unrolling
-
 
 	// blockA size is mc * kc 
 	// Fits in l2 Cache
@@ -181,15 +189,29 @@ void gebp(Dest& dest, Type* blockA, Type* blockB, Index mc, Index nc, Index kc)
 	// Loop through blockA in packet size chunks
 	for (Index a = 0; a < maxA; a += Stride)
 	{
-		Packet A = pload<Packet>(blockA);
+		//Packet A = pload<Packet>(blockA);
 
 		// We need to hold on to the start of blockB
+		Type* aPtr = blockA;
 		Type* bPtr = blockB;
+
+		Packet tmp;
 
 		for (Index b = 0; b < maxB; b += Stride)
 		{
+			Packet A0 = impl::pbroadcast<Packet>(aPtr);
+			//Packet A1 = pbroadcast<Packet>(aPtr+1);
+			//Packet A2 = pbroadcast<Packet>(aPtr+2);
+			//Packet A3 = pbroadcast<Packet>(aPtr+3);
+
 			Packet B = pload<Packet>(bPtr);
 
+			// TODO/BUG: This could easily be wrong here
+			Packet C = dest.template packet<Packet>(a, b);
+
+			pmadd(A0, B, C, tmp);
+
+			int a = 5;
 		}
 
 		for (Index b = maxB; b < BSize; ++b)

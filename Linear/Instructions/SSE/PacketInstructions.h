@@ -77,22 +77,19 @@ template<> inline Packet4i pmul<Packet4i>(const Packet4i& p1, const Packet4i& p2
 template<> inline Packet4f pdiv<Packet4f>(const Packet4f& p1, const Packet4f& p2) { return _mm_div_ps(p1, p2); }
 template<> inline Packet2d pdiv<Packet2d>(const Packet2d& p1, const Packet2d& p2) { return _mm_div_pd(p1, p2); }
 
-template<>
-inline Packet4f pbroadcast(const float* ptr) 
+template<> inline Packet4f pbroadcast(const float* ptr) 
 { 
 	return _mm_broadcast_ss(ptr);
 }
 
-template<>
-inline Packet4i pbroadcast(const int* ptr)
+template<> inline Packet4i pbroadcast(const int* ptr)
 {
 	// TODO: Clean-up
 	// This is super ugly and takes a performance hit for sure. 
 	return *reinterpret_cast<Packet4i*>(&_mm_broadcast_ss(reinterpret_cast<const float*>(ptr)));
 }
 
-template<>
-inline Packet2d pbroadcast(const double* ptr)
+template<> inline Packet2d pbroadcast(const double* ptr)
 {
 	return _mm_broadcastsd_pd(*reinterpret_cast<const Packet2d*>(ptr));
 }
