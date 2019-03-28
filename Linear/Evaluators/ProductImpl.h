@@ -187,7 +187,7 @@ void gebp(Dest& dest, Type* blockA, Type* blockB, Index mc, Index nc, Index kc)
 	const Index maxB = BSize - BSize % Stride;
 
 	// Loop through blockA in packet size chunks
-	for (Index a = 0; a < maxA; a += Stride)
+	for (Index a = 0; a < maxA; ++a)
 	{
 		//Packet A = pload<Packet>(blockA);
 
@@ -197,21 +197,32 @@ void gebp(Dest& dest, Type* blockA, Type* blockB, Index mc, Index nc, Index kc)
 
 		Packet tmp;
 
+		Packet A0 = impl::pbroadcast<Packet>(aPtr);
+		Packet A1 = impl::pbroadcast<Packet>(aPtr+1);
+		Packet A2 = impl::pbroadcast<Packet>(aPtr+2);
+		Packet A3 = impl::pbroadcast<Packet>(aPtr+3);
+
 		for (Index b = 0; b < maxB; b += Stride)
 		{
-			Packet A0 = impl::pbroadcast<Packet>(aPtr);
-			//Packet A1 = pbroadcast<Packet>(aPtr+1);
-			//Packet A2 = pbroadcast<Packet>(aPtr+2);
-			//Packet A3 = pbroadcast<Packet>(aPtr+3);
-
 			Packet B = pload<Packet>(bPtr);
 
 			// TODO/BUG: This could easily be wrong here
-			Packet C = dest.template packet<Packet>(a, b);
+			Packet C0 = dest.template packet<Packet>(a,     b); // BUG: Indexing is WRONG
+			Packet C1 = dest.template packet<Packet>(a + 1, b);
+			Packet C2 = dest.template packet<Packet>(a + 2, b);
+			Packet C3 = dest.template packet<Packet>(a + 3, b);
 
-			pmadd(A0, B, C, tmp);
+			pmadd(A0, B, C0, tmp);
+			pmadd(A1, B, C1, tmp);
+			pmadd(A2, B, C2, tmp);
+			pmadd(A3, B, C3, tmp);
 
-			int a = 5;
+			dest.template writePacket<Packet>(a,     b, C0);
+			dest.template writePacket<Packet>(a + 1, b, C1);
+			dest.template writePacket<Packet>(a + 2, b, C2);
+			dest.template writePacket<Packet>(a + 3, b, C3);
+
+			bPtr += Stride;
 		}
 
 		for (Index b = maxB; b < BSize; ++b)
