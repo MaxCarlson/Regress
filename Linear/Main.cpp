@@ -10,24 +10,13 @@ using Eigen::MatrixXd;
 
 int main()
 {
+	Stopwatch<std::chrono::milliseconds> s;
+
 	/*
 	MatrixXd mat;
-	mat.resize(1000, 1000);
-	mat(0, 0) = 1;
-	mat(0, 1) = 2;
-	mat(1, 0) = 3;
-	mat(1, 1) = 4;
-
-	Eigen::Matrix<double, -1, -1, Eigen::RowMajor> mat1;
-	mat1.resize(1000, 1000);
-
-	Stopwatch s;
+	mat.resize(200, 200);
 	s.start();
 	mat = mat * mat;
-	s.printCurrent();
-	s.start();
-	mat1 = mat1 * mat1;
-
 	s.printCurrent();
 	//*/
 
@@ -58,11 +47,11 @@ int main()
 	};
 
 
-	//Stopwatch<std::chrono::nanoseconds> s;
-	//s.start();
+	Matrix<int> large(200, 200);
 
-	Matrix<int> vv = bigger * bigger;
-	//s.printCurrent();
+	s.start();
+	Matrix<int> vv = huge * huge;
+	s.printCurrent();
 
 	std::cout << vv << "\n\n";
 

@@ -61,7 +61,7 @@ struct ProductLoop<Dest, LhsE, RhsE, ProductLoopTraits::PACKET>
 	// Paper:
 	// https://www.cs.utexas.edu/users/pingali/CS378/2008sp/papers/gotoPaper.pdf
 	//
-	inline static void run(Dest& dest, const LhsE& lhsE, const RhsE& rhsE)
+	static void run(Dest& dest, const LhsE& lhsE, const RhsE& rhsE)
 	{
 		const size_type lRows = lhsE.rows();
 		const size_type lCols = lhsE.cols();
@@ -81,9 +81,9 @@ struct ProductLoop<Dest, LhsE, RhsE, ProductLoopTraits::PACKET>
 		// TODO: Get working in Column MajorOrder
 
 		// Blocksize along direction 
-		size_type mc = 4; // along m (rows of dest/lhs)
-		size_type kc = 4; // along k (columns of lhs, rows of rhs)
-		size_type nc = 4; // along n (columns of rhs)
+		size_type mc = 100; // along m (rows of dest/lhs)
+		size_type kc = 25; // along k (columns of lhs, rows of rhs)
+		size_type nc = 25; // along n (columns of rhs)
 
 		SALW blockA{ mc * kc }; // LhsBlock
 		SALW blockB{ kc * nc }; // RhsBlock

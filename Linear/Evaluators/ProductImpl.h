@@ -104,7 +104,6 @@ void packRhs(Type* blockB, const Rhs& rhs, Index sRows, Index rows, Index sCols,
 	//packTranspose(blockB, rhs, sRows, rows, sCols, cols);
 }
 
-
 // Simple wrapper class to make indexing inside gebp easier
 template<class Dest, class Index>
 struct IndexWrapper
@@ -178,6 +177,7 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, Index mc, Index nc
 	enum { Stride = Traits::Stride };
 
 	// TODO: Loop unrolling
+
 	// blockA size is mc * kc 
 	// Fits in l2 Cache
 	// blockB size is kc * nc
