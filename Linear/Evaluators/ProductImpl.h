@@ -163,20 +163,16 @@ __forceinline void pmadd(const Packet& a, const Packet& b, Packet& c, Packet& tm
 //							
 //
 template<class Dest, class Type, class Index>
-void gebp(Dest& dest, Type* blockA, Type* blockB, Index mc, Index nc, Index kc)
+void gebp(Dest& dest, const Type* blockA, const Type* blockB, Index mc, Index nc, Index kc)
 {
-	using Traits = PacketTraits<Type>;
-	using Packet = typename Traits::type;
-	enum
-	{
-		Stride = Traits::Stride
-	};
+	using Traits	= PacketTraits<Type>;
+	using Packet	= typename Traits::type;
+	using BlockPtr	= const Type*;
+	enum { Stride = Traits::Stride };
 
 	// TODO: Loop unrolling
-
 	// blockA size is mc * kc 
 	// Fits in l2 Cache
-
 	// blockB size is kc * nc
 	// Fits in l1 Cache
 
@@ -186,57 +182,35 @@ void gebp(Dest& dest, Type* blockA, Type* blockB, Index mc, Index nc, Index kc)
 	const Index maxA = ASize - ASize % Stride;
 	const Index maxB = BSize - BSize % Stride;
 
-	// Loop through blockA in packet size chunks
-	for (Index a = 0; a < maxA; ++a)
+	const Index maxN = nc - nc % Stride;
+
+	Index row = 0;
+	Index col = 0;
+
+	// Loop through blockA (rows of lhs)
+	for (Index k = 0; k < kc; ++k)
 	{
-		//Packet A = pload<Packet>(blockA);
-
-		// We need to hold on to the start of blockB
-		Type* aPtr = blockA;
-		Type* bPtr = blockB;
-
-		Packet tmp;
-
-		Packet A0 = impl::pbroadcast<Packet>(aPtr);
-		Packet A1 = impl::pbroadcast<Packet>(aPtr+1);
-		Packet A2 = impl::pbroadcast<Packet>(aPtr+2);
-		Packet A3 = impl::pbroadcast<Packet>(aPtr+3);
-
-		for (Index b = 0; b < maxB; b += Stride)
+		// Loop through blockA (cols of lhs)
+		for (Index m = 0; m < mc; ++m)
 		{
-			Packet B = pload<Packet>(bPtr);
+			BlockPtr aPtr = &blockA[k * mc + m];
+			BlockPtr bPtr = &blockB[k * nc];
 
-			// TODO/BUG: This could easily be wrong here
-			Packet C0 = dest.template packet<Packet>(a,     b); // BUG: Indexing is WRONG
-			Packet C1 = dest.template packet<Packet>(a + 1, b);
-			Packet C2 = dest.template packet<Packet>(a + 2, b);
-			Packet C3 = dest.template packet<Packet>(a + 3, b);
+			Packet tmp;
+			Packet A = impl::pbroadcast<Packet>(aPtr);
 
-			pmadd(A0, B, C0, tmp);
-			pmadd(A1, B, C1, tmp);
-			pmadd(A2, B, C2, tmp);
-			pmadd(A3, B, C3, tmp);
+			for (Index n = 0; n < maxN; n += Stride)
+			{
+				if (n != 0) bPtr += Stride;
 
-			dest.template writePacket<Packet>(a,     b, C0);
-			dest.template writePacket<Packet>(a + 1, b, C1);
-			dest.template writePacket<Packet>(a + 2, b, C2);
-			dest.template writePacket<Packet>(a + 3, b, C3);
+				// TODO/BUG: This could easily be wrong here
+				Packet C = dest.template packet<Packet>(m, n);
+				Packet B = pload<Packet>(bPtr);
 
-			bPtr += Stride;
+				pmadd(A, B, C, tmp);
+				dest.template writePacket<Packet>(m, n, C);
+			}
 		}
-
-		for (Index b = maxB; b < BSize; ++b)
-		{
-
-		}
-
-		blockA += Stride;
-	}
-
-	for (Index a = maxA; a < ASize; ++a)
-	{
-
-		++blockA;
 	}
 }
 
