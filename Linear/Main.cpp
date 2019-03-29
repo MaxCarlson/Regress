@@ -50,7 +50,7 @@ int main()
 	Matrix<int> large(200, 200);
 
 	s.start();
-	Matrix<int> vv = huge * huge;
+	Matrix<int> vv = large * large;
 	s.printCurrent();
 
 	std::cout << vv << "\n\n";
