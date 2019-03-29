@@ -57,12 +57,12 @@ struct ProductLoop<Dest, LhsE, RhsE, ProductLoopTraits::PACKET>
 				}
 	}
 
+
 	// Paper:
 	// https://www.cs.utexas.edu/users/pingali/CS378/2008sp/papers/gotoPaper.pdf
 	//
 	inline static void run(Dest& dest, const LhsE& lhsE, const RhsE& rhsE)
 	{
-
 		const size_type lRows = lhsE.rows();
 		const size_type lCols = lhsE.cols();
 		const size_type rRows = rhsE.rows();
@@ -78,8 +78,7 @@ struct ProductLoop<Dest, LhsE, RhsE, ProductLoopTraits::PACKET>
 		// TODO: Revisit main loop order below
 		// TODO: Calculate mc/kc/nc from type size/l2 cache size
 		// TODO: Benchmark allocating A/B on heap/thread_local/stack
-		// TODO: BlockB is packed from Rhs in transpose, this is probably non-ideal
-		// as it's the most commonly packed block
+		// TODO: Get working in Column MajorOrder
 
 		// Blocksize along direction 
 		size_type mc = 4; // along m (rows of dest/lhs)

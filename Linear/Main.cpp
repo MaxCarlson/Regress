@@ -10,9 +10,6 @@ using Eigen::MatrixXd;
 
 int main()
 {
-	int aa[] = { 1, 2, 3, 4 };
-	__m128i rr = impl::pload<__m128i>(aa);
-	auto aaa = impl::pbroadcast<__m128i, int>(aa);
 	/*
 	MatrixXd mat;
 	mat.resize(1000, 1000);
@@ -61,14 +58,18 @@ int main()
 	};
 
 
-
 	//Stopwatch<std::chrono::nanoseconds> s;
 	//s.start();
 
-	Matrix<float> vv = med * med;
+	Matrix<int> vv = bigger * bigger;
 	//s.printCurrent();
 
-	std::cout << vv << '\n';
+	std::cout << vv << "\n\n";
+
+	Matrix<int> res3v = { {47, 58, 59, 70, 11},
+		{65, 82, 85, 102, 17}, {93, 118, 123, 148, 25},
+		{93, 118, 123, 148, 25}, {93, 118, 123, 148, 25} };
+	std::cout << res3v << '\n';
 
 	/*
 	Eigen::MatrixXi t;

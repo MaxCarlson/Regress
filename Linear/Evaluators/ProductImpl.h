@@ -114,13 +114,18 @@ struct GebpIndexWrapper
 		m{ m }, n{ n }, k{ k }
 	{}
 
-	inline Type& coeff(Index row, Index col)
+	inline Type evaluate(Index row, Index col) const
+	{
+		return dest.evaluateRef(row + m, col + n);
+	}
+
+	inline Type& evaluateRef(Index row, Index col)
 	{
 		return dest.evaluateRef(row + m, col + n);
 	}
 
 	template<class Packet>
-	inline Packet packet(Index row, Index col)
+	inline Packet packet(Index row, Index col) const 
 	{
 		return dest.template packet<Packet>(row + m, col + n);
 	}
@@ -176,16 +181,7 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, Index mc, Index nc
 	// blockB size is kc * nc
 	// Fits in l1 Cache
 
-	const Index ASize = mc * kc;
-	const Index BSize = kc * nc;
-
-	const Index maxA = ASize - ASize % Stride;
-	const Index maxB = BSize - BSize % Stride;
-
 	const Index maxN = nc - nc % Stride;
-
-	Index row = 0;
-	Index col = 0;
 
 	// Loop through blockA (rows of lhs)
 	for (Index k = 0; k < kc; ++k)
@@ -199,16 +195,28 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, Index mc, Index nc
 			Packet tmp;
 			Packet A = impl::pbroadcast<Packet>(aPtr);
 
+			// Evaluate packet by packet (SIMD)
 			for (Index n = 0; n < maxN; n += Stride)
 			{
 				if (n != 0) bPtr += Stride;
 
-				// TODO/BUG: This could easily be wrong here
 				Packet C = dest.template packet<Packet>(m, n);
 				Packet B = pload<Packet>(bPtr);
 
 				pmadd(A, B, C, tmp);
 				dest.template writePacket<Packet>(m, n, C);
+			}
+
+			// Evaluate element by element
+			Type Aval = *aPtr;
+			for (Index n = maxN; n < nc; ++n)
+			{
+				// TODO/BUG: This could easily be wrong here
+				Type C = dest.evaluate(m, n);
+				Type B = *bPtr;
+				dest.evaluateRef(m, n) = C + Aval * B;
+
+				++bPtr;
 			}
 		}
 	}
