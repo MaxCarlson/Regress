@@ -99,16 +99,18 @@ struct ProductLoop<Dest, LhsE, RhsE, ProductLoopTraits::PACKET>
 			{
 				const size_type endK = std::min(k + kc, lCols) - k;
 
-				packLhs(blockA.ptr, lhsE, m, endM, k, endK);
+				IndexWrapper lhsW{ lhsE, m, k };
+				packLhs(blockA.ptr, lhsW, m, endM, k, endK);
 
 				// For each kc x nc horizontal panel of rhs
 				for (size_type n = 0; n < rCols; n += nc)
 				{
 					const size_type endN = std::min(n + nc, rCols) - n;
 
-					packRhs(blockB.ptr, rhsE, k, endK, n, endN);
+					IndexWrapper rhsW{ rhsE, k, n };
+					packRhs(blockB.ptr, rhsW, k, endK, n, endN);
 
-					GebpIndexWrapper idxWrapper{ dest, m, n, k };
+					IndexWrapper idxWrapper{ dest, m, n };
 					gebp(idxWrapper, blockA.ptr, blockB.ptr, endM, endN, endK);
 				
 					//testGepb(dest, lhsE, rhsE, m, n, k, endM, endN, endK);

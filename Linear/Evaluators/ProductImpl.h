@@ -32,12 +32,14 @@ void packInorder(Type* block, const From& from, Index r, Index rows, Index c, In
 		Stride = Traits::Stride
 	};
 
-	const Index maxCols = cols - cols % Stride;
+	const Index maxCols			= cols;
+	const Index maxPCols		= cols - cols % Stride;
 
-	for (Index i = r; i < rows; ++i)
+	for (Index i = 0; i < rows; ++i)
 	{
 		// Pack elements by packet
-		for (Index j = c; j < maxCols; j += Stride)
+		Index j = 0;
+		for (; j < maxPCols; j += Stride)
 		{
 			Packet p = from.template packet<Packet>(i, j);
 			pstore(block, p);
@@ -45,7 +47,7 @@ void packInorder(Type* block, const From& from, Index r, Index rows, Index c, In
 		}
 
 		// Pack elements one at a time
-		for (Index j = maxCols; j < cols; ++j)
+		for (; j < maxCols; ++j)
 		{
 			*block = from.evaluate(i, j);
 			++block;
@@ -72,14 +74,14 @@ void packTranspose(Type* block, const From& from, Index r, Index rows, Index c, 
 	// TODO: Specialize for MajorOrder
 	// TODO: Loop unrolling
 
-	for (Index j = c; j < cols; ++j)
+	for (Index j = 0; j < cols; ++j)
 	{
 		// Cannot Pack by packet as memory is not contiguous.
 		// Look into packing into temporary and using _MM_transpose
 		// Pack elements by packet
 
 		// Pack elements one at a time
-		for (Index i = r; i < rows; ++i)
+		for (Index i = 0; i < rows; ++i)
 		{
 			Type v = from.evaluate(i, j);
 			*block = v;
@@ -105,40 +107,40 @@ void packRhs(Type* blockB, const Rhs& rhs, Index sRows, Index rows, Index sCols,
 
 // Simple wrapper class to make indexing inside gebp easier
 template<class Dest, class Index>
-struct GebpIndexWrapper
+struct IndexWrapper
 {
 	using Type = typename Dest::value_type;
 
-	GebpIndexWrapper(Dest& dest, Index m, Index n, Index k) :
+	IndexWrapper(Dest& dest, Index r, Index c) :
 		dest{ dest },
-		m{ m }, n{ n }, k{ k }
+		r{ r }, c{ c }
 	{}
 
 	inline Type evaluate(Index row, Index col) const
 	{
-		return dest.evaluateRef(row + m, col + n);
+		return dest.evaluate(row + r, col + c);
 	}
 
 	inline Type& evaluateRef(Index row, Index col)
 	{
-		return dest.evaluateRef(row + m, col + n);
+		return dest.evaluateRef(row + r, col + c);
 	}
 
 	template<class Packet>
 	inline Packet packet(Index row, Index col) const 
 	{
-		return dest.template packet<Packet>(row + m, col + n);
+		return dest.template packet<Packet>(row + r, col + c);
 	}
 
 	template<class Packet>
 	inline void writePacket(Index row, Index col, const Packet& p)
 	{
-		dest.template writePacket<Packet>(row + m, col + n, p);
+		dest.template writePacket<Packet>(row + r, col + c, p);
 	}
 
 private:
 	Dest& dest;
-	Index m, n, k;
+	Index r, c;
 };
 
 template<class Packet>
