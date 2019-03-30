@@ -146,11 +146,11 @@ private:
 };
 
 template<class Packet>
-RGR_FORCE_INLINE void pmadd(const Packet& a, const Packet& b, Packet& c, Packet& tmp)
+inline void pmadd(const Packet& a, const Packet& b, Packet& c, Packet& tmp)
 {
 	// TODO: ifdef for FMA instructions
-	//tmp = b;
-	tmp = impl::pmul(a, b);
+	tmp = b;
+	tmp = impl::pmul(a, tmp);
 	c = impl::padd(c, tmp);
 }
 
@@ -179,20 +179,21 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, Index mc, Index nc
 {
 	using Traits	= PacketTraits<Type>;
 	using Packet	= typename Traits::type;
-	using BlockPtr	= const Type*;
+	using BlockPtr	= const Type*__restrict; // TODO: Benchmark
 	enum { Stride = Traits::Stride };
 
 	// TODO: Loop unrolling
 	// TODO: NOTE: mr/nr/kr are register block sizes
 	// TODO: Is this gepb instead?
+	// TODO: Look into using sentinals?
 
 	// blockA size is mc * kc 
 	// Fits in l2 Cache
 	// blockB size is kc * nc
 	// Fits in l1 Cache
 
-	const Index maxPackedN = nc - nc % Stride;
-	const Index unroll1 = maxPackedN - maxPackedN % (4*Stride);
+	const Index maxPackedN	= nc - nc % Stride;
+	const Index unroll1		= maxPackedN - maxPackedN % (4*Stride);
 
 	// Loop through blockA (rows of lhs)
 	for (Index k = 0; k < kc; ++k)
@@ -234,8 +235,14 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, Index mc, Index nc
 			// Evaluate packet by packet (SIMD)
 			for (Index n = unroll1; n < maxPackedN; n += Stride)
 			{
+				//Packet B = pload<Packet>(bPtr);
+				Packet B = pload<Packet>(&blockB[k * nc + n]);
 				Packet C = dest.template packet<Packet>(m, n);
-				Packet B = pload<Packet>(bPtr);
+
+				//int* bVal = reinterpret_cast<int*>(&B);
+				//std::cout << *bPtr << '\n';
+				//std::cout << blockB[k * nc + n] << '\n';
+				//std::cout << bVal[0] << ", " << bVal[1] << ", " << bVal[2] << ", ";
 
 				pmadd(A, B, C, tmp);
 				dest.template writePacket<Packet>(m, n, C);
@@ -245,7 +252,6 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, Index mc, Index nc
 			// Evaluate element by element
 			for (Index n = maxPackedN; n < nc; ++n)
 			{
-				// TODO/BUG: This could easily be wrong here
 				Type C = dest.evaluate(m, n);
 				Type B = *bPtr;
 				dest.evaluateRef(m, n) = C + Aval * B;

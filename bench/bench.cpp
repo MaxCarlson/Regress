@@ -39,7 +39,6 @@ struct basic : public BaseBench
 
 	static void run()
 	{
-		//RUN_FUNC(doOther, 1);
 		print("mulSquareAlias ", typeid(Type).name(), '\n');
 		print("MajorOrder: ", order, '\n');
 		RUN_FUNC(mulSquareAlias, "10", 10);
