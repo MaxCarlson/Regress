@@ -179,7 +179,7 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, Index mc, Index nc
 {
 	using Traits	= PacketTraits<Type>;
 	using Packet	= typename Traits::type;
-	using BlockPtr	= const Type*__restrict; // TODO: Benchmark
+	using BlockPtr	= const Type* RGR_RESTRICT; // TODO: Benchmark
 	enum { Stride = Traits::Stride };
 
 	// TODO: Loop unrolling
@@ -235,16 +235,16 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, Index mc, Index nc
 			// Evaluate packet by packet (SIMD)
 			for (Index n = unroll1; n < maxPackedN; n += Stride)
 			{
-				//Packet B = pload<Packet>(bPtr);
-				Packet B = pload<Packet>(&blockB[k * nc + n]);
+				Packet B = pload<Packet>(bPtr);
 				Packet C = dest.template packet<Packet>(m, n);
 
-				//int* bVal = reinterpret_cast<int*>(&B);
-				//std::cout << *bPtr << '\n';
-				//std::cout << blockB[k * nc + n] << '\n';
-				//std::cout << bVal[0] << ", " << bVal[1] << ", " << bVal[2] << ", ";
+				//std::cout << '1';
 
-				pmadd(A, B, C, tmp);
+				//pmadd(A, B, C, tmp);
+				Packet tmp = B;
+				tmp = impl::pmul(A, tmp);
+				C = impl::padd(C, tmp);
+
 				dest.template writePacket<Packet>(m, n, C);
 				bPtr += Stride;
 			}

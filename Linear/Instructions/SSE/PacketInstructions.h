@@ -85,13 +85,14 @@ template<> inline Packet4f pbroadcast(const float* ptr)
 template<> inline Packet4i pbroadcast(const int* ptr)
 {
 	// TODO: Clean-up
-	// This is super ugly and takes a performance hit for sure. 
+	// This is super ugly and probably takes a performance hit. 
 	return *reinterpret_cast<Packet4i*>(&_mm_broadcast_ss(reinterpret_cast<const float*>(ptr)));
 }
 
 template<> inline Packet2d pbroadcast(const double* ptr)
 {
-	return _mm_broadcastsd_pd(*reinterpret_cast<const Packet2d*>(ptr));
+	Packet2d t = _mm_loadu_pd(ptr);
+	return _mm_broadcastsd_pd(*reinterpret_cast<const Packet2d*>(&t));
 }
 
 } // End impl::
