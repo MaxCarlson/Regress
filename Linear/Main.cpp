@@ -6,8 +6,6 @@
 
 using Eigen::MatrixXd;
 
-#include <immintrin.h>
-
 int main()
 {
 	Stopwatch<std::chrono::milliseconds> s;
@@ -20,19 +18,19 @@ int main()
 	s.printCurrent();
 	//*/
 
-	Matrix<int> lhs = {
+	Matrix<int, true> lhs = {
 		{1, 2},
 		{3, 4},
 		{5, 6},
 	};
 
-	Matrix<int> rhs = {
+	Matrix<int, true> rhs = {
 		{1, 2, 3},
 		{4, 5, 6}
 	};
 
 
-	Matrix<int> bigger = {
+	Matrix<int, true> bigger = {
 		{ 1,  2,  3,  4,  5 },	
 		{ 6,  7,  8,  9,  10},
 		{ 11, 12, 13, 14, 15},
@@ -48,7 +46,7 @@ int main()
 
 	//Matrix<int> large(200, 200);
 	s.start();
-	Matrix<int> vv = bigger * bigger;
+	Matrix<int, true> vv = lhs * rhs;
 	s.printCurrent();
 
 	std::cout << vv << "\n\n";

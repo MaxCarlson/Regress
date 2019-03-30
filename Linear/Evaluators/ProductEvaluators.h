@@ -61,17 +61,18 @@ struct ProductLoop<Dest, LhsE, RhsE, GEMMType::VECTORIZED>
 	// Paper:
 	// https://www.cs.utexas.edu/users/pingali/CS378/2008sp/papers/gotoPaper.pdf
 	//
-	template<class Lhs, class Rhs>
-	static void runImpl(Dest& dest, const Lhs& lhs, const Rhs& rhs)
+	template<class Lhs, class Rhs, bool Order>
+	static void runImpl(Dest& dest, const Lhs& lhs, const Rhs& rhs, size_type lRows, size_type lCols, size_type rCols)
 	{
-		const size_type lRows = lhs.rows();
-		const size_type lCols = lhs.cols();
-		const size_type rCols = rhs.cols();
-
 		// Matrix Model:
 		//   dest = lhsE  * rhsE
 		//  m x n = m x k * k x n
 		// 
+
+		using IndexWrapperLhs = IndexWrapper<const Lhs, size_type, Order>;
+		using IndexWrapperRhs = IndexWrapper<const Rhs, size_type, Order>;
+		using IndexWrapperDest = IndexWrapper<Dest, size_type, Order>;
+
 
 		// TODO: Switch input blocks so it works just as well for Col MajorOrder 
 		// (rhs becomes lhs, lhs -> rhs)
@@ -99,7 +100,7 @@ struct ProductLoop<Dest, LhsE, RhsE, GEMMType::VECTORIZED>
 			{
 				const size_type endK = std::min(k + kc, lCols) - k;
 
-				IndexWrapper lhsW{ lhs, m, k };
+				IndexWrapperLhs lhsW( lhs, m, k );
 				packLhs(blockA.ptr, lhsW, m, endM, k, endK);
 
 				// For each kc x nc horizontal panel of rhs
@@ -107,10 +108,10 @@ struct ProductLoop<Dest, LhsE, RhsE, GEMMType::VECTORIZED>
 				{
 					const size_type endN = std::min(n + nc, rCols) - n;
 
-					IndexWrapper rhsW{ rhs, k, n };
+					IndexWrapperRhs rhsW{ rhs, k, n };
 					packRhs(blockB.ptr, rhsW, k, endK, n, endN);
 
-					IndexWrapper idxWrapper{ dest, m, n };
+					IndexWrapperDest idxWrapper{ dest, m, n };
 					gebp(idxWrapper, blockA.ptr, blockB.ptr, endM, endN, endK);
 				
 					//testGepb(dest, lhsE, rhsE, m, n, k, endM, endN, endK);
@@ -119,12 +120,16 @@ struct ProductLoop<Dest, LhsE, RhsE, GEMMType::VECTORIZED>
 		}
 	}
 
-	static void run(Dest& dest, const LhsE& lhsE, const RhsE& rhsE)
+	//const size_type lRows = lhs.rows();
+//const size_type lCols = lhs.cols();
+//const size_type rCols = rhs.cols();
+
+	static void run(Dest& dest, const LhsE& lhs, const RhsE& rhs)
 	{
 		if (Dest::MajorOrder)
-			runImpl(dest, rhsE, lhsE);
+			runImpl<RhsE, LhsE, false>(dest, rhs, lhs, dest.cols(), lhs.cols(), dest.rows());
 		else
-			runImpl(dest, lhsE, rhsE);
+			runImpl<LhsE, RhsE, true>(dest, lhs, rhs, lhs.rows(), lhs.cols(), rhs.cols());
 	}
 };
 

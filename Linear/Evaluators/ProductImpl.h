@@ -16,6 +16,8 @@ namespace impl
 //
 //
 
+// TODO: Optimize both packing functions for Row/ColMajor Order
+//
 // Format in memory: 
 // BlockSize 4x4
 // 1  2  3  4 
@@ -71,7 +73,6 @@ void packTranspose(Type* block, const From& from, Index r, Index rows, Index c, 
 		Stride = Traits::Stride
 	};
 
-	// TODO: Specialize for MajorOrder
 	// TODO: Loop unrolling
 
 	for (Index j = 0; j < cols; ++j)
@@ -93,23 +94,17 @@ void packTranspose(Type* block, const From& from, Index r, Index rows, Index c, 
 template<class Type, class Lhs, class Index>
 void packLhs(Type* blockA, const Lhs& lhs, Index sRows, Index rows, Index sCols, Index cols)
 {
-	if (Lhs::MajorOrder)
-		packInorder(blockA, lhs, sRows, rows, sCols, cols);
-	else
-		packTranspose(blockA, lhs, sRows, rows, sCols, cols);
+	packTranspose(blockA, lhs, sRows, rows, sCols, cols);
 }
 
 template<class Type, class Rhs, class Index>
 void packRhs(Type* blockB, const Rhs& rhs, Index sRows, Index rows, Index sCols, Index cols)
 {
-	if (Rhs::MajorOrder)
-		packTranspose(blockB, rhs, sRows, rows, sCols, cols);
-	else
-		packInorder(blockB, rhs, sRows, rows, sCols, cols);
+	packInorder(blockB, rhs, sRows, rows, sCols, cols);
 }
 
 // Simple wrapper class to make indexing inside gebp easier
-template<class Dest, class Index>
+template<class Dest, class Index, bool Order>
 struct IndexWrapper
 {
 	using Type = typename Dest::value_type;
@@ -122,24 +117,36 @@ struct IndexWrapper
 
 	inline Type evaluate(Index row, Index col) const
 	{
-		return dest.evaluate(row + r, col + c);
+		if(Order)
+			return dest.evaluate(row + r, col + c);
+		else
+			return dest.evaluate(col + c, row + r);
 	}
 
 	inline Type& evaluateRef(Index row, Index col)
 	{
-		return dest.evaluateRef(row + r, col + c);
+		if(Order)
+			return dest.evaluateRef(row + r, col + c);
+		else
+			return dest.evaluateRef(col + c, row + r);
 	}
 
 	template<class Packet>
 	inline Packet packet(Index row, Index col) const 
 	{
-		return dest.template packet<Packet>(row + r, col + c);
+		if(Order)
+			return dest.template packet<Packet>(row + r, col + c);
+		else
+			return dest.template packet<Packet>(col + c, row + r);
 	}
 
 	template<class Packet>
 	inline void writePacket(Index row, Index col, const Packet& p)
 	{
-		dest.template writePacket<Packet>(row + r, col + c, p);
+		if (Order)
+			dest.template writePacket<Packet>(row + r, col + c, p);
+		else
+			dest.template writePacket<Packet>(col + c, row + r, p);
 	}
 
 private:
@@ -148,7 +155,7 @@ private:
 };
 
 template<class Packet>
-RGR_FORCEINLINE void pmadd(const Packet& a, const Packet& b, Packet& c, Packet& tmp)
+RGR_FORCE_INLINE void pmadd(const Packet& a, const Packet& b, Packet& c, Packet& tmp)
 {
 	// TODO: ifdef for FMA instructions
 	//tmp = b;
@@ -168,11 +175,14 @@ RGR_FORCEINLINE void pmadd(const Packet& a, const Packet& b, Packet& c, Packet& 
 //
 // Example input format of above matrix 
 // Assuming floats with SSE
+// lhs'			rhs (RowMajor)
 // BlockA		BlockB		
 // 1 5  9 13	1 2 3 4		1111 5555
 // 2 6 10 14	5 6 7 8		1234 1234
-//							
-//
+//						
+// rhs			lhs' (ColumnMajor)
+// 1 5  9 13	1 2 3 4		
+// 2 6 10 14	5 6 7 8	
 template<class Dest, class Type, class Index>
 void gebp(Dest& dest, const Type* blockA, const Type* blockB, Index mc, Index nc, Index kc)
 {
@@ -182,6 +192,7 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, Index mc, Index nc
 	enum { Stride = Traits::Stride };
 
 	// TODO: Loop unrolling
+	// TODO: NOTE: mr/nr/kr are register block sizes
 
 	// blockA size is mc * kc 
 	// Fits in l2 Cache
