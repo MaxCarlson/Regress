@@ -38,7 +38,23 @@ int main()
 		{ 21, 22, 23, 24, 25}
 	};
 
+	/*
+	// TODO: Theres an issue with cross MajorOrder multiplication here
+	Matrix<int, true> biggerc = {
+	{1, 2, 3, 4, 1},
+	{3, 4, 4, 5, 1},
+	{5, 6, 6, 7, 1},
+	{5, 6, 6, 7, 1},
+	{5, 6, 6, 7, 1}
+	};
+	Matrix<int> biggercO = biggerc;
 
+	std::cout << biggerc << "\n\n" << biggercO << '\n';
+
+	Matrix<int> resBigcT = biggercO * biggerc;
+	Matrix<int> resBigc = biggerc * biggerc;
+	std::cout << resBigcT << "\n\n" << resBigc << '\n';
+	//*/
 
 	// TODO: Why does this cause illegal void erros??
 	//Matrix<int64_t> gg = { {1} }; 

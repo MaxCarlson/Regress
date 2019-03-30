@@ -184,13 +184,15 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, Index mc, Index nc
 
 	// TODO: Loop unrolling
 	// TODO: NOTE: mr/nr/kr are register block sizes
+	// TODO: Is this gepb instead?
 
 	// blockA size is mc * kc 
 	// Fits in l2 Cache
 	// blockB size is kc * nc
 	// Fits in l1 Cache
 
-	const Index maxN = nc - nc % Stride;
+	const Index maxPackedN = nc - nc % Stride;
+	const Index unroll1 = maxPackedN - maxPackedN % (4*Stride);
 
 	// Loop through blockA (rows of lhs)
 	for (Index k = 0; k < kc; ++k)
@@ -205,8 +207,32 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, Index mc, Index nc
 			Packet A	= impl::pbroadcast<Packet>(aPtr);
 			Type Aval	= *aPtr;
 
+			for (Index n = 0; n < unroll1; n += Stride * 4)
+			{
+				Packet C0 = dest.template packet<Packet>(m, n);
+				Packet C1 = dest.template packet<Packet>(m, n + 1);
+				Packet C2 = dest.template packet<Packet>(m, n + 2);
+				Packet C3 = dest.template packet<Packet>(m, n + 3);
+
+				Packet B0 = pload<Packet>(bPtr);
+				Packet B1 = pload<Packet>(bPtr + 1);
+				Packet B2 = pload<Packet>(bPtr + 2);
+				Packet B3 = pload<Packet>(bPtr + 3);
+
+				pmadd(A, B0, C0, tmp);
+				pmadd(A, B1, C1, tmp);
+				pmadd(A, B2, C2, tmp);
+				pmadd(A, B3, C3, tmp);
+				dest.template writePacket<Packet>(m, n, C0);
+				dest.template writePacket<Packet>(m, n + 1, C1);
+				dest.template writePacket<Packet>(m, n + 2, C2);
+				dest.template writePacket<Packet>(m, n + 3, C3);
+
+				bPtr += Stride * 4;
+			}
+
 			// Evaluate packet by packet (SIMD)
-			for (Index n = 0; n < maxN; n += Stride)
+			for (Index n = unroll1; n < maxPackedN; n += Stride)
 			{
 				Packet C = dest.template packet<Packet>(m, n);
 				Packet B = pload<Packet>(bPtr);
@@ -217,7 +243,7 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, Index mc, Index nc
 			}
 
 			// Evaluate element by element
-			for (Index n = maxN; n < nc; ++n)
+			for (Index n = maxPackedN; n < nc; ++n)
 			{
 				// TODO/BUG: This could easily be wrong here
 				Type C = dest.evaluate(m, n);

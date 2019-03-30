@@ -120,10 +120,17 @@ namespace test
 			enum { MajorOrder = Mat::MajorOrder };
 			using OMat = Matrix<Type, !MajorOrder>;
 
+			OMat Obig = big;
+			OMat Olhs = lhs;
+			OMat Orhs = rhs;
+			OMat Orhs1 = rhs1;
+
 			Mat res1 = (lhs * rhs) * lhs;
 			Mat res2 = (lhs * rhs) * lhs * rhs1;
 			Mat res3 = big * big;
-			//Mat res4 =
+			Mat res4 = (Olhs * rhs) * Olhs;
+			Mat res5 = (lhs * Orhs) * lhs * Orhs1;
+			Mat res6 = Obig * big;
 
 			Mat res1v = { {120, 156}, {262, 340}, {404, 524} };
 			Mat res2v = { {900, 1176, 1452, 1728},
@@ -132,9 +139,12 @@ namespace test
 			{65, 82, 85, 102, 17}, {93, 118, 123, 148, 25},
 			{93, 118, 123, 148, 25}, {93, 118, 123, 148, 25} };
 
-			Assert::IsTrue(res1 == res1v);
-			Assert::IsTrue(res2 == res2v);
-			Assert::IsTrue(res3 == res3v);
+			Assert::IsTrue(res1 == res1v, L"res1");
+			Assert::IsTrue(res2 == res2v, L"res2");
+			Assert::IsTrue(res3 == res3v, L"res3");
+			Assert::IsTrue(res4 == res1v, L"res4");
+			Assert::IsTrue(res5 == res2v, L"res5");
+			Assert::IsTrue(res6 == res3v, L"res6");
 		}
 
 		TEST_METHOD(Mul)
