@@ -44,42 +44,32 @@ struct ProductLoop<Dest, LhsE, RhsE, GEMMType::VECTORIZED>
 	using PacketType	= typename Traits::type;
 	using SALW			= StackAlignedWrapper<value_type>;
 
-	//enum { Alignment = Traits::Alignment };
-
-	template<class Index>
-	static void testGepb(Dest& dest, const LhsE& lhs, const RhsE& rhs, Index ii, Index jj, Index pp, Index endI, Index endJ, Index endP)
+	enum
 	{
-		for (Index p = pp; p < pp + endP; ++p)
-			for (Index i = ii; i < ii + endI; ++i)
-				for (Index j = jj; j < jj + endJ; ++j)
-				{
-					dest.evaluateRef(i, j) += lhs.evaluate(i, p) * rhs.evaluate(p, j);
-				}
-	}
-
+		DestTranspose	= Dest::MajorOrder,
+	};
 
 	// Paper:
 	// https://www.cs.utexas.edu/users/pingali/CS378/2008sp/papers/gotoPaper.pdf
 	//
-	template<class Lhs, class Rhs, bool Order>
-	static void runImpl(Dest& dest, const Lhs& lhs, const Rhs& rhs, size_type lRows, size_type lCols, size_type rCols)
+	// Note: gemm is written from a RowMajor Order perspective. In order to get
+	// a ColumnMajor result the matricies are transposed
+	//
+	// Matrix Model:
+	//   dest = lhs  * rhs
+	//  m x n = m x k * k x n
+	template<class Lhs, class Rhs, bool DestTranspose>
+	static void gemm(Dest& dest, const Lhs& lhs, const Rhs& rhs, size_type lRows, size_type lCols, size_type rCols)
 	{
-		// Matrix Model:
-		//   dest = lhsE  * rhsE
-		//  m x n = m x k * k x n
-		// 
-
-		using IndexWrapperLhs = IndexWrapper<const Lhs, size_type, Order>;
-		using IndexWrapperRhs = IndexWrapper<const Rhs, size_type, Order>;
-		using IndexWrapperDest = IndexWrapper<Dest, size_type, Order>;
-
+		using IndexWrapperLhs	= IndexWrapper<const Lhs, size_type, DestTranspose>;
+		using IndexWrapperRhs	= IndexWrapper<const Rhs, size_type, DestTranspose>;
+		using IndexWrapperDest	= IndexWrapper<Dest, size_type, DestTranspose>;
 
 		// TODO: Switch input blocks so it works just as well for Col MajorOrder 
 		// (rhs becomes lhs, lhs -> rhs)
 		// TODO: Revisit main loop order below
 		// TODO: Calculate mc/kc/nc from type size/l2 cache size
 		// TODO: Benchmark allocating A/B on heap/thread_local/stack
-		// TODO: Get working in Column MajorOrder
 
 		// Blocksize along direction 
 		const size_type mc = 4; // along m (rows of dest/lhs)
@@ -113,23 +103,17 @@ struct ProductLoop<Dest, LhsE, RhsE, GEMMType::VECTORIZED>
 
 					IndexWrapperDest idxWrapper{ dest, m, n };
 					gebp(idxWrapper, blockA.ptr, blockB.ptr, endM, endN, endK);
-				
-					//testGepb(dest, lhsE, rhsE, m, n, k, endM, endN, endK);
 				}
 			}
 		}
 	}
 
-	//const size_type lRows = lhs.rows();
-//const size_type lCols = lhs.cols();
-//const size_type rCols = rhs.cols();
-
 	static void run(Dest& dest, const LhsE& lhs, const RhsE& rhs)
 	{
-		if (Dest::MajorOrder)
-			runImpl<RhsE, LhsE, false>(dest, rhs, lhs, dest.cols(), lhs.cols(), dest.rows());
+		if (DestTranspose)
+			gemm<RhsE, LhsE, DestTranspose>(dest, rhs, lhs, dest.cols(), lhs.cols(), dest.rows());
 		else
-			runImpl<LhsE, RhsE, true>(dest, lhs, rhs, lhs.rows(), lhs.cols(), rhs.cols());
+			gemm<LhsE, RhsE, DestTranspose>(dest, lhs, rhs, dest.rows(), lhs.cols(), dest.cols());
 	}
 };
 

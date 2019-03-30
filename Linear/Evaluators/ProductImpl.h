@@ -104,7 +104,7 @@ void packRhs(Type* blockB, const Rhs& rhs, Index sRows, Index rows, Index sCols,
 }
 
 // Simple wrapper class to make indexing inside gebp easier
-template<class Dest, class Index, bool Order>
+template<class Dest, class Index, bool Transpose>
 struct IndexWrapper
 {
 	using Type = typename Dest::value_type;
@@ -115,42 +115,33 @@ struct IndexWrapper
 		r{ r }, c{ c }
 	{}
 
+	RGR_FORCE_INLINE Index getRow(Index row, Index col) const { return Transpose ? col + c : row + r; }
+	RGR_FORCE_INLINE Index getCol(Index row, Index col) const { return Transpose ? row + r : col + c; }
+
 	inline Type evaluate(Index row, Index col) const
 	{
-		if(Order)
-			return dest.evaluate(row + r, col + c);
-		else
-			return dest.evaluate(col + c, row + r);
+		return dest.evaluate(getRow(row, col), getCol(row, col));
 	}
 
 	inline Type& evaluateRef(Index row, Index col)
 	{
-		if(Order)
-			return dest.evaluateRef(row + r, col + c);
-		else
-			return dest.evaluateRef(col + c, row + r);
+		return dest.evaluateRef(getRow(row, col), getCol(row, col));
 	}
 
 	template<class Packet>
 	inline Packet packet(Index row, Index col) const 
 	{
-		if(Order)
-			return dest.template packet<Packet>(row + r, col + c);
-		else
-			return dest.template packet<Packet>(col + c, row + r);
+		return dest.template packet<Packet>(getRow(row, col), getCol(row, col));
 	}
 
 	template<class Packet>
 	inline void writePacket(Index row, Index col, const Packet& p)
 	{
-		if (Order)
-			dest.template writePacket<Packet>(row + r, col + c, p);
-		else
-			dest.template writePacket<Packet>(col + c, row + r, p);
+		dest.template writePacket<Packet>(getRow(row, col), getCol(row, col), p);
 	}
 
 private:
-	Dest& dest;
+	Dest& RGR_RESTRICT dest;
 	Index r, c;
 };
 
