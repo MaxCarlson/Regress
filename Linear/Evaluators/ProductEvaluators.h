@@ -6,13 +6,13 @@
 namespace impl
 {
 
-enum class ProductLoopTraits { COEFF, PACKET, INDEX, SLICED };
+enum class GEMMType { COEFF, VECTORIZED };
 
-template<class Dest, class LhsE, class RhsE, ProductLoopTraits arg>
+template<class Dest, class LhsE, class RhsE, GEMMType arg>
 struct ProductLoop{};
 
 template<class Dest, class LhsE, class RhsE>
-struct ProductLoop<Dest, LhsE, RhsE, ProductLoopTraits::COEFF>
+struct ProductLoop<Dest, LhsE, RhsE, GEMMType::COEFF>
 {
 	using size_type		= typename Dest::size_type;
 	using value_type	= typename Dest::value_type;
@@ -36,7 +36,7 @@ struct ProductLoop<Dest, LhsE, RhsE, ProductLoopTraits::COEFF>
 };
 
 template<class Dest, class LhsE, class RhsE>
-struct ProductLoop<Dest, LhsE, RhsE, ProductLoopTraits::PACKET>
+struct ProductLoop<Dest, LhsE, RhsE, GEMMType::VECTORIZED>
 {
 	using size_type		= typename Dest::size_type;
 	using value_type	= typename Dest::value_type;
@@ -44,7 +44,7 @@ struct ProductLoop<Dest, LhsE, RhsE, ProductLoopTraits::PACKET>
 	using PacketType	= typename Traits::type;
 	using SALW			= StackAlignedWrapper<value_type>;
 
-	enum { Alignment = Traits::Alignment };
+	//enum { Alignment = Traits::Alignment };
 
 	template<class Index>
 	static void testGepb(Dest& dest, const LhsE& lhs, const RhsE& rhs, Index ii, Index jj, Index pp, Index endI, Index endJ, Index endP)
@@ -61,12 +61,12 @@ struct ProductLoop<Dest, LhsE, RhsE, ProductLoopTraits::PACKET>
 	// Paper:
 	// https://www.cs.utexas.edu/users/pingali/CS378/2008sp/papers/gotoPaper.pdf
 	//
-	static void run(Dest& dest, const LhsE& lhsE, const RhsE& rhsE)
+	template<class Lhs, class Rhs>
+	static void runImpl(Dest& dest, const Lhs& lhs, const Rhs& rhs)
 	{
-		const size_type lRows = lhsE.rows();
-		const size_type lCols = lhsE.cols();
-		const size_type rRows = rhsE.rows();
-		const size_type rCols = rhsE.cols();
+		const size_type lRows = lhs.rows();
+		const size_type lCols = lhs.cols();
+		const size_type rCols = rhs.cols();
 
 		// Matrix Model:
 		//   dest = lhsE  * rhsE
@@ -81,9 +81,9 @@ struct ProductLoop<Dest, LhsE, RhsE, ProductLoopTraits::PACKET>
 		// TODO: Get working in Column MajorOrder
 
 		// Blocksize along direction 
-		size_type mc = 100; // along m (rows of dest/lhs)
-		size_type kc = 25; // along k (columns of lhs, rows of rhs)
-		size_type nc = 25; // along n (columns of rhs)
+		const size_type mc = 4; // along m (rows of dest/lhs)
+		const size_type kc = 4; // along k (columns of lhs, rows of rhs)
+		const size_type nc = 4; // along n (columns of rhs)
 
 		SALW blockA{ mc * kc }; // LhsBlock
 		SALW blockB{ kc * nc }; // RhsBlock
@@ -99,7 +99,7 @@ struct ProductLoop<Dest, LhsE, RhsE, ProductLoopTraits::PACKET>
 			{
 				const size_type endK = std::min(k + kc, lCols) - k;
 
-				IndexWrapper lhsW{ lhsE, m, k };
+				IndexWrapper lhsW{ lhs, m, k };
 				packLhs(blockA.ptr, lhsW, m, endM, k, endK);
 
 				// For each kc x nc horizontal panel of rhs
@@ -107,7 +107,7 @@ struct ProductLoop<Dest, LhsE, RhsE, ProductLoopTraits::PACKET>
 				{
 					const size_type endN = std::min(n + nc, rCols) - n;
 
-					IndexWrapper rhsW{ rhsE, k, n };
+					IndexWrapper rhsW{ rhs, k, n };
 					packRhs(blockB.ptr, rhsW, k, endK, n, endN);
 
 					IndexWrapper idxWrapper{ dest, m, n };
@@ -117,6 +117,14 @@ struct ProductLoop<Dest, LhsE, RhsE, ProductLoopTraits::PACKET>
 				}
 			}
 		}
+	}
+
+	static void run(Dest& dest, const LhsE& lhsE, const RhsE& rhsE)
+	{
+		if (Dest::MajorOrder)
+			runImpl(dest, rhsE, lhsE);
+		else
+			runImpl(dest, lhsE, rhsE);
 	}
 };
 
@@ -157,6 +165,9 @@ struct ProductEvaluator<ProductOp<Lhs, Rhs>>
 			&& LhsE::Indexable && RhsE::Indexable
 	};
 
+	static constexpr auto GemmType = Packetable 
+		? GEMMType::VECTORIZED : GEMMType::COEFF;
+
 	using MatrixType	= Matrix<value_type, MajorOrder>;
 
 	explicit ProductEvaluator(const Op& expr) :
@@ -165,7 +176,7 @@ struct ProductEvaluator<ProductOp<Lhs, Rhs>>
 		matrix(expr.resultRows(), expr.resultCols()),
 		matrixEval{ matrix }
 	{
-		using LoopType = ProductLoop<Evaluator<MatrixType>, LhsE, RhsE, ProductLoopTraits::PACKET>; // TODO: Just for testing, switch back 
+		using LoopType = ProductLoop<Evaluator<MatrixType>, LhsE, RhsE, GemmType>;  
 		LoopType::run(matrixEval, lhsE, rhsE);
 	}
 

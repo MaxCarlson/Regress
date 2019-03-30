@@ -1,5 +1,7 @@
 #pragma once
-#include <memory>
+
+#define RGR_NOINLINE __declspec(noinline)
+#define RGR_FORCEINLINE __forceinline
 
 namespace impl
 {

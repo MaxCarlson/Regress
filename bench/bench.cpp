@@ -35,14 +35,18 @@ template<class Type, bool MajorOrder>
 struct basic : public BaseBench
 {
 	using Mat = Matrix<Type, MajorOrder>;
+	inline static const std::string order = MajorOrder ? "Column" : "Row";
 
 	static void run()
 	{
 		//RUN_FUNC(doOther, 1);
-		print("mulSquareAlias \n");
+		print("mulSquareAlias ", typeid(Type).name(), '\n');
+		print("MajorOrder: ", order, '\n');
+		RUN_FUNC(mulSquareAlias, "10", 10);
+		RUN_FUNC(mulSquareAlias, "50", 50);
 		RUN_FUNC(mulSquareAlias, "100", 100);
 		RUN_FUNC(mulSquareAlias, "250", 250);
-		RUN_FUNC(mulSquareAlias, "500", 500);
+		//RUN_FUNC(mulSquareAlias, "500", 500);
 	}
 
 	static void mulSquareAlias(int size)
@@ -52,8 +56,19 @@ struct basic : public BaseBench
 	}
 };
 
+template<template<class, bool> class Bench, bool MajorOrder>
+void runTypeTests()
+{
+	Bench<float,	MajorOrder>::run();
+	Bench<double,	MajorOrder>::run();
+	Bench<int,		MajorOrder>::run();
+	//Bench<int64_t,	MajorOrder>::run();
+}
+
 int main()
 {
-	basic<int, false>::run();
+	runTypeTests<basic, false>();
+	runTypeTests<basic, true>();
+
 	return 0;
 }

@@ -93,15 +93,19 @@ void packTranspose(Type* block, const From& from, Index r, Index rows, Index c, 
 template<class Type, class Lhs, class Index>
 void packLhs(Type* blockA, const Lhs& lhs, Index sRows, Index rows, Index sCols, Index cols)
 {
-	packTranspose(blockA, lhs, sRows, rows, sCols, cols);
-	//packInorder(blockA, lhs, sRows, rows, sCols, cols);
+	if (Lhs::MajorOrder)
+		packInorder(blockA, lhs, sRows, rows, sCols, cols);
+	else
+		packTranspose(blockA, lhs, sRows, rows, sCols, cols);
 }
 
 template<class Type, class Rhs, class Index>
 void packRhs(Type* blockB, const Rhs& rhs, Index sRows, Index rows, Index sCols, Index cols)
 {
-	packInorder(blockB, rhs, sRows, rows, sCols, cols);
-	//packTranspose(blockB, rhs, sRows, rows, sCols, cols);
+	if (Rhs::MajorOrder)
+		packTranspose(blockB, rhs, sRows, rows, sCols, cols);
+	else
+		packInorder(blockB, rhs, sRows, rows, sCols, cols);
 }
 
 // Simple wrapper class to make indexing inside gebp easier
@@ -109,6 +113,7 @@ template<class Dest, class Index>
 struct IndexWrapper
 {
 	using Type = typename Dest::value_type;
+	enum { MajorOrder = Dest::MajorOrder };
 
 	IndexWrapper(Dest& dest, Index r, Index c) :
 		dest{ dest },
@@ -143,7 +148,7 @@ private:
 };
 
 template<class Packet>
-__forceinline void pmadd(const Packet& a, const Packet& b, Packet& c, Packet& tmp)
+RGR_FORCEINLINE void pmadd(const Packet& a, const Packet& b, Packet& c, Packet& tmp)
 {
 	// TODO: ifdef for FMA instructions
 	//tmp = b;
@@ -152,7 +157,7 @@ __forceinline void pmadd(const Packet& a, const Packet& b, Packet& c, Packet& tm
 }
 
 
-// GEneral Block Product
+// GEneral Block Panel
 // https://www.cs.utexas.edu/users/pingali/CS378/2008sp/papers/gotoPaper.pdf
 // m x n = m x k * k x n
 //
@@ -195,22 +200,21 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, Index mc, Index nc
 			BlockPtr bPtr = &blockB[k * nc];
 
 			Packet tmp;
-			Packet A = impl::pbroadcast<Packet>(aPtr);
+			Packet A	= impl::pbroadcast<Packet>(aPtr);
+			Type Aval	= *aPtr;
 
 			// Evaluate packet by packet (SIMD)
 			for (Index n = 0; n < maxN; n += Stride)
 			{
-				if (n != 0) bPtr += Stride;
-
 				Packet C = dest.template packet<Packet>(m, n);
 				Packet B = pload<Packet>(bPtr);
 
 				pmadd(A, B, C, tmp);
 				dest.template writePacket<Packet>(m, n, C);
+				bPtr += Stride;
 			}
 
 			// Evaluate element by element
-			Type Aval = *aPtr;
 			for (Index n = maxN; n < nc; ++n)
 			{
 				// TODO/BUG: This could easily be wrong here

@@ -10,6 +10,9 @@
 
 namespace impl
 {
+template<class T> struct findAlignment { enum { value = alignof(T) }; };
+template<> struct findAlignment<void> { enum { value = 0 }; };
+
 // Get the packet traits of a type
 template<class ValueType, class PacketType>
 struct DefaultPacketTraits
@@ -19,7 +22,7 @@ struct DefaultPacketTraits
 
 	enum
 	{
-		Alignment	= alignof(PacketType),
+		Alignment	= findAlignment<PacketType>::value,
 		Size		= sizeof(ValueType),
 		Stride		= 0,
 		Packetable	= false,
