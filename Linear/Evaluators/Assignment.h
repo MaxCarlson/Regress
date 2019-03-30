@@ -94,12 +94,15 @@ struct AssignmentKernel
 	using ThisType		= AssignmentKernel<DestImpl, ExprImpl, Func>;
 	using size_type		= typename DestImpl::size_type;
 	using value_type	= typename DestImpl::value_type;
+
+	// TODO: Investigate optimizing MajorOrder to Opposite MajorOrder ops
 	enum
 	{
 		MajorOrder	= DestImpl::MajorOrder,
 		Packetable	= std::is_same_v<value_type, typename ExprImpl::value_type>
-			&& DestImpl::Packetable && ExprImpl::Packetable,
+			&& DestImpl::Packetable && ExprImpl::Packetable && MajorOrder == ExprImpl::MajorOrder,
 		Indexable	= Packetable && DestImpl::Indexable && ExprImpl::Indexable
+			&& MajorOrder == ExprImpl::MajorOrder
 	};
 
 	static constexpr LoopTraits LoopType = Indexable ? LoopTraits::Index
@@ -291,8 +294,10 @@ struct Assignment<Dest, Matrix<Type, MajorOrder>, Type, Func>
 
 		//ExprType expr{ typename Func::OpType{}, dest, matrix };
 		
-
 		ExprEval					exprE{ matrix };
+
+		dest.resize(exprE.rows(), exprE.cols());
+
 		ActualDest<Dest, ExprEval>	destE{ dest };
 		AssignmentKernel			kernel{ destE, exprE, func };
 

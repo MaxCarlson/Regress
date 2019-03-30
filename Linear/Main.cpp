@@ -24,7 +24,7 @@ int main()
 		{5, 6},
 	};
 
-	Matrix<int, true> rhs = {
+	Matrix<int> rhs = {
 		{1, 2, 3},
 		{4, 5, 6}
 	};

@@ -130,6 +130,33 @@ public:
 		addColumnImpl(lhsR, rhsR);
 		addColumnImpl(lhsC, rhsC);
 	}
+
+	template<class T, bool O>
+	void InitFromOppMajorOrderImpl(Matrix<T, O>& lhs, Matrix<T, O>& rhs)
+	{
+		using Mat	= Matrix<T, O>;
+		using MatO	= Matrix<T, !O>;
+
+		MatO res1 = lhs;
+		MatO res2 = rhs;
+
+		auto test = [&](auto& m1, auto& m2)
+		{
+			auto it = m1.ino_begin();
+			for (auto oit = m2.ino_begin();
+				it != m1.ino_end(); ++it, ++oit)
+				Assert::IsTrue(*it == *oit);
+		};
+		
+		test(res1, lhs);
+		test(res2, rhs);
+	}
+
+	TEST_METHOD(InitFromOppMajorOrder)
+	{
+		InitFromOppMajorOrderImpl(lhsR, rhsR);
+		InitFromOppMajorOrderImpl(lhsC, rhsC);
+	}
 };
 
 }

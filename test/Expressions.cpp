@@ -116,9 +116,14 @@ namespace test
 		template<class Mat>
 		void mulImpl(const Mat& lhs, const Mat& rhs, const Mat& rhs1, const Mat& big)
 		{
+			using Type = typename Mat::value_type;
+			enum { MajorOrder = Mat::MajorOrder };
+			using OMat = Matrix<Type, !MajorOrder>;
+
 			Mat res1 = (lhs * rhs) * lhs;
 			Mat res2 = (lhs * rhs) * lhs * rhs1;
 			Mat res3 = big * big;
+			//Mat res4 =
 
 			Mat res1v = { {120, 156}, {262, 340}, {404, 524} };
 			Mat res2v = { {900, 1176, 1452, 1728},
