@@ -20,11 +20,12 @@ namespace impl
 //
 // Format in memory: 
 // BlockSize 4x4
-// 1  2  3  4 
-// 5  6  7  8
-// 9  10 11 12
-// 13 14 15 16
-template<class Type, class From, class Index>
+// 1  2  3  4	17 18 19 20
+// 5  6  7  8	21 22 23 24
+// 9  10 11 12	25 26 27 28
+// 13 14 15 16	29 30 31 32 
+//
+template<class Type, class From, class Index, int nr = PacketTraits<Type>::Stride>
 void packInorder(Type* block, const From& from, Index r, Index rows, Index c, Index cols)
 {
 	using Traits = PacketTraits<Type>;
@@ -34,27 +35,34 @@ void packInorder(Type* block, const From& from, Index r, Index rows, Index c, In
 		Stride = Traits::Stride
 	};
 
-	const Index maxCols			= cols;
-	const Index maxPCols		= cols - cols % Stride;
+	// DELETE THIS
+	const Type* rr = block;
 
-	for (Index i = 0; i < rows; ++i)
+	// Columns after this col will be stored in transposed order
+	const Index maxPCol = cols - cols % nr;
+
+	for (Index j = 0; j < maxPCol; j += nr)
 	{
-		// Pack elements by packet
-		Index j = 0;
-		for (; j < maxPCols; j += Stride)
+		for (Index i = 0; i < rows; ++i)
 		{
 			Packet p = from.template packet<Packet>(i, j);
 			pstore(block, p);
-			block += Stride;
-		}
-
-		// Pack elements one at a time
-		for (; j < maxCols; ++j)
-		{
-			*block = from.evaluate(i, j);
-			++block;
+			block += nr;
 		}
 	}
+
+	// Pack last cols transposed
+		for (Index j = maxPCol; j < cols; ++j)
+			for (Index i = 0; i < rows; ++i)
+			{
+				Type v = from.evaluate(i, j);
+				*block = v;
+				++block;
+			}
+
+	for (int i = 0; i < rows * cols; ++i)
+		std::cout << rr[i] << ", ";
+	std::cout << "\n\n";
 }
 
 // Format in memory: 
@@ -74,10 +82,12 @@ void packTranspose(Type* block, const From& from, Index r, Index rows, Index c, 
 	};
 
 	// TODO: Loop unrolling
-	Type* rr = block;
+	
+	// DELETE THIS
+	const Type* rr = block;
 
 	const Index packedRows		= rows / mr + 1;
-	const Index lastPackedRow	= rows - rows % mr;
+	const Index lastPackedRow	= rows - rows % mr; // Rows after this row will be stored inorder
 
 	// Pack elements in transposed blocks
 	for (Index ri = 1; ri < packedRows; ++ri)
@@ -105,7 +115,7 @@ void packTranspose(Type* block, const From& from, Index r, Index rows, Index c, 
 
 	for (int i = 0; i < rows * cols; ++i)
 		std::cout << rr[i] << ", ";
-	int a = 5;
+	std::cout << "\n\n";
 }
 
 template<class Type, class Lhs, class Index>
