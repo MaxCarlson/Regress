@@ -25,10 +25,10 @@ public:
 		end = now();
 	}
 
-	void printCurrent()
+	void printCurrent(int factor = 1)
 	{
 		auto n = now();
-		auto count = std::chrono::duration_cast<Measure>(n - begin).count();
+		auto count = std::chrono::duration_cast<Measure>(n - begin).count() / factor;
 		std::cout << count << '\n';
 	}
 

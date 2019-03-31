@@ -146,6 +146,13 @@ struct IndexWrapper
 		dest.template writePacket<Packet>(getRow(row, col), getCol(row, col), p);
 	}
 
+	template<class Packet>
+	inline void accumulate(Index row, Index col, const Packet& p) const
+	{
+		Packet r = loadUnaligned<Packet>(row, col);
+		writePacket<Packet>(row, col, impl::padd(r, p));
+	}
+
 private:
 	Dest& RGR_RESTRICT dest;
 	Index r, c;
@@ -165,7 +172,7 @@ inline void pmadd(const Packet& a, const Packet& b, Packet& c, Packet& tmp)
 // https://www.cs.utexas.edu/users/pingali/CS378/2008sp/papers/gotoPaper.pdf
 // m x n = m x k * k x n
 //
-// { 1,  2,  3,  4}	  { 1,  2,  3,  4}
+// { 1,  2,  3,  4}	  { 1,  2,  3,  4} 
 // { 5,  6,  7,  8}   { 5,  6,  7,  8}
 // { 9, 10, 11, 12} * { 9, 10, 11, 12}
 // {13, 14, 15, 16}   {13, 14, 15, 16}
@@ -241,18 +248,9 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, Index mc, Index nc
 			for (Index n = unroll1; n < maxPackedN; n += Stride)
 			{
 				Packet B = impl::ploadu<Packet>(bPtr);
-				//Packet B = pload<Packet>(&blockB[k * nc + n]);
-
-				// TODO: Convert to unalignedLoad
 				Packet C = dest.template loadUnaligned<Packet>(m, n);
 
-				//std::cout << '1';
-
-				//pmadd(A, B, C, tmp);
-				Packet tmp = B;
-				tmp = impl::pmul(A, tmp);
-				C = impl::padd(C, tmp);
-
+				pmadd(A, B, C, tmp);
 				dest.template writePacket<Packet>(m, n, C);
 				bPtr += Stride;
 			}
@@ -260,10 +258,8 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, Index mc, Index nc
 			// Evaluate element by element
 			for (Index n = maxPackedN; n < nc; ++n)
 			{
-				Type C = dest.evaluate(m, n);
 				Type B = *bPtr;
-				dest.evaluateRef(m, n) = C + Aval * B;
-
+				dest.evaluateRef(m, n) += Aval * B;
 				++bPtr;
 			}
 		}

@@ -7,7 +7,7 @@ struct BaseBench
 {
 	static void start() { s.start(); }
 	static void stop() { s.stop(); }
-	static void printTime() { s.printCurrent(); }
+	static void printTime(int factor = 1) { s.printCurrent(factor); }
 	inline static Stopwatch<std::chrono::milliseconds> s;
 
 	template<class Func, class... Args>
@@ -24,10 +24,11 @@ inline void print(Args&& ...args)
 { (std::cout << ... << args);}
 
 
-#define RUN_FUNC(func, subname, ...)  std::cout << subname << ' '; \
+#define RUN_FUNC(func, subname, tests, ...)  std::cout << subname << ' '; \
 	BaseBench::start(); \
-	func(##__VA_ARGS__); \
-	BaseBench::printTime() \
+	for(int i = 0; i < tests; ++i) \
+		func(##__VA_ARGS__); \
+	BaseBench::printTime(tests) \
 
 
 
@@ -41,11 +42,11 @@ struct basic : public BaseBench
 	{
 		print("mulSquareAlias ", typeid(Type).name(), '\n');
 		print("MajorOrder: ", order, '\n');
-		RUN_FUNC(mulSquareAlias, "10", 10);
-		RUN_FUNC(mulSquareAlias, "50", 50);
-		RUN_FUNC(mulSquareAlias, "100", 100);
-		RUN_FUNC(mulSquareAlias, "250", 250);
-		//RUN_FUNC(mulSquareAlias, "500", 500);
+		RUN_FUNC(mulSquareAlias, "10", 10,  10);
+		RUN_FUNC(mulSquareAlias, "50", 10, 50);
+		RUN_FUNC(mulSquareAlias, "100", 10, 100);
+		RUN_FUNC(mulSquareAlias, "250", 10, 250);
+		RUN_FUNC(mulSquareAlias, "500", 10, 500);
 	}
 
 	static void mulSquareAlias(int size)

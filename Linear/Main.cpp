@@ -10,11 +10,30 @@ int main()
 {
 	Stopwatch<std::chrono::milliseconds> s;
 
-	/*
-	MatrixXd mat;
-	mat.resize(200, 200);
+	//*
+	Eigen::Matrix<int, -1, -1, Eigen::RowMajor> mat1;
+	Eigen::Matrix<int, -1, -1, Eigen::RowMajor> mat2;
+	mat1.resize(25, 25);
+	mat2.resize(25, 25);
+	int idx = 1;
+	auto fillMat = [&](auto& mat)
+	{
+		for (int i = 0; i < 25; ++i)
+		{
+			for (int j = 0; j < 25; ++j)
+			{
+				mat(i, j) = idx;
+				std::cout << idx++ << ", ";
+			}
+			std::cout << '\n';
+		}
+		std::cout << "\n";
+	};
+	fillMat(mat1);
+	fillMat(mat2);
+
 	s.start();
-	mat = mat * mat;
+	mat1 = mat1 * mat2;
 	s.printCurrent();
 	//*/
 
