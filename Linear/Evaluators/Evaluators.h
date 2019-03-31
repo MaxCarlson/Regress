@@ -62,10 +62,13 @@ struct Evaluator<Matrix<Type, MajorOrder>>
 		return m.index(idx);
 	}
 
-	template<class Packet>
+	template<class Packet, bool IsAligned = true>
 	Packet packet(size_type row, size_type col) const
 	{
-		return pload<Packet, value_type>(&m(row, col));
+		if (IsAligned)
+			return pload<Packet, value_type>(&m(row, col));
+		else
+			return impl::ploadu<Packet, value_type>(&m(row, col));
 	}
 
 	template<class Packet>

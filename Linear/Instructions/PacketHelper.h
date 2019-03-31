@@ -1,4 +1,12 @@
 #pragma once
+/*
+#ifdef _MSC_VER
+#include <intrin.h>
+#elif
+#include <x86intrin.h>
+#endif 
+*/
+#include <immintrin.h>
 
 #ifdef __AVX2__
 #define REGRESS_AVX2
@@ -39,7 +47,13 @@ template<class Packet, class Type>
 inline Packet pload(const Type* ptr) { static_assert(false); return {}; }
 
 template<class Packet, class Type>
-inline Packet pload1(const Type* ptr) { static_assert(false); return {}; }
+inline Packet ploadu(const Type* ptr) { static_assert(false); return {}; }
+
+template<class Packet, class Type>
+inline Packet pset1(const Type& ptr) { static_assert(false); return {}; }
+
+template<class Packet, class Type>
+inline Packet pload1(const Type* ptr) { return pset1<Packet>(*ptr); }
 
 template<class Packet, class Type>
 inline void pstore(Type* to, const Packet& ptr) { static_assert(false); }

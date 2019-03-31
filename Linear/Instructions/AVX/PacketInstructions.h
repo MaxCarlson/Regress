@@ -1,7 +1,6 @@
 #pragma once
 #include "ForwardDeclarations.h"
 #include "Instructions\PacketHelper.h"
-#include <immintrin.h>
 
 namespace impl
 {

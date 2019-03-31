@@ -135,6 +135,12 @@ struct IndexWrapper
 	}
 
 	template<class Packet>
+	inline Packet loadUnaligned(Index row, Index col) const
+	{
+		return dest.template packet<Packet, false>(getRow(row, col), getCol(row, col));
+	}
+
+	template<class Packet>
 	inline void writePacket(Index row, Index col, const Packet& p)
 	{
 		dest.template writePacket<Packet>(getRow(row, col), getCol(row, col), p);
@@ -170,10 +176,7 @@ inline void pmadd(const Packet& a, const Packet& b, Packet& c, Packet& tmp)
 // BlockA		BlockB		
 // 1 5  9 13	1 2 3 4		1111 5555
 // 2 6 10 14	5 6 7 8		1234 1234
-//						
-// rhs			lhs' (ColumnMajor)
-// 1 5  9 13	1 2 3 4		
-// 2 6 10 14	5 6 7 8	
+//
 template<class Dest, class Type, class Index>
 void gebp(Dest& dest, const Type* blockA, const Type* blockB, Index mc, Index nc, Index kc)
 {
@@ -183,7 +186,7 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, Index mc, Index nc
 	enum { Stride = Traits::Stride };
 
 	// TODO: Loop unrolling
-	// TODO: NOTE: mr/nr/kr are register block sizes
+	// TODO: NOTE: mr/nr/kr are block sizes to make block fit in registers?
 	// TODO: Is this gepb instead?
 	// TODO: Look into using sentinals?
 
@@ -193,7 +196,7 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, Index mc, Index nc
 	// Fits in l1 Cache
 
 	const Index maxPackedN	= nc - nc % Stride;
-	const Index unroll1		= maxPackedN - maxPackedN % (4*Stride);
+	const Index unroll1 = 0;// maxPackedN - maxPackedN % (4 * Stride);
 
 	// Loop through blockA (rows of lhs)
 	for (Index k = 0; k < kc; ++k)
@@ -205,9 +208,10 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, Index mc, Index nc
 			BlockPtr bPtr = &blockB[k * nc];
 
 			Packet tmp;
-			Packet A	= impl::pbroadcast<Packet>(aPtr);
+			Packet A	= impl::pload1<Packet>(aPtr); //impl::pbroadcast<Packet>(aPtr); 
 			Type Aval	= *aPtr;
 
+			/*
 			for (Index n = 0; n < unroll1; n += Stride * 4)
 			{
 				Packet C0 = dest.template packet<Packet>(m, n);
@@ -231,12 +235,16 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, Index mc, Index nc
 
 				bPtr += Stride * 4;
 			}
+			*/
 
 			// Evaluate packet by packet (SIMD)
 			for (Index n = unroll1; n < maxPackedN; n += Stride)
 			{
-				Packet B = pload<Packet>(bPtr);
-				Packet C = dest.template packet<Packet>(m, n);
+				Packet B = impl::ploadu<Packet>(bPtr);
+				//Packet B = pload<Packet>(&blockB[k * nc + n]);
+
+				// TODO: Convert to unalignedLoad
+				Packet C = dest.template loadUnaligned<Packet>(m, n);
 
 				//std::cout << '1';
 
