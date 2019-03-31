@@ -63,7 +63,7 @@ void packInorder(Type* block, const From& from, Index r, Index rows, Index c, In
 // 2 6 10 14
 // 3 7 11 15
 // 4 8 12 16
-template<class Type, class From, class Index>
+template<class Type, class From, class Index, int mr = 4>
 void packTranspose(Type* block, const From& from, Index r, Index rows, Index c, Index cols)
 {
 	using Traits = PacketTraits<Type>;
@@ -74,21 +74,38 @@ void packTranspose(Type* block, const From& from, Index r, Index rows, Index c, 
 	};
 
 	// TODO: Loop unrolling
+	Type* rr = block;
 
-	for (Index j = 0; j < cols; ++j)
+	const Index packedRows		= rows / mr + 1;
+	const Index lastPackedRow	= rows - rows % mr;
+
+	// Pack elements in transposed blocks
+	for (Index ri = 1; ri < packedRows; ++ri)
 	{
-		// Cannot Pack by packet as memory is not contiguous.
-		// Look into packing into temporary and using _MM_transpose
-		// Pack elements by packet
-
-		// Pack elements one at a time
-		for (Index i = 0; i < rows; ++i)
+		for (Index j = 0; j < cols; ++j)
 		{
-			Type v = from.evaluate(i, j);
-			*block = v;
-			++block;
+			// Cannot Pack by packet as memory is not contiguous.
+			// Look into packing into temporary and using _MM_transpose
+			for (Index i = 0; i < mr; ++i)
+			{
+				Type v = from.evaluate(i * ri, j);
+				*block = v;
+				++block;
+			}
 		}
 	}
+
+	// Finish out packing elements in order
+	for (Index i = lastPackedRow; i < rows; ++i)
+		for (Index j = 0; j < cols; ++j)
+		{
+			*block = from.evaluate(i, j);
+			++block;
+		}
+
+	for (int i = 0; i < rows * cols; ++i)
+		std::cout << rr[i] << ", ";
+	int a = 5;
 }
 
 template<class Type, class Lhs, class Index>
@@ -184,6 +201,8 @@ inline void pmadd(const Packet& a, const Packet& b, Packet& c, Packet& tmp)
 // 1 5  9 13	1 2 3 4		1111 5555
 // 2 6 10 14	5 6 7 8		1234 1234
 //
+// 1 2 3 4		1 5  9 13
+// 5 6 7 8		2 6 10 14
 template<class Dest, class Type, class Index>
 void gebp(Dest& dest, const Type* blockA, const Type* blockB, Index mc, Index nc, Index kc)
 {
@@ -217,32 +236,6 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, Index mc, Index nc
 			Packet tmp;
 			Packet A	= impl::pload1<Packet>(aPtr); //impl::pbroadcast<Packet>(aPtr); 
 			Type Aval	= *aPtr;
-
-			/*
-			for (Index n = 0; n < unroll1; n += Stride * 4)
-			{
-				Packet C0 = dest.template packet<Packet>(m, n);
-				Packet C1 = dest.template packet<Packet>(m, n + 1);
-				Packet C2 = dest.template packet<Packet>(m, n + 2);
-				Packet C3 = dest.template packet<Packet>(m, n + 3);
-
-				Packet B0 = pload<Packet>(bPtr);
-				Packet B1 = pload<Packet>(bPtr + 1);
-				Packet B2 = pload<Packet>(bPtr + 2);
-				Packet B3 = pload<Packet>(bPtr + 3);
-
-				pmadd(A, B0, C0, tmp);
-				pmadd(A, B1, C1, tmp);
-				pmadd(A, B2, C2, tmp);
-				pmadd(A, B3, C3, tmp);
-				dest.template writePacket<Packet>(m, n, C0);
-				dest.template writePacket<Packet>(m, n + 1, C1);
-				dest.template writePacket<Packet>(m, n + 2, C2);
-				dest.template writePacket<Packet>(m, n + 3, C3);
-
-				bPtr += Stride * 4;
-			}
-			*/
 
 			// Evaluate packet by packet (SIMD)
 			for (Index n = unroll1; n < maxPackedN; n += Stride)
