@@ -91,7 +91,7 @@ struct ProductLoop<Dest, LhsE, RhsE, GEMMType::VECTORIZED>
 				const size_type endK = std::min(k + kc, lCols) - k;
 
 				IndexWrapperLhs lhsW( lhs, m, k );
-				packLhs(blockA.ptr, lhsW, m, endM, k, endK);
+				packLhs(blockA.ptr, lhsW, endM, endK);
 
 				// For each kc x nc horizontal panel of rhs
 				for (size_type n = 0; n < rCols; n += nc)
@@ -99,7 +99,7 @@ struct ProductLoop<Dest, LhsE, RhsE, GEMMType::VECTORIZED>
 					const size_type endN = std::min(n + nc, rCols) - n;
 
 					IndexWrapperRhs rhsW{ rhs, k, n };
-					packRhs(blockB.ptr, rhsW, k, endK, n, endN);
+					packRhs(blockB.ptr, rhsW, endK, endN);
 
 					IndexWrapperDest idxWrapper{ dest, m, n };
 					gebp(idxWrapper, blockA.ptr, blockB.ptr, endM, endN, endK);
@@ -137,6 +137,7 @@ struct ProductEvaluator<ProductOp<Lhs, Rhs>>
 	using LhsE			= Evaluator<Lhs>;
 	using RhsE			= Evaluator<Rhs>;
 	using value_type	= typename Op::value_type;
+	//using PackingInfoT	= PackingInfo<value_type>;
 
 	enum 
 	{
