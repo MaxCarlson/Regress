@@ -104,6 +104,7 @@ void packPanel(Type* block, const From& from, Index rows, Index cols)
 	const Index maxPackedCols = cols - cols % Stride;
 
 	for (Index i = 0; i < rows; ++i)
+	{
 		for (Index j = 0; j < maxPackedCols; j += Stride)
 		{
 			Packet p = from.template packet<Packet>(i, j);
@@ -111,6 +112,16 @@ void packPanel(Type* block, const From& from, Index rows, Index cols)
 			block += Stride;
 		}
 
+		for (Index j = maxPackedCols; j < cols; ++j)
+		{
+			Type v = from.evaluate(i, j);
+			*block = v;
+			++block;
+		}
+	}
+
+
+	/*
 	for (Index i = 0; i < rows; ++i)
 		for (Index j = maxPackedCols; j < cols ; ++j)
 		{
@@ -118,6 +129,7 @@ void packPanel(Type* block, const From& from, Index rows, Index cols)
 			*block = v;
 			++block;
 		}
+	*/
 	for (int i = 0; i < rows * cols; ++i)
 	{
 		if (i != 0 && i % Stride == 0) std::cout << '\n';
@@ -246,7 +258,7 @@ struct IndexWrapper
 	inline void accumulate(Index row, Index col, const Packet& p) const
 	{
 		Packet r = loadUnaligned<Packet>(row, col);
-		writePacket<Packet>(row, col, impl::padd(r, p));
+		dest.template writePacket<Packet>(row, col, impl::padd(r, p));
 	}
 
 private:
@@ -291,21 +303,52 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, Index mc, Index nc
 	// blockB size is kc * nc
 	// Fits in l1 Cache
 
-	Index maxM = mc - mc % mr;
-	Index maxN = nc - nc % nr;
+	Index maxK = kc - kc % Stride; // TODO: Should be kr?
 
 	for (Index m = 0; m < mc; ++m)
 	{
-		for (Index k = 0; k < kc; ++k)
+		Index n			= 0;
+
+		if (maxK > 0)
 		{
-			BlockPtr aPtr	= blockA[m * mr + k];
-			Packet A		= pload1<Packet>(aPtr);
+			BlockPtr aPtr = &blockA[m * mc];
+			Packet C = impl::pset1<Packet>(0);
+			Packet tmp;
 
-			for (Index n = 0; n < maxN; n += nr)
+			for (Index k2 = 0; k2 < kc; ++k2)
 			{
-				BlockPtr bPtr = blockB[k * nr + n]; // TODO: Should nr be kr here?
+				Packet A = impl::pload1<Packet>(aPtr);
+				BlockPtr bPtr = &blockB[k2 * nr]; // TODO: Should nr be kr here?
+				Packet B = pload<Packet>(bPtr);
 
+				pmadd(A, B, C, tmp);
+				++aPtr;
 			}
+
+			dest.accumulate(m, n, C);
+			n += 4;
+		}
+
+		if (maxK < kc)
+		{
+			// Finish out micro row
+			Type Cval = 0;
+			aPtr = &blockA[m * mc]; // -= kc
+			for (Index k2 = 0; k2 < kc; ++k2)
+			{
+				BlockPtr bPtr = &blockB[nr * kc + k2];
+				Cval += *aPtr * *bPtr;
+				++aPtr;
+			}
+
+			dest.evaluateRef(m, n) += Cval;
+			n++;
+		}
+
+		
+		// TODO:
+		for (Index k1 = 0; k1 < kc; ++k1)
+		{
 		}
 	}
 
