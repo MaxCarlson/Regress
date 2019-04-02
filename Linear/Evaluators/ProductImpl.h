@@ -234,51 +234,48 @@ void gepb(Dest& dest, const Type* blockA, const Type* blockB, Index mc, Index nc
 	// blockB size is kc * nc
 	// Fits in l1 Cache
 
-	Index maxPackedK		= kc - kc % Stride;			// number of packed rhs rows (THIS IS WRONG, RHS packs all rows)
-	Index maxPackedN		= nc - nc % nr;				// number of packed rhs cols
-	Index columnsPerPacket	= maxPackedN / Stride;		// 
+	const Index maxPackedN			= nc - nc % nr;				// number of packed rhs cols
+	const Index columnsPerPacket	= maxPackedN / Stride;		// 
 
 	for (Index m = 0; m < mc; ++m)
 	{
-		Index n	= 0;
+		Packet tmp;
+		BlockPtr bPtr = &blockB[0];
 
-		if (maxPackedK > 0)
+		for (Index n = 0; n < maxPackedN; n += Stride)
 		{
-			Packet tmp;
+			BlockPtr aPtr	= &blockA[m * mc];
+			Packet C		= impl::pset1<Packet>(Type{ 0 });
 
-			for (Index n = 0; n < maxPackedN; n += Stride)
+			for (Index k = 0; k < kc; ++k)
 			{
-				BlockPtr aPtr	= &blockA[m * mc];
-				Packet C		= impl::pset1<Packet>(Type{ 0 });
+				//BlockPtr bPtr	= &blockB[k * nr + n * kc]; // TODO: Should nr be kr here?
+				Packet A		= impl::pload1<Packet>(aPtr);
+				Packet B		= pload<Packet>(bPtr);
 
-				for (Index k2 = 0; k2 < kc; ++k2)
-				{
-					BlockPtr bPtr	= &blockB[k2 * nr + n * kc]; // TODO: Should nr be kr here?
-					Packet A		= impl::pload1<Packet>(aPtr);
-					Packet B		= pload<Packet>(bPtr);
-
-					pmadd(A, B, C, tmp);
-					++aPtr;
-				}
-				dest.accumulate(m, n, C);
+				pmadd(A, B, C, tmp);
+				++aPtr;
+				bPtr += Stride;
 			}
+			dest.accumulate(m, n, C);
 		}
-
-		if (maxPackedK < kc)
+		
+		// Handle the column/s of RHS we were unable to pack
+		for (Index n = maxPackedN; n < nc; ++n)
 		{
 			// Finish out micro row
 			Type Cval		= 0;
 			BlockPtr aPtr	= &blockA[m * mc]; // -= kc
-			for (Index k2 = 0; k2 < kc; ++k2)
+			for (Index k = 0; k < kc; ++k)
 			{
-				BlockPtr bPtr = &blockB[nr * kc + k2];
+				//BlockPtr bPtr = &blockB[nr * kc * + k];
 				Cval += *aPtr * *bPtr;
 				++aPtr;
+				++bPtr;
 			}
-
 			dest.evaluateRef(m, n) += Cval;
-			n++;
 		}
+
 	}
 }
 
