@@ -68,12 +68,13 @@ void packPanel(Type* block, const From& from, Index rows, Index cols)
 		}
 	}
 
+	//*
 	for (int i = 0; i < rows * cols; ++i)
 	{
 		if (i != 0 && i % Stride == 0) std::cout << '\n';
 		std::cout << rr[i] << ", ";
 	}
-	std::cout << "\n\n";
+	std::cout << "\n\n";//*/
 }
 
 
@@ -122,25 +123,26 @@ void packBlock(Type* block, const From& from, Index rows, Index cols)
 			++block;
 		}
 
+	//*
 	for (int i = 0; i < rows * cols; ++i)
 	{
 		if (i != 0 && i % nr == 0) std::cout << '\n';
 		std::cout << rr[i] << ", ";
 	}
-	std::cout << "\n\n";
+	std::cout << "\n\n"; //*/
 }
 
 template<class Type, class Lhs, class Index>
 void packLhs(Type* blockA, const Lhs& lhs, Index rows, Index cols)
 {
-	std::cout << "Packing Lhs \n";
+	//std::cout << "Packing Lhs \n";
 	packPanel(blockA, lhs, rows, cols);
 }
 
 template<class Type, class Rhs, class Index>
 void packRhs(Type* blockB, const Rhs& rhs,  Index rows, Index cols)
 {
-	std::cout << "Packing Rhs \n";
+	//std::cout << "Packing Rhs \n";
 	packBlock(blockB, rhs, rows, cols);
 }
 
@@ -230,20 +232,45 @@ void gepb(Dest& dest, const Type* blockA, const Type* blockB, Index mc, Index nc
 	// TODO: Prefetching
 	// TODO: NOTE: mr/nr/kr are block sizes to make block fit in registers?
 
-
 	// blockA size is mc * kc 
 	// Fits in l2 Cache
 	// blockB size is kc * nc
 	// Fits in l1 Cache
 
-	const Index maxPackedN			= nc - nc % nr;				// number of packed rhs cols
-	const Index columnsPerPacket	= maxPackedN / Stride;		// 
+	const Index maxPackedN	= nc - nc % nr;	// number of packed rhs cols
+	const Index maxPackedN2 = 0;// maxPackedN / 2;
 
 	for (Index m = 0; m < mc; ++m)
 	{
 		BlockPtr bPtr = &blockB[0];
 
-		for (Index n = 0; n < maxPackedN; n += Stride)
+		/*// This still has issues
+		for (Index n = 0; n < maxPackedN2; n += Stride * 2)
+		{
+			Packet tmp;
+			Packet C0		= impl::pset1<Packet>(Type{ 0 });
+			Packet C1		= impl::pset1<Packet>(Type{ 0 });
+
+			BlockPtr aPtr	= &blockA[m * kc];
+
+			for (Index k = 0; k < kc; ++k)
+			{
+				Packet A = impl::pload1<Packet>(aPtr);
+				Packet B0 = pload<Packet>(bPtr);
+				Packet B1 = pload<Packet>(bPtr + Stride * kc);
+
+				pmadd(A, B0, C0, tmp);
+				pmadd(A, B1, C1, tmp);
+
+				++aPtr;
+				bPtr += Stride;
+			}
+			dest.accumulate(m, n, C0);
+			dest.accumulate(m, n + Stride, C1);
+		}
+		*/
+
+		for (Index n = maxPackedN2; n < maxPackedN; n += Stride)
 		{
 			Packet tmp;
 			Packet C		= impl::pset1<Packet>(Type{ 0 });
@@ -251,9 +278,8 @@ void gepb(Dest& dest, const Type* blockA, const Type* blockB, Index mc, Index nc
 
 			for (Index k = 0; k < kc; ++k)
 			{
-				//BlockPtr bPtr	= &blockB[k * nr + n * kc]; // TODO: Should nr be kr here?
-				Packet A		= impl::pload1<Packet>(aPtr);
-				Packet B		= pload<Packet>(bPtr);
+				Packet A	= impl::pload1<Packet>(aPtr);
+				Packet B	= pload<Packet>(bPtr);
 
 				pmadd(A, B, C, tmp);
 				++aPtr;
@@ -270,7 +296,6 @@ void gepb(Dest& dest, const Type* blockA, const Type* blockB, Index mc, Index nc
 			BlockPtr aPtr	= &blockA[m * kc]; 
 			for (Index k = 0; k < kc; ++k)
 			{
-				//BlockPtr bPtr = &blockB[nr * kc * + k];
 				Cval += *aPtr * *bPtr;
 				++aPtr;
 				++bPtr;

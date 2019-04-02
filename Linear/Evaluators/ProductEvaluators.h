@@ -72,9 +72,9 @@ struct ProductLoop<Dest, LhsE, RhsE, GEMMType::VECTORIZED>
 		// TODO: Benchmark allocating A/B on heap/thread_local/stack
 
 		// Blocksize along direction 
-		const size_type mc = 2; // along m (rows of dest/lhs)
-		const size_type kc = 2; // along k (columns of lhs, rows of rhs)
-		const size_type nc = 2; // along n (columns of rhs)
+		const size_type mc = 50; // along m (rows of dest/lhs)
+		const size_type kc = 25; // along k (columns of lhs, rows of rhs)
+		const size_type nc = 25; // along n (columns of rhs)
 
 		SALW blockA{ mc * kc }; // LhsBlock
 		SALW blockB{ kc * nc }; // RhsBlock
@@ -151,8 +151,8 @@ struct ProductEvaluator<ProductOp<Lhs, Rhs>>
 
 		Packetable		= std::is_same_v<typename Lhs::value_type, typename Rhs::value_type>
 			&& LhsE::Packetable && RhsE::Packetable,
-		Indexable		= LhsMajorOrder == RhsMajorOrder && Packetable
-			&& LhsE::Indexable && RhsE::Indexable
+		//Indexable		= LhsMajorOrder == RhsMajorOrder && Packetable
+		//	&& LhsE::Indexable && RhsE::Indexable
 	};
 
 	static constexpr auto GemmType = Packetable 
