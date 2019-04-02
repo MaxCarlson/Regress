@@ -102,7 +102,7 @@ struct ProductLoop<Dest, LhsE, RhsE, GEMMType::VECTORIZED>
 					packRhs(blockB.ptr, rhsW, endK, endN);
 
 					IndexWrapperDest idxWrapper{ dest, m, n };
-					gebp(idxWrapper, blockA.ptr, blockB.ptr, endM, endN, endK);
+					gepb(idxWrapper, blockA.ptr, blockB.ptr, endM, endN, endK);
 				}
 			}
 		}

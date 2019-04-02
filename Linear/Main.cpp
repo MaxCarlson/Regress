@@ -37,7 +37,7 @@ int main()
 	s.printCurrent();
 	//*/
 
-	Matrix<int, true> lhs = {
+	Matrix<int> lhs = {
 		{1, 2},
 		{3, 4},
 		{5, 6},
@@ -49,7 +49,7 @@ int main()
 	};
 
 
-	Matrix<int> bigger = {
+	Matrix<double> med = {
 		{ 1,  2,  3,  4,  5 },	// 1  6 11 16 21
 		{ 6,  7,  8,  9,  10},	// 2  7 12 17 22
 		{ 11, 12, 13, 14, 15},	// 3  8 13 18 23
@@ -57,53 +57,23 @@ int main()
 		{ 21, 22, 23, 24, 25}	// 5 10 15 20 25
 	};
 
-	/*
-	// TODO: Theres an issue with cross MajorOrder multiplication here
-	Matrix<int, true> biggerc = {
-	{1, 2, 3, 4, 1},
-	{3, 4, 4, 5, 1},
-	{5, 6, 6, 7, 1},
-	{5, 6, 6, 7, 1},
-	{5, 6, 6, 7, 1}
+	Matrix<int> medL = {
+		{ 1,  2,  3,  4,  5 },	
+		{ 6,  7,  8,  9,  10},	
+		{ 11, 12, 13, 14, 15},	
+		{ 16, 17, 18, 19, 20},	
+		{ 21, 22, 23, 24, 25},
+		{ 26, 27, 28, 29, 30}
 	};
-	Matrix<int> biggercO = biggerc;
+	Matrix<int> medR = medL.transpose();
 
-	std::cout << biggerc << "\n\n" << biggercO << '\n';
-
-	Matrix<int> resBigcT = biggercO * biggerc;
-	Matrix<int> resBigc = biggerc * biggerc;
-	std::cout << resBigcT << "\n\n" << resBigc << '\n';
-	//*/
-
-	// TODO: Why does this cause illegal void erros??
-	//Matrix<int64_t> gg = { {1} }; 
-	//gg = gg * gg;
-
-	//Matrix<int> large(100, 100);
 	s.start();
-	Matrix<int> vv = bigger * bigger;
+	//Matrix<int> vv = lhs * rhs;
+	Matrix<double> vv = med * med;
+	//Matrix<int> vv = medL * medR;
 	s.printCurrent();
 
 	std::cout << vv << "\n\n";
-
-	Matrix<int> bigRes = { 
-		{215, 230, 245, 260, 275}, 
-		{490, 530, 570, 610, 650},
-		{765, 830, 895, 960, 1025}, 
-		{1040, 1130, 1220, 1310, 1400}, 
-		{1315, 1430, 1545, 1660, 1775} 
-	};
-	std::cout << bigRes << '\n';
-
-	/*
-	Eigen::MatrixXi t;
-	t.resize(5, 5);
-	s.start();
-
-	Eigen::MatrixXi tt = t + t + t + t;
-	s.printCurrent();
-	s.start();
-	//*/
 
 	return 0;
 }
