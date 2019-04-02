@@ -239,13 +239,13 @@ void gepb(Dest& dest, const Type* blockA, const Type* blockB, Index mc, Index nc
 
 	for (Index m = 0; m < mc; ++m)
 	{
-		Packet tmp;
 		BlockPtr bPtr = &blockB[0];
 
 		for (Index n = 0; n < maxPackedN; n += Stride)
 		{
-			BlockPtr aPtr	= &blockA[m * mc];
+			Packet tmp;
 			Packet C		= impl::pset1<Packet>(Type{ 0 });
+			BlockPtr aPtr	= &blockA[m * kc];
 
 			for (Index k = 0; k < kc; ++k)
 			{
@@ -265,7 +265,7 @@ void gepb(Dest& dest, const Type* blockA, const Type* blockB, Index mc, Index nc
 		{
 			// Finish out micro row
 			Type Cval		= 0;
-			BlockPtr aPtr	= &blockA[m * mc]; // -= kc
+			BlockPtr aPtr	= &blockA[m * kc]; 
 			for (Index k = 0; k < kc; ++k)
 			{
 				//BlockPtr bPtr = &blockB[nr * kc * + k];
