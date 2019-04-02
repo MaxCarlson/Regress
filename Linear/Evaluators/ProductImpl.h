@@ -133,12 +133,14 @@ void packBlock(Type* block, const From& from, Index rows, Index cols)
 template<class Type, class Lhs, class Index>
 void packLhs(Type* blockA, const Lhs& lhs, Index rows, Index cols)
 {
+	std::cout << "Packing Lhs \n";
 	packPanel(blockA, lhs, rows, cols);
 }
 
 template<class Type, class Rhs, class Index>
 void packRhs(Type* blockB, const Rhs& rhs,  Index rows, Index cols)
 {
+	std::cout << "Packing Rhs \n";
 	packBlock(blockB, rhs, rows, cols);
 }
 
@@ -186,10 +188,10 @@ struct IndexWrapper
 	}
 
 	template<class Packet>
-	inline void accumulate(Index row, Index col, const Packet& p) const
+	inline void accumulate(Index row, Index col, const Packet& p) 
 	{
 		Packet r = loadUnaligned<Packet>(row, col);
-		dest.template writePacket<Packet>(row, col, impl::padd(r, p));
+		writePacket<Packet>(row, col, impl::padd(r, p));
 	}
 
 private:

@@ -49,7 +49,7 @@ int main()
 	};
 
 
-	Matrix<int> med = {
+	Matrix<double> med = {
 		{ 1,  2,  3,  4,  5 },	// 1  6 11 16 21
 		{ 6,  7,  8,  9,  10},	// 2  7 12 17 22
 		{ 11, 12, 13, 14, 15},	// 3  8 13 18 23
@@ -69,7 +69,7 @@ int main()
 
 	s.start();
 	//Matrix<int> vv = lhs * rhs;
-	Matrix<int> vv = med * med;
+	Matrix<double> vv = med * med;
 	//Matrix<int> vv = medL * medR;
 	s.printCurrent();
 
