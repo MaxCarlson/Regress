@@ -58,13 +58,13 @@ template<> inline Packet4f ploadu<Packet4f, float>(const float*		from) { return 
 template<> inline Packet4i ploadu<Packet4i, int>(const int*			from) { return _mm_loadu_si128(reinterpret_cast<const __m128i*>(from)); }
 template<> inline Packet2d ploadu<Packet2d, double>(const double*	from) { return _mm_loadu_pd(from); }
 
-template<> Packet4f pload1<Packet4f, float	>(const float*		from) { return _mm_load1_ps(from); }
+template<> inline Packet4f pload1<Packet4f, float	>(const float*		from) { return _mm_load1_ps(from); }
 // Int defaults to pset1
-template<> Packet2d pload1<Packet2d, double	>(const double*	from) { return _mm_load1_pd(from); }
+template<> inline Packet2d pload1<Packet2d, double	>(const double*	from) { return _mm_load1_pd(from); }
 
-template<> Packet4f pset1<Packet4f, float	>(const float&		from) { return _mm_set1_ps(from); }
-template<> Packet4i pset1<Packet4i, int		>(const int&		from) { return _mm_set1_epi32(from); }
-template<> Packet2d pset1<Packet2d, double	>(const double&		from) { return _mm_set1_pd(from); }
+template<> inline Packet4f pset1<Packet4f, float	>(const float&		from) { return _mm_set1_ps(from); }
+template<> inline Packet4i pset1<Packet4i, int		>(const int&		from) { return _mm_set1_epi32(from); }
+template<> inline Packet2d pset1<Packet2d, double	>(const double&		from) { return _mm_set1_pd(from); }
 
 template<> inline void pstore<Packet4f, float	>(float*	to, const Packet4f& from) { return _mm_store_ps(to, from); }
 template<> inline void pstore<Packet4i, int	>(int*		to, const Packet4i& from) { return _mm_store_si128(reinterpret_cast<__m128i*>(to), from); }
