@@ -61,7 +61,7 @@ struct ProductLoop<Dest, LhsE, RhsE, GEMMType::VECTORIZED>
 	template<class Lhs, class Rhs, bool DestTranspose>
 	static void gemm(Dest& dest, const Lhs& lhs, const Rhs& rhs, size_type lRows, size_type lCols, size_type rCols)
 	{
-		using IndexWrapperLhs	= IndexWrapper<const Lhs, size_type, DestTranspose>;
+		using IndexWrapperLhs	= IndexWrapper<const Lhs, size_type, false>;
 		using IndexWrapperRhs	= IndexWrapper<const Rhs, size_type, DestTranspose>;
 		using IndexWrapperDest	= IndexWrapper<Dest, size_type, DestTranspose>;
 
@@ -70,6 +70,10 @@ struct ProductLoop<Dest, LhsE, RhsE, GEMMType::VECTORIZED>
 		// TODO: Revisit main loop order below
 		// TODO: Calculate mc/kc/nc from type size/l2 cache size
 		// TODO: Benchmark allocating A/B on heap/thread_local/stack
+
+		///
+		/// NOTE: BUG: All tests not passing when mc/kc/nc are not small!
+		/// (Only on mixed Major Order expressions)
 
 		// Blocksize along direction 
 		const size_type mc = 50; // along m (rows of dest/lhs)
@@ -102,7 +106,7 @@ struct ProductLoop<Dest, LhsE, RhsE, GEMMType::VECTORIZED>
 					packRhs(blockB.ptr, rhsW, endK, endN);
 
 					IndexWrapperDest idxWrapper{ dest, m, n };
-					gepb(idxWrapper, blockA.ptr, blockB.ptr, endM, endN, endK);
+					gebp(idxWrapper, blockA.ptr, blockB.ptr, endM, endN, endK);
 				}
 			}
 		}
@@ -151,8 +155,8 @@ struct ProductEvaluator<ProductOp<Lhs, Rhs>>
 
 		Packetable		= std::is_same_v<typename Lhs::value_type, typename Rhs::value_type>
 			&& LhsE::Packetable && RhsE::Packetable,
-		//Indexable		= LhsMajorOrder == RhsMajorOrder && Packetable
-		//	&& LhsE::Indexable && RhsE::Indexable
+		Indexable		= LhsMajorOrder == RhsMajorOrder && Packetable
+			&& LhsE::Indexable && RhsE::Indexable
 	};
 
 	static constexpr auto GemmType = Packetable 

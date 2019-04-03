@@ -51,6 +51,10 @@ void packPanel(Type* block, const From& from, Index rows, Index cols)
 
 	const Index maxPackedCols = cols - cols % Stride;
 
+	// TODO: BUG: Current issue with mul tests of non-uniform MajorOrder operations
+	// originates from this packing not working when lhs is of ColumnOrder.
+	// Indexer is partially to blame as if the indexing was not switched it looks like it would work!
+
 	for (Index i = 0; i < rows; ++i)
 	{
 		for (Index j = 0; j < maxPackedCols; j += Stride)
@@ -104,15 +108,33 @@ void packBlock(Type* block, const From& from, Index rows, Index cols)
 	// Columns after this col will be stored in transposed order
 	const Index maxPCol = cols - cols % nr;
 
-	for (Index j = 0; j < maxPCol; j += nr)
+	if (!From::MajorOrder)
 	{
-		for (Index i = 0; i < rows; ++i)
+		for (Index j = 0; j < maxPCol; j += nr)
 		{
-			Packet p = from.template packet<Packet>(i, j);
-			pstore(block, p);
-			block += nr;
+			for (Index i = 0; i < rows; ++i)
+			{
+				Packet p = from.template packet<Packet>(i, j);
+				pstore(block, p);
+				block += nr;
+			}
 		}
 	}
+	//*
+	else
+	{
+		for (Index j = 0; j < maxPCol; ++j)
+		{
+			for (Index i = 0; i < rows; ++i)
+			{
+				Type p = from.evaluate(i, j);
+				*block = p;
+				++block;
+			}
+		}
+	}
+	//*/
+
 
 	// Pack last cols transposed
 	for (Index j = maxPCol; j < cols; ++j)
@@ -158,8 +180,8 @@ struct IndexWrapper
 		r{ r }, c{ c }
 	{}
 
-	RGR_FORCE_INLINE Index getRow(Index row, Index col) const { return Transpose ? col + c : row + r; }
-	RGR_FORCE_INLINE Index getCol(Index row, Index col) const { return Transpose ? row + r : col + c; }
+	inline Index getRow(Index row, Index col) const { return Transpose ? col + c : row + r; }
+	inline Index getCol(Index row, Index col) const { return Transpose ? row + r : col + c; }
 
 	inline Type evaluate(Index row, Index col) const
 	{
@@ -211,7 +233,7 @@ inline void pmadd(const Packet& a, const Packet& b, Packet& c, Packet& tmp)
 }
 
 
-// GEneral Panel Block (Mirror of gebp and done in Row Major Order)
+// GEneral Block Panel 
 // https://www.cs.utexas.edu/users/pingali/CS378/2008sp/papers/gotoPaper.pdf
 // m x n = m x k * k x n
 //
@@ -221,7 +243,7 @@ inline void pmadd(const Packet& a, const Packet& b, Packet& c, Packet& tmp)
 // {13, 14, 15, 16}   {13, 14, 15, 16}
 //
 template<class Dest, class Type, class Index, int nr = PackingInfo<Type>::nr, int mr = PackingInfo<Type>::mr>
-void gepb(Dest& dest, const Type* blockA, const Type* blockB, Index mc, Index nc, Index kc)
+void gebp(Dest& dest, const Type* blockA, const Type* blockB, Index mc, Index nc, Index kc)
 {
 	using Traits	= PacketTraits<Type>;
 	using Packet	= typename Traits::type;
@@ -237,19 +259,19 @@ void gepb(Dest& dest, const Type* blockA, const Type* blockB, Index mc, Index nc
 	// blockB size is kc * nc
 	// Fits in l1 Cache
 
-	const Index maxPackedN	= nc - nc % nr;	// number of packed rhs cols
-	const Index maxPackedN2 = 0;// maxPackedN / 2;
+	const Index maxPackedN2 = nc - nc % (nr * 2);
+	const Index maxPackedN	= nc - nc % nr;
 
 	for (Index m = 0; m < mc; ++m)
 	{
 		BlockPtr bPtr = &blockB[0];
 
-		/*// This still has issues
-		for (Index n = 0; n < maxPackedN2; n += Stride * 2)
+		//*// This still has issues (middle row of "med" matrix is double what it should be!)
+		for (Index n = 0;;)
 		{
 			Packet tmp;
-			Packet C0		= impl::pset1<Packet>(Type{ 0 });
-			Packet C1		= impl::pset1<Packet>(Type{ 0 });
+			Packet C0{ Type{ 0 } };
+			Packet C1{ Type{ 0 } };
 
 			BlockPtr aPtr	= &blockA[m * kc];
 
@@ -257,24 +279,31 @@ void gepb(Dest& dest, const Type* blockA, const Type* blockB, Index mc, Index nc
 			{
 				Packet A = impl::pload1<Packet>(aPtr);
 				Packet B0 = pload<Packet>(bPtr);
-				Packet B1 = pload<Packet>(bPtr + Stride * kc);
+				Packet B1 = pload<Packet>(bPtr + nr * kc);
 
 				pmadd(A, B0, C0, tmp);
 				pmadd(A, B1, C1, tmp);
 
 				++aPtr;
-				bPtr += Stride;
+				bPtr += nr;
 			}
 			dest.accumulate(m, n, C0);
 			dest.accumulate(m, n + Stride, C1);
+
+			n += Stride * 2;
+			if (n >= maxPackedN2)
+			{
+				bPtr += nr * kc;
+				break;
+			}
 		}
-		*/
+		//*/
 
 		for (Index n = maxPackedN2; n < maxPackedN; n += Stride)
 		{
-			Packet tmp;
-			Packet C		= impl::pset1<Packet>(Type{ 0 });
-			BlockPtr aPtr	= &blockA[m * kc];
+			Packet		tmp;
+			Packet		C{ Type{ 0 } };
+			BlockPtr	aPtr = &blockA[m * kc];
 
 			for (Index k = 0; k < kc; ++k)
 			{

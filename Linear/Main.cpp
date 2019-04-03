@@ -42,6 +42,7 @@ int main()
 		{3, 4},
 		{5, 6},
 	};
+	Matrix<int, true> lhsC = lhs;
 
 	Matrix<int> rhs = {
 		{1, 2, 3},
@@ -56,6 +57,7 @@ int main()
 		{ 16, 17, 18, 19, 20},	// 4  9 14 19 24
 		{ 21, 22, 23, 24, 25}	// 5 10 15 20 25
 	};
+	Matrix<double, true> medC = med;
 
 	Matrix<int> medL = {
 		{ 1,  2,  3,  4,  5 },	
@@ -65,7 +67,17 @@ int main()
 		{ 21, 22, 23, 24, 25},
 		{ 26, 27, 28, 29, 30}
 	};
-	//Matrix<int> medR = medL.transpose();
+	
+	//Matrix<int> res1 = lhsC * rhs;
+	//Matrix<int> res2 = lhs * rhs;
+	//Matrix<double> test = medC * med; // Note: simple test for current issue
+	//Matrix<double> res = med * med;
+	//std::cout << test << "\n\n" << res << "\n\n";
+
+	constexpr int nc = 10;
+	constexpr int nr = 2;
+	constexpr int maxPackedN2 = nc - nc % (nr * 2);
+	constexpr int maxPackedN = nc - nc % nr;
 
 	s.start();
 	//Matrix<int> vv = lhs * rhs;

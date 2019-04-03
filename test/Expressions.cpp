@@ -129,7 +129,7 @@ namespace test
 			Mat res2 = (lhs * rhs) * lhs * rhs1;
 			Mat res3 = big * big;
 			Mat res4 = (Olhs * rhs) * Olhs;
-			Mat res5 = (lhs * Orhs) * lhs * Orhs1;
+			Mat res5 = (lhs * Orhs) * lhs * Orhs1; 
 			Mat res6 = Obig * big;
 
 			Mat res1v = { {120, 156}, {262, 340}, {404, 524} };
