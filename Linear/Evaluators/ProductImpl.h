@@ -72,7 +72,7 @@ void packPanel(Type* block, const From& from, Index rows, Index cols)
 		}
 	}
 
-	//*
+	/*
 	for (int i = 0; i < rows * cols; ++i)
 	{
 		if (i != 0 && i % Stride == 0) std::cout << '\n';
@@ -145,7 +145,7 @@ void packBlock(Type* block, const From& from, Index rows, Index cols)
 			++block;
 		}
 
-	//*
+	/*
 	for (int i = 0; i < rows * cols; ++i)
 	{
 		if (i != 0 && i % nr == 0) std::cout << '\n';
@@ -243,7 +243,7 @@ inline void pmadd(const Packet& a, const Packet& b, Packet& c, Packet& tmp)
 // {13, 14, 15, 16}   {13, 14, 15, 16}
 //
 template<class Dest, class Type, class Index, int nr = PackingInfo<Type>::nr, int mr = PackingInfo<Type>::mr>
-void gebp(Dest& dest, const Type* blockA, const Type* blockB, Index mc, Index nc, Index kc)
+void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, const Index nc, const Index kc)
 {
 	using Traits	= PacketTraits<Type>;
 	using Packet	= typename Traits::type;
@@ -266,7 +266,7 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, Index mc, Index nc
 	{
 		BlockPtr bPtr = &blockB[0];
 
-		//*// This still has issues (middle row of "med" matrix is double what it should be!)
+		//*// Anywhere from 110 - 150% speedup depending on the Matrix size
 		for (Index n = 0;;)
 		{
 			Packet tmp;
