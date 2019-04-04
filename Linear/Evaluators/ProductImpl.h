@@ -72,7 +72,7 @@ void packPanel(Type* block, const From& from, Index rows, Index cols)
 		}
 	}
 
-	/*
+	//*
 	for (int i = 0; i < rows * cols; ++i)
 	{
 		if (i != 0 && i % Stride == 0) std::cout << '\n';
@@ -145,7 +145,7 @@ void packBlock(Type* block, const From& from, Index rows, Index cols)
 			++block;
 		}
 
-	/*
+	//*
 	for (int i = 0; i < rows * cols; ++i)
 	{
 		if (i != 0 && i % nr == 0) std::cout << '\n';
@@ -267,7 +267,7 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 		BlockPtr bPtr = &blockB[0];
 
 		//*// Anywhere from 110 - 150% speedup depending on the Matrix size
-		for (Index n = 0;;)
+		for (Index n = 0; n < maxPackedN2;)
 		{
 			Packet tmp;
 			Packet C0{ Type{ 0 } };
@@ -291,7 +291,7 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 			dest.accumulate(m, n + Stride, C1);
 
 			n += Stride * 2;
-			if (n >= maxPackedN2)
+			if (n >= maxPackedN2) // TODO: Two checks a loop? Possibly bad, check assembly
 			{
 				bPtr += nr * kc;
 				break;

@@ -74,6 +74,9 @@ int main()
 	//Matrix<double> res = med * med;
 	//std::cout << test << "\n\n" << res << "\n\n";
 
+	Matrix<int> res = lhs * rhs * lhs;
+	std::cout << res << "\n\n";
+
 	constexpr int nc = 10;
 	constexpr int nr = 2;
 	constexpr int maxPackedN2 = nc - nc % (nr * 2);
