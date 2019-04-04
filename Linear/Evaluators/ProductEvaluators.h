@@ -53,27 +53,31 @@ struct ProductLoop<Dest, LhsE, RhsE, GEMMType::VECTORIZED>
 	// https://www.cs.utexas.edu/users/pingali/CS378/2008sp/papers/gotoPaper.pdf
 	//
 	// Note: gemm is written from a RowMajor Order perspective. In order to get
-	// a ColumnMajor result the matricies are transposed
+	// a ColumnMajor result the matricies lhs and rhs swap places and
+	// coordinates transposed (rhs becomes lhs, lhs(1, 2) becomes lhs(2, 1))
 	//
 	// Matrix Model:
-	//   dest = lhs  * rhs
+	//   dest = lhs * rhs
 	//  m x n = m x k * k x n
-	template<class Lhs, class Rhs, bool DestTranspose>
+	template<class Lhs, class Rhs>
 	static void gemm(Dest& dest, const Lhs& lhs, const Rhs& rhs, size_type lRows, size_type lCols, size_type rCols)
 	{
-		using IndexWrapperLhs	= IndexWrapper<const Lhs, size_type, false>;
+		using IndexWrapperLhs	= IndexWrapper<const Lhs, size_type, DestTranspose>;
 		using IndexWrapperRhs	= IndexWrapper<const Rhs, size_type, DestTranspose>;
 		using IndexWrapperDest	= IndexWrapper<Dest, size_type, DestTranspose>;
 
-		// TODO: Switch input blocks so it works just as well for Col MajorOrder 
-		// (rhs becomes lhs, lhs -> rhs)
 		// TODO: Revisit main loop order below
 		// TODO: Calculate mc/kc/nc from type size/l2 cache size
 		// TODO: Benchmark allocating A/B on heap/thread_local/stack
 
 		///
-		/// NOTE: BUG: All tests not passing when mc/kc/nc are not small!
-		/// (Only on mixed Major Order expressions)
+		// NOTE: BUG: All tests not passing when mc/kc/nc are not small!
+		// (Only on mixed Major Order expressions)
+		///
+		// NOTE: When lhs is ColumnMajor Order and rhs isn't 
+		// the whole expression (or vice-versa) tries to transpose itself
+		// Even if dest is RowMajor order (like the result of this expr would
+		// be without transpositon)
 
 		// Blocksize along direction 
 		const size_type mc = 50; // along m (rows of dest/lhs)
@@ -115,9 +119,9 @@ struct ProductLoop<Dest, LhsE, RhsE, GEMMType::VECTORIZED>
 	static void run(Dest& dest, const LhsE& lhs, const RhsE& rhs)
 	{
 		if (DestTranspose)
-			gemm<RhsE, LhsE, DestTranspose>(dest, rhs, lhs, dest.cols(), lhs.cols(), dest.rows());
+			gemm(dest, rhs, lhs, dest.cols(), lhs.cols(), dest.rows());
 		else
-			gemm<LhsE, RhsE, DestTranspose>(dest, lhs, rhs, dest.rows(), lhs.cols(), dest.cols());
+			gemm(dest, lhs, rhs, dest.rows(), lhs.cols(), dest.cols());
 	}
 };
 

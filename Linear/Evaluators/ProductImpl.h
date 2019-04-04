@@ -108,33 +108,15 @@ void packBlock(Type* block, const From& from, Index rows, Index cols)
 	// Columns after this col will be stored in transposed order
 	const Index maxPCol = cols - cols % nr;
 
-	if (!From::MajorOrder)
+	for (Index j = 0; j < maxPCol; j += nr)
 	{
-		for (Index j = 0; j < maxPCol; j += nr)
+		for (Index i = 0; i < rows; ++i)
 		{
-			for (Index i = 0; i < rows; ++i)
-			{
-				Packet p = from.template packet<Packet>(i, j);
-				pstore(block, p);
-				block += nr;
-			}
+			Packet p = from.template packet<Packet>(i, j);
+			pstore(block, p);
+			block += nr;
 		}
 	}
-	//*
-	else
-	{
-		for (Index j = 0; j < maxPCol; ++j)
-		{
-			for (Index i = 0; i < rows; ++i)
-			{
-				Type p = from.evaluate(i, j);
-				*block = p;
-				++block;
-			}
-		}
-	}
-	//*/
-
 
 	// Pack last cols transposed
 	for (Index j = maxPCol; j < cols; ++j)
@@ -173,7 +155,11 @@ template<class Dest, class Index, bool Transpose>
 struct IndexWrapper
 {
 	using Type = typename Dest::value_type;
-	enum { MajorOrder = Dest::MajorOrder };
+	enum
+	{
+		MajorOrder = Dest::MajorOrder, 
+		Transposed = Transpose
+	};
 
 	IndexWrapper(Dest& dest, Index r, Index c) :
 		dest{ dest },
@@ -259,8 +245,9 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 	// blockB size is kc * nc
 	// Fits in l1 Cache
 
+	const Index maxPackedN4 = nc - nc % (nr * 4);
 	const Index maxPackedN2 = nc - nc % (nr * 2);
-	const Index maxPackedN	= nc - nc % nr;
+	const Index maxPackedN = nc - nc % nr;
 
 	for (Index m = 0; m < mc; ++m)
 	{
@@ -317,6 +304,8 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 			dest.accumulate(m, n, C);
 		}
 		
+
+		// TODO: Pack so as we can vectorize with (probably) unaligned loads
 		// Handle the column/s of RHS we were unable to pack
 		for (Index n = maxPackedN; n < nc; ++n)
 		{

@@ -3,7 +3,7 @@
 #include "Matrix.h" 
 #include <Eigen\Dense>
 #include "Instructions\Packets.h"
-
+#include <numeric>
 using Eigen::MatrixXd;
 
 int main()
@@ -49,7 +49,6 @@ int main()
 		{4, 5, 6}
 	};
 
-
 	Matrix<double> med = {
 		{ 1,  2,  3,  4,  5 },	// 1  6 11 16 21
 		{ 6,  7,  8,  9,  10},	// 2  7 12 17 22
@@ -59,28 +58,17 @@ int main()
 	};
 	Matrix<double, true> medC = med;
 
-	Matrix<int> medL = {
-		{ 1,  2,  3,  4,  5 },	
-		{ 6,  7,  8,  9,  10},	
-		{ 11, 12, 13, 14, 15},	
-		{ 16, 17, 18, 19, 20},	
-		{ 21, 22, 23, 24, 25},
-		{ 26, 27, 28, 29, 30}
-	};
-	
-	//Matrix<int> res1 = lhsC * rhs;
-	//Matrix<int> res2 = lhs * rhs;
-	//Matrix<double> test = medC * med; // Note: simple test for current issue
-	//Matrix<double> res = med * med;
-	//std::cout << test << "\n\n" << res << "\n\n";
+	//Matrix<int> large(10, 10);
+	//std::iota(large.begin(), large.end(), 1);
+	//std::cout << large;
+	//Matrix<int> largeRes = large * large;
 
-	Matrix<int> res = lhs * rhs * lhs;
-	std::cout << res << "\n\n";
+	Matrix<double> res = med * med;
+	Matrix<double> test = medC * med; // Note: simple test for current issue
+	std::cout << res << "\n\n" << test << "\n\n";
 
-	constexpr int nc = 10;
-	constexpr int nr = 2;
-	constexpr int maxPackedN2 = nc - nc % (nr * 2);
-	constexpr int maxPackedN = nc - nc % nr;
+	//Matrix<int> res = lhs * rhs * lhs;
+	//std::cout << res << "\n\n";
 
 	s.start();
 	//Matrix<int> vv = lhs * rhs;
