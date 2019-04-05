@@ -280,31 +280,6 @@ struct Assignment<Dest, TransposeOp<Expr>, Type, Func>
 	}
 };
 
-template<class Dest, class Type, bool MajorOrder, class Func>
-struct Assignment<Dest, Matrix<Type, MajorOrder>, Type, Func>
-{
-	using MatrixType	= Matrix<Type, MajorOrder>;
-	//using ExprType		= CwiseBinaryOp<typename Func::OpType, Dest, MatrixType>;
-
-	// TODO: This needs to be specialized for *= as it won't work as is
-	// 
-	inline static void run(Dest& dest, const MatrixType& matrix, const Func& func)
-	{
-		using ExprEval = Evaluator<MatrixType>;
-
-		//ExprType expr{ typename Func::OpType{}, dest, matrix };
-		
-		ExprEval					exprE{ matrix };
-
-		dest.resize(exprE.rows(), exprE.cols());
-
-		ActualDest<Dest, ExprEval>	destE{ dest };
-		AssignmentKernel			kernel{ destE, exprE, func };
-
-		kernel.run();
-	}
-};
-
 template<class DestValueType, bool DestMajorOrder, class Type, bool MajorOrder, class Func>
 struct Assignment<Matrix<DestValueType, DestMajorOrder>, Matrix<Type, MajorOrder>, DestValueType, Func>
 {
@@ -318,17 +293,16 @@ struct Assignment<Matrix<DestValueType, DestMajorOrder>, Matrix<Type, MajorOrder
 	{
 		using ExprEval = Evaluator<MatrixType>;
 
-		//ExprType expr{ typename Func::OpType{}, dest, matrix };
+		ExprEval					exprE{ matrix };
 
-		//ExprEval					exprE{ matrix };
+		dest.resize(exprE.rows(), exprE.cols());
 
-		//dest.resize(exprE.rows(), exprE.cols());
+		ActualDest<Dest, ExprEval>	destE{ dest };
+		AssignmentKernel			kernel{ destE, exprE, func };
 
-		//ActualDest<Dest, ExprEval>	destE{ dest };
-		//AssignmentKernel			kernel{ destE, exprE, func };
-
-		//kernel.run();
+		kernel.run();
 	}
 };
+
 
 } // End impl::

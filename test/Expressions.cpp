@@ -160,6 +160,8 @@ namespace test
 			mulImpl<rMM, double>(lhs, rhs, rhs1, med, bigger);
 
 			mulImpl<cMM, int>(lhsc, rhsc, rhs1c, medc, biggerc);
+			mulImpl<cMM, float>(lhsc, rhsc, rhs1c, medc, biggerc);
+			mulImpl<cMM, double>(lhsc, rhsc, rhs1c, medc, biggerc);
 		}
 
 		template<class Mat>
