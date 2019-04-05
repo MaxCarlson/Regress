@@ -55,7 +55,7 @@ void packPanel(Type* block, const From& from, Index rows, Index cols)
 	// originates from this packing not working when lhs is of ColumnOrder.
 	// Indexer is partially to blame as if the indexing was not switched it looks like it would work!
 
-	if (From::Transposed)
+	if (From::MajorOrder)
 	{
 		for (Index i = 0; i < rows; ++i)
 		{
@@ -66,25 +66,24 @@ void packPanel(Type* block, const From& from, Index rows, Index cols)
 				++block;
 			}
 		}
-		return;
 	}
-
-	for (Index i = 0; i < rows; ++i)
-	{
-		for (Index j = 0; j < maxPackedCols; j += Stride)
+	else
+		for (Index i = 0; i < rows; ++i)
 		{
-			Packet p = from.template packet<Packet>(i, j);
-			pstore(block, p);
-			block += Stride;
-		}
+			for (Index j = 0; j < maxPackedCols; j += Stride)
+			{
+				Packet p = from.template packet<Packet>(i, j);
+				pstore(block, p);
+				block += Stride;
+			}
 
-		for (Index j = maxPackedCols; j < cols; ++j)
-		{
-			Type v = from.evaluate(i, j);
-			*block = v;
-			++block;
+			for (Index j = maxPackedCols; j < cols; ++j)
+			{
+				Type v = from.evaluate(i, j);
+				*block = v;
+				++block;
+			}
 		}
-	}
 
 	//*
 	for (int i = 0; i < rows * cols; ++i)
@@ -122,6 +121,24 @@ void packBlock(Type* block, const From& from, Index rows, Index cols)
 	// Columns after this col will be stored in transposed order
 	const Index maxPCol = cols - cols % nr;
 
+
+	if (From::MajorOrder)
+	{
+		for (Index j = 0; j < maxPCol; j += nr)
+		{
+			for (Index i = 0; i < rows; ++i)
+			{
+				for (Index h = 0; h < nr; ++h)
+				{
+					Type v = from.evaluate(i, j + h);
+					*block = v;
+					++block;
+				}
+			}
+		}
+		goto DebugEnd;
+	}
+
 	for (Index j = 0; j < maxPCol; j += nr)
 	{
 		for (Index i = 0; i < rows; ++i)
@@ -132,6 +149,9 @@ void packBlock(Type* block, const From& from, Index rows, Index cols)
 		}
 	}
 
+DebugEnd:
+
+
 	// Pack last cols transposed
 	for (Index j = maxPCol; j < cols; ++j)
 		for (Index i = 0; i < rows; ++i)
@@ -140,6 +160,7 @@ void packBlock(Type* block, const From& from, Index rows, Index cols)
 			*block = v;
 			++block;
 		}
+
 
 	//*
 	for (int i = 0; i < rows * cols; ++i)
@@ -171,8 +192,8 @@ struct IndexWrapper
 	using Type = typename Dest::value_type;
 	enum
 	{
-		MajorOrder = Dest::MajorOrder, 
-		Transposed = Transpose
+		Transposed = Transpose,
+		MajorOrder = Transposed ? !Dest::MajorOrder : Dest::MajorOrder,
 	};
 
 	IndexWrapper(Dest& dest, Index r, Index c) :

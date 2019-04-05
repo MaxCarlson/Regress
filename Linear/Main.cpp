@@ -48,6 +48,7 @@ int main()
 		{1, 2, 3},
 		{4, 5, 6}
 	};
+	Matrix<int> rhsC = rhs;
 
 	Matrix<double> med = {
 		{ 1,  2,  3,  4,  5 },	// 1  6 11 16 21
@@ -63,13 +64,19 @@ int main()
 	//std::cout << large;
 	//Matrix<int> largeRes = large * large;
 
-	Matrix<int> res2 = lhs * rhs;
-	Matrix<int> res1 = lhsC * rhs;
-	std::cout << res2 << "\n\n" << res1 << "\n\n";
+	//Matrix<int> res2 = lhs * rhs;
+	//Matrix<int> res1 = lhsC * rhs;
+	//Matrix<int> res3 = lhs * rhsC;
+	//std::cout << res2 << "\n\n";
+	//std::cout << res1 << "\n\n";
+	//std::cout << res3 << "\n\n";
 
-	Matrix<double> res = med * med;
-	Matrix<double> test = medC * med; // Note: simple test for current issue
-	std::cout << res << "\n\n" << test << "\n\n";
+	Matrix<double> resMed = med * med;
+	Matrix<double> resMed1 = medC * med; // Note: simple test for current issue
+	Matrix<double> resMed2 = med * medC;
+	std::cout << resMed << "\n\n";
+	std::cout << resMed1 << "\n\n";
+	std::cout << resMed2 << "\n\n";
 
 	//Matrix<int> res = lhs * rhs * lhs;
 	//std::cout << res << "\n\n";
