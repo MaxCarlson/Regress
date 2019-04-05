@@ -48,12 +48,7 @@ void packPanel(Type* block, const From& from, Index rows, Index cols)
 
 	// DELETE THIS when done printing
 	const Type* rr = block;
-
 	const Index maxPackedCols = cols - cols % Stride;
-
-	// TODO: BUG: Current issue with mul tests of non-uniform MajorOrder operations
-	// originates from this packing not working when lhs is of ColumnOrder.
-	// Indexer is partially to blame as if the indexing was not switched it looks like it would work!
 
 	if (From::MajorOrder)
 	{

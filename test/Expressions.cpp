@@ -98,39 +98,44 @@ namespace test
 			subImpl(lhsc, rhsc);
 		}
 
-		template<class Mat>
-		void mulImpl(const Mat& lhs, const Mat& rhs, const Mat& rhs1, const Mat& med, const Mat& big)
+		template<class Mat, class Type>
+		void mulImpl(const Mat& _lhs, const Mat& _rhs, const Mat& _rhs1, const Mat& _med, const Mat& _big)
 		{
-			using Type = typename Mat::value_type;
 			enum { MajorOrder = Mat::MajorOrder };
 			using OMat = Matrix<Type, !MajorOrder>;
+			using MatT = Matrix<Type, MajorOrder>;
 
+			MatT lhs	= _lhs;
+			MatT rhs	= _rhs;
+			MatT rhs1	= _rhs1;
+			MatT med	= _med;
+			MatT big	= _big;
 			OMat Obig	= big;
 			OMat Olhs	= lhs;
 			OMat Orhs	= rhs;
 			OMat Orhs1	= rhs1;
 			OMat Omed	= med;
 
-			Mat res1 = (lhs * rhs) * lhs;
-			Mat res2 = (lhs * rhs) * lhs * rhs1;
-			Mat res3 = big * big;
-			Mat res4 = (Olhs * rhs) * Olhs;
-			Mat res5 = (lhs * Orhs) * lhs * Orhs1; 
-			Mat res6 = Obig * big;
-			Mat res7 = big * Obig;
-			Mat res8 = Obig * Obig;
-			Mat res9 = med * big;
-			Mat res10 = Omed * big;
-			Mat res11 = med * Obig;
-			Mat res12 = Omed * Obig;
+			MatT res1 = (lhs * rhs) * lhs;
+			MatT res2 = (lhs * rhs) * lhs * rhs1;
+			MatT res3 = big * big;
+			MatT res4 = (Olhs * rhs) * Olhs;
+			MatT res5 = (lhs * Orhs) * lhs * Orhs1; 
+			MatT res6 = Obig * big;
+			MatT res7 = big * Obig;
+			MatT res8 = Obig * Obig;
+			MatT res9 = med * big;
+			MatT res10 = Omed * big;
+			MatT res11 = med * Obig;
+			MatT res12 = Omed * Obig;
 
-			Mat res1v = { {120, 156}, {262, 340}, {404, 524} };
-			Mat res2v = { {900, 1176, 1452, 1728},
+			MatT res1v = { {120, 156}, {262, 340}, {404, 524} };
+			MatT res2v = { {900, 1176, 1452, 1728},
 			{1962, 2564, 3166, 3768}, {3024, 3952, 4880, 5808} };
-			Mat res3v = { {47, 58, 59, 70, 11},
+			MatT res3v = { {47, 58, 59, 70, 11},
 			{65, 82, 85, 102, 17}, {93, 118, 123, 148, 25},
 			{93, 118, 123, 148, 25}, {93, 118, 123, 148, 25} };
-			Mat res9v = { {67, 82, 83, 98, 15}, {162, 202, 208, 248, 40},
+			MatT res9v = { {67, 82, 83, 98, 15}, {162, 202, 208, 248, 40},
 			{257, 322, 333, 398, 65}, {352, 442, 458, 548, 90}, 
 			{447, 562, 583, 698, 115} };
 
@@ -150,8 +155,11 @@ namespace test
 
 		TEST_METHOD(Mul)
 		{
-			mulImpl(lhs, rhs, rhs1, med, bigger);
-			mulImpl(lhsc, rhsc, rhs1c, medc, biggerc);
+			mulImpl<rMM, int>(lhs, rhs, rhs1, med, bigger);
+			mulImpl<rMM, float>(lhs, rhs, rhs1, med, bigger);
+			mulImpl<rMM, double>(lhs, rhs, rhs1, med, bigger);
+
+			mulImpl<cMM, int>(lhsc, rhsc, rhs1c, medc, biggerc);
 		}
 
 		template<class Mat>

@@ -305,4 +305,30 @@ struct Assignment<Dest, Matrix<Type, MajorOrder>, Type, Func>
 	}
 };
 
+template<class DestValueType, bool DestMajorOrder, class Type, bool MajorOrder, class Func>
+struct Assignment<Matrix<DestValueType, DestMajorOrder>, Matrix<Type, MajorOrder>, DestValueType, Func>
+{
+	using Dest			= Matrix<DestValueType, DestMajorOrder>;
+	using MatrixType	= Matrix<Type, MajorOrder>;
+	//using ExprType		= CwiseBinaryOp<typename Func::OpType, Dest, MatrixType>;
+
+	// TODO: This needs to be specialized for *= as it won't work as is
+	// 
+	inline static void run(Dest& dest, const MatrixType& matrix, const Func& func)
+	{
+		using ExprEval = Evaluator<MatrixType>;
+
+		//ExprType expr{ typename Func::OpType{}, dest, matrix };
+
+		//ExprEval					exprE{ matrix };
+
+		//dest.resize(exprE.rows(), exprE.cols());
+
+		//ActualDest<Dest, ExprEval>	destE{ dest };
+		//AssignmentKernel			kernel{ destE, exprE, func };
+
+		//kernel.run();
+	}
+};
+
 } // End impl::
