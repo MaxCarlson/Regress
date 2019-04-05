@@ -63,6 +63,10 @@ int main()
 	//std::cout << large;
 	//Matrix<int> largeRes = large * large;
 
+	Matrix<int> res2 = lhs * rhs;
+	Matrix<int> res1 = lhsC * rhs;
+	std::cout << res2 << "\n\n" << res1 << "\n\n";
+
 	Matrix<double> res = med * med;
 	Matrix<double> test = medC * med; // Note: simple test for current issue
 	std::cout << res << "\n\n" << test << "\n\n";

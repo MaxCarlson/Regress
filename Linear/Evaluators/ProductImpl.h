@@ -55,6 +55,20 @@ void packPanel(Type* block, const From& from, Index rows, Index cols)
 	// originates from this packing not working when lhs is of ColumnOrder.
 	// Indexer is partially to blame as if the indexing was not switched it looks like it would work!
 
+	if (From::Transposed)
+	{
+		for (Index i = 0; i < rows; ++i)
+		{
+			for (Index j = 0; j < cols; ++j)
+			{
+				Type v = from.evaluate(i, j);
+				*block = v;
+				++block;
+			}
+		}
+		return;
+	}
+
 	for (Index i = 0; i < rows; ++i)
 	{
 		for (Index j = 0; j < maxPackedCols; j += Stride)
@@ -233,7 +247,7 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 {
 	using Traits	= PacketTraits<Type>;
 	using Packet	= typename Traits::type;
-	using BlockPtr	= const Type* RGR_RESTRICT; // TODO: Benchmark
+	using BlockPtr	= const Type*;
 	enum { Stride = Traits::Stride };
 
 	// TODO: Loop unrolling
@@ -304,7 +318,6 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 			dest.accumulate(m, n, C);
 		}
 		
-
 		// TODO: Pack so as we can vectorize with (probably) unaligned loads
 		// Handle the column/s of RHS we were unable to pack
 		for (Index n = maxPackedN; n < nc; ++n)
