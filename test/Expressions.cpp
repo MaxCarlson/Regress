@@ -26,35 +26,13 @@ namespace test
 			{4, 5, 6}
 		};
 
-		cMM lhsc = {
-			{1, 2},
-			{3, 4},
-			{5, 6},
-		};
-
-		cMM rhsc = {
-			{1, 2, 3},
-			{4, 5, 6}
-		};
-		
 		rMM lhs1 = {
 			{1, 2, 3},
 			{4, 5, 6},
 			{7, 8, 9},
 		};
 
-		cMM lhs1c = {
-			{1, 2, 3},
-			{4, 5, 6},
-			{7, 8, 9},
-		};
-
 		rMM rhs1 = {
-			{1, 2, 3, 4},
-			{5, 6, 7, 8}
-		};
-
-		cMM rhs1c = {
 			{1, 2, 3, 4},
 			{5, 6, 7, 8}
 		};
@@ -67,13 +45,20 @@ namespace test
 			{5, 6, 6, 7, 1}
 		};
 
-		cMM biggerc = {
-			{1, 2, 3, 4, 1},
-			{3, 4, 4, 5, 1},
-			{5, 6, 6, 7, 1},
-			{5, 6, 6, 7, 1},
-			{5, 6, 6, 7, 1}
+		rMM med = {
+			{ 1,  2,  3,  4,  5 },
+			{ 6,  7,  8,  9,  10},
+			{ 11, 12, 13, 14, 15},
+			{ 16, 17, 18, 19, 20},
+			{ 21, 22, 23, 24, 25}
 		};
+
+		cMM lhsc	= lhs;
+		cMM rhsc	= rhs;
+		cMM lhs1c	= lhs1;
+		cMM rhs1c	= rhs1;
+		cMM medc	= med;
+		cMM biggerc = bigger;
 
 		template<class Mat>
 		void addImpl(const Mat& lhs, const Mat& rhs)
@@ -114,16 +99,17 @@ namespace test
 		}
 
 		template<class Mat>
-		void mulImpl(const Mat& lhs, const Mat& rhs, const Mat& rhs1, const Mat& big)
+		void mulImpl(const Mat& lhs, const Mat& rhs, const Mat& rhs1, const Mat& med, const Mat& big)
 		{
 			using Type = typename Mat::value_type;
 			enum { MajorOrder = Mat::MajorOrder };
 			using OMat = Matrix<Type, !MajorOrder>;
 
-			OMat Obig = big;
-			OMat Olhs = lhs;
-			OMat Orhs = rhs;
-			OMat Orhs1 = rhs1;
+			OMat Obig	= big;
+			OMat Olhs	= lhs;
+			OMat Orhs	= rhs;
+			OMat Orhs1	= rhs1;
+			OMat Omed	= med;
 
 			Mat res1 = (lhs * rhs) * lhs;
 			Mat res2 = (lhs * rhs) * lhs * rhs1;
@@ -131,6 +117,12 @@ namespace test
 			Mat res4 = (Olhs * rhs) * Olhs;
 			Mat res5 = (lhs * Orhs) * lhs * Orhs1; 
 			Mat res6 = Obig * big;
+			Mat res7 = big * Obig;
+			Mat res8 = Obig * Obig;
+			Mat res9 = med * big;
+			Mat res10 = Omed * big;
+			Mat res11 = med * Obig;
+			Mat res12 = Omed * Obig;
 
 			Mat res1v = { {120, 156}, {262, 340}, {404, 524} };
 			Mat res2v = { {900, 1176, 1452, 1728},
@@ -138,6 +130,9 @@ namespace test
 			Mat res3v = { {47, 58, 59, 70, 11},
 			{65, 82, 85, 102, 17}, {93, 118, 123, 148, 25},
 			{93, 118, 123, 148, 25}, {93, 118, 123, 148, 25} };
+			Mat res9v = { {67, 82, 83, 98, 15}, {162, 202, 208, 248, 40},
+			{257, 322, 333, 398, 65}, {352, 442, 458, 548, 90}, 
+			{447, 562, 583, 698, 115} };
 
 			Assert::IsTrue(res1 == res1v, L"res1");
 			Assert::IsTrue(res2 == res2v, L"res2");
@@ -145,12 +140,18 @@ namespace test
 			Assert::IsTrue(res4 == res1v, L"res4");
 			Assert::IsTrue(res5 == res2v, L"res5");
 			Assert::IsTrue(res6 == res3v, L"res6");
+			Assert::IsTrue(res7 == res3v, L"res7");
+			Assert::IsTrue(res8 == res3v, L"res8");
+			Assert::IsTrue(res9 == res9v, L"res9");
+			Assert::IsTrue(res10 == res9v, L"res10");
+			Assert::IsTrue(res11 == res9v, L"res11");
+			Assert::IsTrue(res12 == res9v, L"res12");
 		}
 
 		TEST_METHOD(Mul)
 		{
-			mulImpl(lhs, rhs, rhs1, bigger);
-			mulImpl(lhsc, rhsc, rhs1c, biggerc);
+			mulImpl(lhs, rhs, rhs1, med, bigger);
+			mulImpl(lhsc, rhsc, rhs1c, medc, biggerc);
 		}
 
 		template<class Mat>
