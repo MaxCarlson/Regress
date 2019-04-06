@@ -70,7 +70,7 @@ int main()
 	//std::cout << res2 << "\n\n";
 	//std::cout << res1 << "\n\n";
 	//std::cout << res3 << "\n\n";
-
+	
 	Matrix<double> resMed = med * med;
 	Matrix<double> resMed1 = medC * med; // Note: simple test for current issue
 	Matrix<double> resMed2 = med * medC;

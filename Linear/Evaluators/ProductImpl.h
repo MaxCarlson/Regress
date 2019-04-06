@@ -2,6 +2,10 @@
 #include "ForwardDeclarations.h"
 #include "System\Cache.h"
 
+#ifndef NDEBUG
+#define DEBUG_BLOCKS
+#endif // DEBUG
+
 namespace impl
 {
 
@@ -36,8 +40,6 @@ struct PackingInfo
 
 };
 
-//#define DEBUG_BLOCKS
-
 // Format in memory: 
 // BlockSize mr = 4
 // TODO:
@@ -51,26 +53,51 @@ struct PackPanel
 		Stride = Traits::Stride
 	};
 
-	void printblock(Type* block, Index rows, Index cols)
+	static void printblock(const Type* block, Index rows, Index cols)
 	{
-		//*
 		for (int i = 0; i < rows * cols; ++i)
 		{
 			if (i != 0 && i % mr == 0) std::cout << '\n';
 			std::cout << block[i] << ", ";
 		}
-		std::cout << "\n\n";//*/
+		std::cout << "\n\n";
 	}
 
 	template<class = std::enable_if_t<MajorOrder == RowMajor>>
 	static void run(Type* block, const From& from, Index rows, Index cols)
 	{
 		const Type* debug = block;
-		const Index maxPackedCols = cols - cols % Stride;
+		const Index maxPackedCols	= cols - cols % Stride;
+		const Index unrolled2		= cols - cols % (Stride * 2);
+		const Index unrolled4		= cols - cols % (Stride * 4);
 
 		for (Index i = 0; i < rows; ++i)
 		{
-			for (Index j = 0; j < maxPackedCols; j += Stride)
+			//* // Note: Appears to possibly be faster without... *Test*
+			for (Index j = 0; j < unrolled4; j += Stride * 4)
+			{
+				Packet p0 = from.template packet<Packet>(i, j);
+				Packet p1 = from.template packet<Packet>(i, j + Stride);
+				pstore(block, p0);
+				pstore(block, p1);
+
+				Packet p2 = from.template packet<Packet>(i, j + Stride * 2);
+				Packet p3 = from.template packet<Packet>(i, j + Stride * 3);
+				pstore(block, p2);
+				pstore(block, p3);
+				block += Stride * 4;
+			}//*/
+
+			for (Index j = unrolled4; j < unrolled2; j += Stride * 2)
+			{
+				Packet p0 = from.template packet<Packet>(i, j);
+				Packet p1 = from.template packet<Packet>(i, j + Stride);
+				pstore(block, p0);
+				pstore(block, p1);
+				block += Stride * 2;
+			}
+
+			for (Index j = unrolled2; j < maxPackedCols; j += Stride)
 			{
 				Packet p = from.template packet<Packet>(i, j);
 				pstore(block, p);
@@ -91,7 +118,6 @@ struct PackPanel
 
 	static void run(Type* block, const From& from, Index rows, Index cols)
 	{
-		// DELETE THIS when done printing
 		const Type* debug = block;
 		const Index maxPackedCols = cols - cols % Stride;
 
@@ -127,21 +153,19 @@ struct PackBlock
 		Stride = Traits::Stride
 	};
 
-	void printblock(Type* block, Index rows, Index cols)
+	static void printblock(const Type* block, Index rows, Index cols)
 	{
-		//*
 		for (int i = 0; i < rows * cols; ++i)
 		{
 			if (i != 0 && i % nr == 0) std::cout << '\n';
 			std::cout << block[i] << ", ";
 		}
-		std::cout << "\n\n"; //*/
+		std::cout << "\n\n"; 
 	}
 
 	template<class = std::enable_if_t<MajorOrder == RowMajor>>
 	static void run(Type* block, const From& from, Index rows, Index cols)
 	{
-		// DELETE THIS when done printing
 		const Type* debug = block;
 		const Index maxPCol = cols - cols % nr;
 
@@ -170,7 +194,6 @@ struct PackBlock
 
 	static void run(Type* block, const From& from, Index rows, Index cols)
 	{
-		// DELETE THIS when done printing
 		const Type* debug = block;
 		const Index maxPCol = cols - cols % nr;
 
