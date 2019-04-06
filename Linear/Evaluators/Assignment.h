@@ -280,13 +280,13 @@ struct Assignment<Dest, TransposeOp<Expr>, Type, Func>
 	}
 };
 
-template<class DestValueType, bool DestMajorOrder, class Type, bool MajorOrder, class Func>
-struct Assignment<Matrix<DestValueType, DestMajorOrder>, Matrix<Type, MajorOrder>, DestValueType, Func>
+// General Matrix Matrix assignment
+template<class DestType, bool DestMajorOrder, class Type, bool MajorOrder, class Func>
+struct Assignment<Matrix<DestType, DestMajorOrder>, Matrix<Type, MajorOrder>, DestType, Func>
 {
-	using Dest			= Matrix<DestValueType, DestMajorOrder>;
+	using Dest			= Matrix<DestType, DestMajorOrder>;
 	using MatrixType	= Matrix<Type, MajorOrder>;
-	//using ExprType		= CwiseBinaryOp<typename Func::OpType, Dest, MatrixType>;
-
+	
 	// TODO: This needs to be specialized for *= as it won't work as is
 	// 
 	inline static void run(Dest& dest, const MatrixType& matrix, const Func& func)

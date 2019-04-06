@@ -87,12 +87,12 @@ struct ProductLoop<Dest, LhsE, RhsE, GEMMType::VECTORIZED>
 		SALW blockA{ mc * kc }; // LhsBlock
 		SALW blockB{ kc * nc }; // RhsBlock
 
-		// Height (in rows) of lhs's vertical panel
+		// Height (in rows) of lhs's block
 		for (size_type m = 0; m < lRows; m += mc)
 		{
 			const size_type endM = std::min(m + mc, lRows) - m;
 
-			// Width (in cols) of lhs's veritcal panel
+			// Width (in cols) of lhs's block
 			// Also height (in rows) of rhs's horizontal panel 
 			for (size_type k = 0; k < lCols; k += kc)
 			{

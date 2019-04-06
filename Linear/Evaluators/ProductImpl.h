@@ -36,6 +36,9 @@ struct PackingInfo
 
 };
 
+// Format in memory: 
+// BlockSize mr = 4
+// TODO:
 template<class Type, class From, class Index, int mr = PackingInfo<Type>::mr>
 void packPanel(Type* block, const From& from, Index rows, Index cols)
 {
@@ -94,10 +97,7 @@ void packPanel(Type* block, const From& from, Index rows, Index cols)
 //
 // Format in memory: 
 // BlockSize nr = 4
-// 1  2  3  4	17 18 19 20
-// 5  6  7  8	21 22 23 24
-// 9  10 11 12	25 26 27 28
-// 13 14 15 16	29 30 31 32 
+// TODO:
 //
 // Note: nr is number of columns from rhs per packed op
 template<class Type, class From, class Index, int nr = PackingInfo<Type>::nr>
@@ -116,7 +116,7 @@ void packBlock(Type* block, const From& from, Index rows, Index cols)
 	// Columns after this col will be stored in transposed order
 	const Index maxPCol = cols - cols % nr;
 
-
+	//*/
 	if (From::MajorOrder)
 	{
 		for (Index j = 0; j < maxPCol; j += nr)
@@ -133,6 +133,7 @@ void packBlock(Type* block, const From& from, Index rows, Index cols)
 		}
 		goto DebugEnd;
 	}
+	//*/
 
 	for (Index j = 0; j < maxPCol; j += nr)
 	{

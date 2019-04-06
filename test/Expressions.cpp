@@ -155,6 +155,7 @@ namespace test
 
 		TEST_METHOD(Mul)
 		{
+			// TODO: Do this typing for other tests
 			mulImpl<rMM, int>(lhs, rhs, rhs1, med, bigger);
 			mulImpl<rMM, float>(lhs, rhs, rhs1, med, bigger);
 			mulImpl<rMM, double>(lhs, rhs, rhs1, med, bigger);
