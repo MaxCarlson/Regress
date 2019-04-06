@@ -83,7 +83,7 @@ void packPanel(Type* block, const From& from, Index rows, Index cols)
 			}
 		}
 
-	//*
+	/*
 	for (int i = 0; i < rows * cols; ++i)
 	{
 		if (i != 0 && i % Stride == 0) std::cout << '\n';
@@ -158,7 +158,7 @@ DebugEnd:
 		}
 
 
-	//*
+	/*
 	for (int i = 0; i < rows * cols; ++i)
 	{
 		if (i != 0 && i % nr == 0) std::cout << '\n';
