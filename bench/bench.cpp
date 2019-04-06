@@ -69,7 +69,7 @@ void runTypeTests()
 
 int main()
 {
-	runTypeTests<basic, false>();
+	runTypeTests<basic, RowMajor>();
 	//runTypeTests<basic, true>();
 
 	return 0;

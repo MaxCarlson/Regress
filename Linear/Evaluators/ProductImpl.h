@@ -116,6 +116,7 @@ struct PackPanel
 #endif // DEBUG_BLOCKS
 	}
 
+	template<class = std::enable_if_t<MajorOrder == ColMajor>>
 	static void run(Type* block, const From& from, Index rows, Index cols)
 	{
 		const Type* debug = block;
@@ -192,6 +193,7 @@ struct PackBlock
 #endif // DEBUG_BLOCKS
 	}
 
+	template<class = std::enable_if_t<MajorOrder == ColMajor>>
 	static void run(Type* block, const From& from, Index rows, Index cols)
 	{
 		const Type* debug = block;
