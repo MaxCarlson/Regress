@@ -39,8 +39,9 @@ struct PackingInfo
 // Format in memory: 
 // BlockSize mr = 4
 // TODO:
-template<class Type, class From, class Index, int mr = PackingInfo<Type>::mr>
-void packPanel(Type* block, const From& from, Index rows, Index cols)
+
+template<class Type, class From, class Index, bool MajorOrder, int mr>
+struct packPanel
 {
 	using Traits = PacketTraits<Type>;
 	using Packet = typename Traits::type;
@@ -49,23 +50,11 @@ void packPanel(Type* block, const From& from, Index rows, Index cols)
 		Stride = Traits::Stride
 	};
 
-	// DELETE THIS when done printing
-	const Type* rr = block;
-	const Index maxPackedCols = cols - cols % Stride;
-
-	if (From::MajorOrder)
+	template<class = std::enable_if_t<MajorOrder == RowMajor>>
+	static void run(Type* block, const From& from, Index rows, Index cols)
 	{
-		for (Index i = 0; i < rows; ++i)
-		{
-			for (Index j = 0; j < cols; ++j)
-			{
-				Type v = from.evaluate(i, j);
-				*block = v;
-				++block;
-			}
-		}
-	}
-	else
+		const Index maxPackedCols = cols - cols % Stride;
+
 		for (Index i = 0; i < rows; ++i)
 		{
 			for (Index j = 0; j < maxPackedCols; j += Stride)
@@ -82,16 +71,33 @@ void packPanel(Type* block, const From& from, Index rows, Index cols)
 				++block;
 			}
 		}
-
-	/*
-	for (int i = 0; i < rows * cols; ++i)
-	{
-		if (i != 0 && i % Stride == 0) std::cout << '\n';
-		std::cout << rr[i] << ", ";
 	}
-	std::cout << "\n\n";//*/
-}
 
+	static void run(Type* block, const From& from, Index rows, Index cols)
+	{
+		// DELETE THIS when done printing
+		const Type* rr = block;
+		const Index maxPackedCols = cols - cols % Stride;
+
+		for (Index i = 0; i < rows; ++i)
+		{
+			for (Index j = 0; j < cols; ++j)
+			{
+				Type v = from.evaluate(i, j);
+				*block = v;
+				++block;
+			}
+		}
+
+		/*
+		for (int i = 0; i < rows * cols; ++i)
+		{
+			if (i != 0 && i % Stride == 0) std::cout << '\n';
+			std::cout << rr[i] << ", ";
+		}
+		std::cout << "\n\n";//*/
+	}
+};
 
 // TODO: Optimize both packing functions for Row/ColMajor Order
 //
@@ -131,7 +137,7 @@ void packBlock(Type* block, const From& from, Index rows, Index cols)
 				}
 			}
 		}
-		goto DebugEnd;
+		goto End;
 	}
 	//*/
 
@@ -145,7 +151,7 @@ void packBlock(Type* block, const From& from, Index rows, Index cols)
 		}
 	}
 
-DebugEnd:
+End:
 
 
 	// Pack last cols transposed
@@ -171,7 +177,8 @@ template<class Type, class Lhs, class Index>
 void packLhs(Type* blockA, const Lhs& lhs, Index rows, Index cols)
 {
 	//std::cout << "Packing Lhs \n";
-	packPanel(blockA, lhs, rows, cols);
+	using packer = packPanel<Type, Lhs, Index, Lhs::MajorOrder, PackingInfo<Type>::mr>;
+	packer::run(blockA, lhs, rows, cols);
 }
 
 template<class Type, class Rhs, class Index>

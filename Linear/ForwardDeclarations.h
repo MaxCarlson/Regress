@@ -118,3 +118,9 @@ Packet padd(const Packet& p1, const Packet& p2);
 template<class Packet>
 Packet pdiv(const Packet& p1, const Packet& p2);
 }
+
+enum
+{
+	RowMajor = 0,
+	ColMajor
+};
