@@ -63,8 +63,10 @@ struct PackPanel
 		std::cout << "\n\n";
 	}
 
-	template<class = std::enable_if_t<MajorOrder == RowMajor>>
-	static void run(Type* block, const From& from, Index rows, Index cols)
+	template<bool MajorOrder>
+	static void run(Type* block, const From& from, Index rows, Index cols) {}
+
+	template<> static void run<RowMajor>(Type* block, const From& from, Index rows, Index cols)
 	{
 		const Type* debug = block;
 		const Index maxPackedCols	= cols - cols % Stride;
@@ -73,29 +75,32 @@ struct PackPanel
 
 		for (Index i = 0; i < rows; ++i)
 		{
-			//* // Note: Appears to possibly be faster without... *Test*
+			/* // Note: Appears to possibly be faster without... *Test*
 			for (Index j = 0; j < unrolled4; j += Stride * 4)
 			{
 				Packet p0 = from.template packet<Packet>(i, j);
 				Packet p1 = from.template packet<Packet>(i, j + Stride);
 				pstore(block, p0);
-				pstore(block, p1);
+				pstore(block + Stride, p1);
 
 				Packet p2 = from.template packet<Packet>(i, j + Stride * 2);
 				Packet p3 = from.template packet<Packet>(i, j + Stride * 3);
-				pstore(block, p2);
-				pstore(block, p3);
+				pstore(block + Stride * 2, p2);
+				pstore(block + Stride * 3, p3);
 				block += Stride * 4;
 			}//*/
-
-			for (Index j = unrolled4; j < unrolled2; j += Stride * 2)
+			//*
+			// TODO: Also appears to possibly slow down some of the larger matrixes.
+			// Try different methods of unrolling/packing
+			for (Index j = 0; j < unrolled2; j += Stride * 2) 
 			{
 				Packet p0 = from.template packet<Packet>(i, j);
 				Packet p1 = from.template packet<Packet>(i, j + Stride);
 				pstore(block, p0);
-				pstore(block, p1);
+				pstore(block + Stride, p1);
 				block += Stride * 2;
 			}
+			//*/
 
 			for (Index j = unrolled2; j < maxPackedCols; j += Stride)
 			{
@@ -116,8 +121,7 @@ struct PackPanel
 #endif // DEBUG_BLOCKS
 	}
 
-	template<class = std::enable_if_t<MajorOrder == ColMajor>>
-	static void run(Type* block, const From& from, Index rows, Index cols)
+	template<> static void run<ColMajor>(Type* block, const From& from, Index rows, Index cols)
 	{
 		const Type* debug = block;
 		const Index maxPackedCols = cols - cols % Stride;
@@ -193,7 +197,6 @@ struct PackBlock
 #endif // DEBUG_BLOCKS
 	}
 
-	template<class = std::enable_if_t<MajorOrder == ColMajor>>
 	static void run(Type* block, const From& from, Index rows, Index cols)
 	{
 		const Type* debug = block;
@@ -230,7 +233,7 @@ void packLhs(Type* blockA, const Lhs& lhs, Index rows, Index cols)
 {
 	//std::cout << "Packing Lhs \n";
 	using packer = PackPanel<Type, Lhs, Index, Lhs::MajorOrder, PackingInfo<Type>::mr>;
-	packer::run(blockA, lhs, rows, cols);
+	packer::run<Lhs::MajorOrder>(blockA, lhs, rows, cols);
 }
 
 template<class Type, class Rhs, class Index>
