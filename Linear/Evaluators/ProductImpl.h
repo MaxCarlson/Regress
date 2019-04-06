@@ -36,12 +36,13 @@ struct PackingInfo
 
 };
 
+//#define DEBUG_BLOCKS
+
 // Format in memory: 
 // BlockSize mr = 4
 // TODO:
-
 template<class Type, class From, class Index, bool MajorOrder, int mr>
-struct packPanel
+struct PackPanel
 {
 	using Traits = PacketTraits<Type>;
 	using Packet = typename Traits::type;
@@ -50,9 +51,21 @@ struct packPanel
 		Stride = Traits::Stride
 	};
 
+	void printblock(Type* block, Index rows, Index cols)
+	{
+		//*
+		for (int i = 0; i < rows * cols; ++i)
+		{
+			if (i != 0 && i % mr == 0) std::cout << '\n';
+			std::cout << block[i] << ", ";
+		}
+		std::cout << "\n\n";//*/
+	}
+
 	template<class = std::enable_if_t<MajorOrder == RowMajor>>
 	static void run(Type* block, const From& from, Index rows, Index cols)
 	{
+		const Type* debug = block;
 		const Index maxPackedCols = cols - cols % Stride;
 
 		for (Index i = 0; i < rows; ++i)
@@ -71,12 +84,15 @@ struct packPanel
 				++block;
 			}
 		}
+#ifdef DEBUG_BLOCKS
+		printblock(debug, rows, cols);
+#endif // DEBUG_BLOCKS
 	}
 
 	static void run(Type* block, const From& from, Index rows, Index cols)
 	{
 		// DELETE THIS when done printing
-		const Type* rr = block;
+		const Type* debug = block;
 		const Index maxPackedCols = cols - cols % Stride;
 
 		for (Index i = 0; i < rows; ++i)
@@ -88,14 +104,9 @@ struct packPanel
 				++block;
 			}
 		}
-
-		/*
-		for (int i = 0; i < rows * cols; ++i)
-		{
-			if (i != 0 && i % Stride == 0) std::cout << '\n';
-			std::cout << rr[i] << ", ";
-		}
-		std::cout << "\n\n";//*/
+#ifdef DEBUG_BLOCKS
+		printblock(debug, rows, cols);
+#endif // DEBUG_BLOCKS
 	}
 };
 
@@ -106,8 +117,8 @@ struct packPanel
 // TODO:
 //
 // Note: nr is number of columns from rhs per packed op
-template<class Type, class From, class Index, int nr = PackingInfo<Type>::nr>
-void packBlock(Type* block, const From& from, Index rows, Index cols)
+template<class Type, class From, class Index, bool MajorOrder, int nr>
+struct PackBlock
 {
 	using Traits = PacketTraits<Type>;
 	using Packet = typename Traits::type;
@@ -116,15 +127,53 @@ void packBlock(Type* block, const From& from, Index rows, Index cols)
 		Stride = Traits::Stride
 	};
 
-	// DELETE THIS when done printing
-	const Type* rr = block;
-
-	// Columns after this col will be stored in transposed order
-	const Index maxPCol = cols - cols % nr;
-
-	//*/
-	if (From::MajorOrder)
+	void printblock(Type* block, Index rows, Index cols)
 	{
+		//*
+		for (int i = 0; i < rows * cols; ++i)
+		{
+			if (i != 0 && i % nr == 0) std::cout << '\n';
+			std::cout << block[i] << ", ";
+		}
+		std::cout << "\n\n"; //*/
+	}
+
+	template<class = std::enable_if_t<MajorOrder == RowMajor>>
+	static void run(Type* block, const From& from, Index rows, Index cols)
+	{
+		// DELETE THIS when done printing
+		const Type* debug = block;
+		const Index maxPCol = cols - cols % nr;
+
+		for (Index j = 0; j < maxPCol; j += nr)
+		{
+			for (Index i = 0; i < rows; ++i)
+			{
+				Packet p = from.template packet<Packet>(i, j);
+				pstore(block, p);
+				block += nr;
+			}
+		}
+
+		// Pack last cols transposed
+		for (Index j = maxPCol; j < cols; ++j)
+			for (Index i = 0; i < rows; ++i)
+			{
+				Type v = from.evaluate(i, j);
+				*block = v;
+				++block;
+			}
+#ifdef DEBUG_BLOCKS
+		printblock(debug, rows, cols);
+#endif // DEBUG_BLOCKS
+	}
+
+	static void run(Type* block, const From& from, Index rows, Index cols)
+	{
+		// DELETE THIS when done printing
+		const Type* debug = block;
+		const Index maxPCol = cols - cols % nr;
+
 		for (Index j = 0; j < maxPCol; j += nr)
 		{
 			for (Index i = 0; i < rows; ++i)
@@ -137,47 +186,25 @@ void packBlock(Type* block, const From& from, Index rows, Index cols)
 				}
 			}
 		}
-		goto End;
+		// Pack last cols transposed
+		for (Index j = maxPCol; j < cols; ++j)
+			for (Index i = 0; i < rows; ++i)
+			{
+				Type v = from.evaluate(i, j);
+				*block = v;
+				++block;
+			}
+#ifdef DEBUG_BLOCKS
+		printblock(debug, rows, cols);
+#endif // DEBUG_BLOCKS
 	}
-	//*/
-
-	for (Index j = 0; j < maxPCol; j += nr)
-	{
-		for (Index i = 0; i < rows; ++i)
-		{
-			Packet p = from.template packet<Packet>(i, j);
-			pstore(block, p);
-			block += nr;
-		}
-	}
-
-End:
-
-
-	// Pack last cols transposed
-	for (Index j = maxPCol; j < cols; ++j)
-		for (Index i = 0; i < rows; ++i)
-		{
-			Type v = from.evaluate(i, j);
-			*block = v;
-			++block;
-		}
-
-
-	/*
-	for (int i = 0; i < rows * cols; ++i)
-	{
-		if (i != 0 && i % nr == 0) std::cout << '\n';
-		std::cout << rr[i] << ", ";
-	}
-	std::cout << "\n\n"; //*/
-}
+};
 
 template<class Type, class Lhs, class Index>
 void packLhs(Type* blockA, const Lhs& lhs, Index rows, Index cols)
 {
 	//std::cout << "Packing Lhs \n";
-	using packer = packPanel<Type, Lhs, Index, Lhs::MajorOrder, PackingInfo<Type>::mr>;
+	using packer = PackPanel<Type, Lhs, Index, Lhs::MajorOrder, PackingInfo<Type>::mr>;
 	packer::run(blockA, lhs, rows, cols);
 }
 
@@ -185,7 +212,8 @@ template<class Type, class Rhs, class Index>
 void packRhs(Type* blockB, const Rhs& rhs,  Index rows, Index cols)
 {
 	//std::cout << "Packing Rhs \n";
-	packBlock(blockB, rhs, rows, cols);
+	using packer = PackBlock<Type, Rhs, Index, Rhs::MajorOrder, PackingInfo<Type>::nr>;
+	packer::run(blockB, rhs, rows, cols);
 }
 
 // Simple wrapper class to make indexing inside gebp easier
