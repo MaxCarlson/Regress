@@ -70,9 +70,14 @@ int main()
 	//std::cout << res2 << "\n\n";
 	//std::cout << res1 << "\n\n";
 	//std::cout << res3 << "\n\n";
+
+	//
+	//// TODO: Look into using unaligned loads for packing to
+	//// make packing easier/faster for both MajorOrders
+	//
 	
 	Matrix<double> resMed = med * med;
-	Matrix<double> resMed1 = medC * med; // Note: simple test for current issue
+	Matrix<double> resMed1 = medC * med; 
 	Matrix<double> resMed2 = med * medC;
 	std::cout << resMed << "\n\n";
 	//std::cout << resMed1 << "\n\n";

@@ -87,6 +87,8 @@ struct ProductLoop<Dest, LhsE, RhsE, GEMMType::VECTORIZED>
 		SALW blockA{ mc * kc }; // LhsBlock
 		SALW blockB{ kc * nc }; // RhsBlock
 
+		const bool packRhsOnce = kc == lCols && nc == rCols;
+
 		// Height (in rows) of lhs's block
 		for (size_type m = 0; m < lRows; m += mc)
 		{
@@ -107,7 +109,9 @@ struct ProductLoop<Dest, LhsE, RhsE, GEMMType::VECTORIZED>
 					const size_type endN = std::min(n + nc, rCols) - n;
 
 					IndexWrapperRhs rhsW{ rhs, k, n };
-					packRhs(blockB.ptr, rhsW, endK, endN);
+
+					if(!packRhsOnce || m == 0)
+						packRhs(blockB.ptr, rhsW, endK, endN);
 
 					IndexWrapperDest idxWrapper{ dest, m, n };
 					gebp(idxWrapper, blockA.ptr, blockB.ptr, endM, endN, endK);
