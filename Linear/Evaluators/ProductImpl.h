@@ -64,7 +64,7 @@ struct PackPanel
 	}
 
 	template<bool MajorOrder>
-	static void run(Type* block, const From& from, Index rows, Index cols) {}
+	static void run(Type* block, const From& from, Index rows, Index cols) { static_assert(false); }
 
 	template<> static void run<RowMajor>(Type* block, const From& from, Index rows, Index cols)
 	{
@@ -75,7 +75,9 @@ struct PackPanel
 
 		for (Index i = 0; i < rows; ++i)
 		{
-			/* // Note: Appears to possibly be faster without... *Test*
+			/* 
+			// Note: Appears to possibly be faster without... *Test*
+			// TODO: Try different unrolling/packing methods
 			for (Index j = 0; j < unrolled4; j += Stride * 4)
 			{
 				Packet p0 = from.template packet<Packet>(i, j);
@@ -89,10 +91,8 @@ struct PackPanel
 				pstore(block + Stride * 3, p3);
 				block += Stride * 4;
 			}//*/
-			//*
-			// TODO: Also appears to possibly slow down some of the larger matrixes.
-			// Try different methods of unrolling/packing
-			for (Index j = 0; j < unrolled2; j += Stride * 2) 
+			/*
+			for (Index j = unrolled4; j < unrolled2; j += Stride * 2)
 			{
 				Packet p0 = from.template packet<Packet>(i, j);
 				Packet p1 = from.template packet<Packet>(i, j + Stride);
@@ -102,7 +102,7 @@ struct PackPanel
 			}
 			//*/
 
-			for (Index j = unrolled2; j < maxPackedCols; j += Stride)
+			for (Index j = 0; j < maxPackedCols; j += Stride)
 			{
 				Packet p = from.template packet<Packet>(i, j);
 				pstore(block, p);
@@ -126,6 +126,7 @@ struct PackPanel
 		const Type* debug = block;
 		const Index maxPackedCols = cols - cols % Stride;
 
+		//*
 		for (Index i = 0; i < rows; ++i)
 		{
 			for (Index j = 0; j < cols; ++j)
@@ -135,6 +136,8 @@ struct PackPanel
 				++block;
 			}
 		}
+		//*/
+
 #ifdef DEBUG_BLOCKS
 		printblock(debug, rows, cols);
 #endif // DEBUG_BLOCKS
@@ -168,14 +171,28 @@ struct PackBlock
 		std::cout << "\n\n"; 
 	}
 
-	template<class = std::enable_if_t<MajorOrder == RowMajor>>
-	static void run(Type* block, const From& from, Index rows, Index cols)
+	template<int MajorOrder>
+	static void run(Type* block, const From& from, Index rows, Index cols) { static_assert(false); }
+
+	template<> static void run<RowMajor>(Type* block, const From& from, Index rows, Index cols)
 	{
 		const Type* debug = block;
 		const Index maxPCol = cols - cols % nr;
+		const Index unroll1 = rows - rows % 2;
 
 		for (Index j = 0; j < maxPCol; j += nr)
 		{
+			/*
+			for (Index i = 0; i < unroll1; i += 2)
+			{
+				Packet p0 = from.template packet<Packet>(i, j);
+				Packet p1 = from.template packet<Packet>(i + 1, j);
+
+				pstore(block, p0);
+				pstore(block + nr, p1);
+				block += nr * 2;
+			}*/
+
 			for (Index i = 0; i < rows; ++i)
 			{
 				Packet p = from.template packet<Packet>(i, j);
@@ -197,7 +214,7 @@ struct PackBlock
 #endif // DEBUG_BLOCKS
 	}
 
-	static void run(Type* block, const From& from, Index rows, Index cols)
+	template<> static void run<ColMajor>(Type* block, const From& from, Index rows, Index cols)
 	{
 		const Type* debug = block;
 		const Index maxPCol = cols - cols % nr;
@@ -241,7 +258,7 @@ void packRhs(Type* blockB, const Rhs& rhs,  Index rows, Index cols)
 {
 	//std::cout << "Packing Rhs \n";
 	using packer = PackBlock<Type, Rhs, Index, Rhs::MajorOrder, PackingInfo<Type>::nr>;
-	packer::run(blockB, rhs, rows, cols);
+	packer::run<Rhs::MajorOrder>(blockB, rhs, rows, cols);
 }
 
 // Simple wrapper class to make indexing inside gebp easier

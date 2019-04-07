@@ -33,7 +33,7 @@ int main()
 	fillMat(mat2);
 
 	s.start();
-	mat1 = mat1 * mat2;
+	Eigen::Matrix<int, -1, -1, Eigen::RowMajor>mm = mat1 * mat2;
 	s.printCurrent();
 	//*/
 
@@ -75,8 +75,8 @@ int main()
 	Matrix<double> resMed1 = medC * med; // Note: simple test for current issue
 	Matrix<double> resMed2 = med * medC;
 	std::cout << resMed << "\n\n";
-	std::cout << resMed1 << "\n\n";
-	std::cout << resMed2 << "\n\n";
+	//std::cout << resMed1 << "\n\n";
+	//std::cout << resMed2 << "\n\n";
 
 	//Matrix<int> res = lhs * rhs * lhs;
 	//std::cout << res << "\n\n";

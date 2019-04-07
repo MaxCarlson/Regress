@@ -44,11 +44,11 @@ struct basic : public BaseBench
 		print("MajorOrder: ", order, '\n');
 		//RUN_FUNC(mulSquareAlias, "10", 10,  10);
 		//RUN_FUNC(mulSquareAlias, "50", 10, 50);
-		RUN_FUNC(mulSquareAlias, "100", 10, 100);
-		RUN_FUNC(mulSquareAlias, "250", 10, 250);
-		RUN_FUNC(mulSquareAlias, "500", 10, 500);
-		RUN_FUNC(mulSquareAlias, "1000", 10, 1000);
-		RUN_FUNC(mulSquareAlias, "1500", 6, 1500);
+		RUN_FUNC(mulSquareAlias, "100", 20, 100);
+		RUN_FUNC(mulSquareAlias, "250", 50, 250);
+		RUN_FUNC(mulSquareAlias, "500", 25, 500);
+		RUN_FUNC(mulSquareAlias, "1000", 25, 1000);
+		RUN_FUNC(mulSquareAlias, "1500", 15, 1500);
 	}
 
 	static void mulSquareAlias(int size)
@@ -70,7 +70,7 @@ void runTypeTests()
 int main()
 {
 	runTypeTests<basic, RowMajor>();
-	//runTypeTests<basic, true>();
+	//runTypeTests<basic, ColMajor>();
 
 	return 0;
 }
