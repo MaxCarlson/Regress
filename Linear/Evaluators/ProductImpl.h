@@ -69,53 +69,32 @@ struct PackPanel
 	template<> static void run<RowMajor>(Type* block, const From& from, Index rows, Index cols)
 	{
 		const Type* debug = block;
-		const Index maxPackedCols	= cols - cols % Stride;
-		const Index unrolled2		= cols - cols % (Stride * 2);
-		const Index unrolled4		= cols - cols % (Stride * 4);
+		const Index maxPRows = rows - rows % Stride;
 
-		for (Index i = 0; i < rows; ++i)
+		for (Index j = 0; j < cols; ++j)
 		{
-			/* 
-			// Note: Appears to possibly be faster without... *Test*
-			// TODO: Try different unrolling/packing methods
-			for (Index j = 0; j < unrolled4; j += Stride * 4)
+			for (Index i2 = 0; i2 < maxPRows; i2 += mr)
 			{
-				Packet p0 = from.template packet<Packet>(i, j);
-				Packet p1 = from.template packet<Packet>(i, j + Stride);
-				pstore(block, p0);
-				pstore(block + Stride, p1);
-
-				Packet p2 = from.template packet<Packet>(i, j + Stride * 2);
-				Packet p3 = from.template packet<Packet>(i, j + Stride * 3);
-				pstore(block + Stride * 2, p2);
-				pstore(block + Stride * 3, p3);
-				block += Stride * 4;
-			}//*/
-			/*
-			for (Index j = unrolled4; j < unrolled2; j += Stride * 2)
-			{
-				Packet p0 = from.template packet<Packet>(i, j);
-				Packet p1 = from.template packet<Packet>(i, j + Stride);
-				pstore(block, p0);
-				pstore(block + Stride, p1);
-				block += Stride * 2;
+				for (Index i = i2; i < i2 + mr; ++i)
+				{
+					Type v = from.evaluate(i, j);
+					*block = v;
+					++block;
+				}
 			}
-			//*/
+		}
 
-			for (Index j = 0; j < maxPackedCols; j += Stride)
-			{
-				Packet p = from.template packet<Packet>(i, j);
-				pstore(block, p);
-				block += Stride;
-			}
-
-			for (Index j = maxPackedCols; j < cols; ++j)
+		// Pack last rows inorder
+		for (Index i = maxPRows; i < rows; ++i)
+		{
+			for (Index j = 0; j < cols; ++j)
 			{
 				Type v = from.evaluate(i, j);
 				*block = v;
 				++block;
 			}
 		}
+
 #ifdef DEBUG_BLOCKS
 		printblock(debug, rows, cols);
 #endif // DEBUG_BLOCKS
@@ -178,26 +157,14 @@ struct PackBlock
 	{
 		const Type* debug = block;
 		const Index maxPCol = cols - cols % nr;
-		const Index unroll1 = rows - rows % 2;
 
-		for (Index j = 0; j < maxPCol; j += nr)
+		for (Index j = 0; j < maxPCol; j += Stride)
 		{
-			/*
-			for (Index i = 0; i < unroll1; i += 2)
-			{
-				Packet p0 = from.template packet<Packet>(i, j);
-				Packet p1 = from.template packet<Packet>(i + 1, j);
-
-				pstore(block, p0);
-				pstore(block + nr, p1);
-				block += nr * 2;
-			}*/
-
 			for (Index i = 0; i < rows; ++i)
 			{
-				Packet p = from.template packet<Packet>(i, j);
+				Packet p = from.template loadUnaligned<Packet>(i, j);
 				pstore(block, p);
-				block += nr;
+				block += Stride;
 			}
 		}
 

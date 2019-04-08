@@ -32,9 +32,8 @@ int main()
 	fillMat(mat1);
 	fillMat(mat2);
 
-	s.start();
-	Eigen::Matrix<int, -1, -1, Eigen::RowMajor>mm = mat1 * mat2;
-	s.printCurrent();
+	//Eigen::Matrix<int, -1, -1, Eigen::RowMajor>mm = mat1 * mat2;
+	mat1 = mat1 * mat2;
 	//*/
 
 	Matrix<int> lhs = {
