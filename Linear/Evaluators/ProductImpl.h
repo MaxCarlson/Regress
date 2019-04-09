@@ -71,9 +71,9 @@ struct PackPanel
 		const Type* debug = block;
 		const Index maxPRows = rows - rows % Stride;
 
-		for (Index j = 0; j < cols; ++j)
+		for (Index i2 = 0; i2 < maxPRows; i2 += mr)
 		{
-			for (Index i2 = 0; i2 < maxPRows; i2 += mr)
+			for (Index j = 0; j < cols; ++j)
 			{
 				for (Index i = i2; i < i2 + mr; ++i)
 				{
@@ -323,46 +323,68 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 	// blockB size is kc * nc
 	// Fits in l1 Cache
 
-	const Index maxPackedN4 = nc - nc % (nr * 4);
-	const Index maxPackedN2 = nc - nc % (nr * 2);
-	const Index maxPackedN = nc - nc % nr;
+	const Index packedM = mc - mc % mr;
+	const Index packedN = nc - nc % nr;
+
+	for (Index m = 0; m < mc; m += mr)
+	{
+
+		for (Index n = 0; n < packedN; n += nr)
+		{
+			BlockPtr aPtr = &blockA[m * mc];
+			BlockPtr bPtr = &blockB[n * kc];
+
+			Packet C0{ Type{ 0 } };
+			Packet C1{ Type{ 0 } };
+			Packet tmp{ Type{ 0 } };
+
+			for (Index k = 0; k < kc; ++k)
+			{
+				Packet A0 = impl::pload1<Packet>(aPtr + 0);
+				Packet A1 = impl::pload1<Packet>(aPtr + 1);
+
+				Packet B0 = pload<Packet>(bPtr);
+
+				pmadd(A0, B0, C0, tmp);
+				pmadd(A1, B0, C1, tmp);
+
+				aPtr += mr;
+				bPtr += nr;
+				int a = 5;
+			}
+
+			dest.accumulate(m + 0, n, C0);
+			dest.accumulate(m + 1, n, C1);
+		}
+
+		// TODO: This is just simple element by element but can be made
+		// faster (do once main packed algorithm is optimized)
+		for (Index n = packedN; n < nc; ++n)
+		{
+			Type C{ 0 };
+			BlockPtr aPtr = &blockA[m * mc];
+			BlockPtr bPtr = &blockB[n * kc];
+
+			for (Index k = 0; k < kc; ++k)
+			{
+				C += *aPtr * *bPtr;
+				++aPtr;
+				++bPtr;
+			}
+			dest.evaluateRef(m, n) += C;
+		}
+	}
+
+
+	/*
+
+	//const Index maxPackedN4 = nc - nc % (nr * 4);
+	//const Index maxPackedN2 = nc - nc % (nr * 2);
+	//const Index maxPackedN = nc - nc % nr;
 
 	for (Index m = 0; m < mc; ++m)
 	{
 		BlockPtr bPtr = &blockB[0];
-
-		//*// Anywhere from 110 - 150% speedup depending on the Matrix size
-		for (Index n = 0; n < maxPackedN2;)
-		{
-			Packet tmp;
-			Packet C0{ Type{ 0 } };
-			Packet C1{ Type{ 0 } };
-
-			BlockPtr aPtr	= &blockA[m * kc];
-
-			for (Index k = 0; k < kc; ++k)
-			{
-				Packet A = impl::pload1<Packet>(aPtr);
-				Packet B0 = pload<Packet>(bPtr);
-				Packet B1 = pload<Packet>(bPtr + nr * kc);
-
-				pmadd(A, B0, C0, tmp);
-				pmadd(A, B1, C1, tmp);
-
-				++aPtr;
-				bPtr += nr;
-			}
-			dest.accumulate(m, n, C0);
-			dest.accumulate(m, n + Stride, C1);
-
-			n += Stride * 2;
-			if (n >= maxPackedN2) // TODO: Two checks a loop? Possibly bad, check assembly
-			{
-				bPtr += nr * kc;
-				break;
-			}
-		}
-		//*/
 
 		for (Index n = maxPackedN2; n < maxPackedN; n += Stride)
 		{
@@ -399,6 +421,7 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 		}
 
 	}
+	*/
 }
 
 
