@@ -326,9 +326,8 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 	const Index packedM = mc - mc % mr;
 	const Index packedN = nc - nc % nr;
 
-	for (Index m = 0; m < mc; m += mr)
+	for (Index m = 0; m < packedM; m += mr)
 	{
-
 		for (Index n = 0; n < packedN; n += nr)
 		{
 			BlockPtr aPtr = &blockA[m * mc];
@@ -361,18 +360,26 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 		// faster (do once main packed algorithm is optimized)
 		for (Index n = packedN; n < nc; ++n)
 		{
-			Type C{ 0 };
+			Type C0{ 0 };
+			Type C1{ 0 };
 			BlockPtr aPtr = &blockA[m * mc];
 			BlockPtr bPtr = &blockB[n * kc];
 
 			for (Index k = 0; k < kc; ++k)
 			{
-				C += *aPtr * *bPtr;
-				++aPtr;
+				C0 += *(aPtr + 0) * *bPtr;
+				C1 += *(aPtr + 1) * *bPtr;
+				aPtr += mr;
 				++bPtr;
 			}
-			dest.evaluateRef(m, n) += C;
+			dest.evaluateRef(m + 0, n) += C0;
+			dest.evaluateRef(m + 1, n) += C1;
 		}
+	}
+
+	for (Index m = packedM; m < mc; ++m)
+	{
+
 	}
 
 
