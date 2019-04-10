@@ -62,18 +62,12 @@ int main()
 	//std::iota(large.begin(), large.end(), 1);
 	//std::cout << large;
 	//Matrix<int> largeRes = large * large;
-
 	//Matrix<int> res2 = lhs * rhs;
 	//Matrix<int> res1 = lhsC * rhs;
 	//Matrix<int> res3 = lhs * rhsC;
 	//std::cout << res2 << "\n\n";
 	//std::cout << res1 << "\n\n";
 	//std::cout << res3 << "\n\n";
-
-	//
-	//// TODO: Look into using unaligned loads for packing to
-	//// make packing easier/faster for both MajorOrders
-	//
 	
 	Matrix<double> resMed = med * med;
 	Matrix<double> resMed1 = medC * med; 

@@ -377,9 +377,44 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 		}
 	}
 
+	// TODO: This can be optimized
+	// Finish out the last row/s of lhs that couldn't be packed 
 	for (Index m = packedM; m < mc; ++m)
 	{
+		for (Index n = 0; n < packedN; n += nr)
+		{
+			BlockPtr aPtr = &blockA[m * mc];
+			BlockPtr bPtr = &blockB[n * kc];
 
+			Type C0{ 0 };
+			Type C1{ 0 };
+
+			for (Index k = 0; k < kc; ++k)
+			{
+				C0 += *aPtr * *(bPtr + 0);
+				C1 += *aPtr * *(bPtr + 1);
+				++aPtr;
+				bPtr += nr;
+			}
+
+			dest.evaluateRef(m, n + 0) += C0;
+			dest.evaluateRef(m, n + 1) += C1;
+		}
+
+		for (Index n = packedN; n < nc; ++n)
+		{
+			BlockPtr aPtr = &blockA[m * mc];
+			BlockPtr bPtr = &blockB[n * kc];
+			Type C0{ 0 };
+
+			for (Index k = 0; k < kc; ++k)
+			{
+				C0 += *aPtr * *bPtr;
+				++aPtr;
+				++bPtr;
+			}
+			dest.evaluateRef(m, n) += C0;
+		}
 	}
 
 
