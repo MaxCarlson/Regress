@@ -34,8 +34,8 @@ struct PackingInfo
 
 	enum
 	{
-		nr = Traits::Stride,
-		mr = nr //sizeof(void*) / 2,
+		nr = Traits::Stride,//sizeof(void*) / 2
+		mr = 4,
 	};
 
 };
@@ -326,6 +326,8 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 	const Index packedM = mc - mc % mr;
 	const Index packedN = nc - nc % nr;
 
+	//const Index
+
 	for (Index m = 0; m < packedM; m += mr)
 	{
 		for (Index n = 0; n < packedN; n += nr)
@@ -333,35 +335,38 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 			BlockPtr aPtr = &blockA[m * mc];
 			BlockPtr bPtr = &blockB[n * kc];
 
-			Packet C0{ Type{ 0 } };
-			Packet C1{ Type{ 0 } };
 			Packet tmp{ Type{ 0 } };
+			Packet C0 { Type{ 0 } }; Packet C1{ Type{ 0 } };
+			Packet C2 { Type{ 0 } }; Packet C3{ Type{ 0 } };
 
 			for (Index k = 0; k < kc; ++k)
 			{
 				Packet A0 = impl::pload1<Packet>(aPtr + 0);
 				Packet A1 = impl::pload1<Packet>(aPtr + 1);
-
+				Packet A2 = impl::pload1<Packet>(aPtr + 2);
+				Packet A3 = impl::pload1<Packet>(aPtr + 3);
 				Packet B0 = pload<Packet>(bPtr);
 
 				pmadd(A0, B0, C0, tmp);
 				pmadd(A1, B0, C1, tmp);
+				pmadd(A2, B0, C2, tmp);
+				pmadd(A3, B0, C3, tmp);
 
 				aPtr += mr;
 				bPtr += nr;
-				int a = 5;
 			}
-
 			dest.accumulate(m + 0, n, C0);
 			dest.accumulate(m + 1, n, C1);
+			dest.accumulate(m + 2, n, C2);
+			dest.accumulate(m + 3, n, C3);
 		}
 
 		// TODO: This is just simple element by element but can be made
 		// faster (do once main packed algorithm is optimized)
 		for (Index n = packedN; n < nc; ++n)
 		{
-			Type C0{ 0 };
-			Type C1{ 0 };
+			Type C0{ 0 }; Type C1{ 0 };
+			Type C2{ 0 }; Type C3{ 0 };
 			BlockPtr aPtr = &blockA[m * mc];
 			BlockPtr bPtr = &blockB[n * kc];
 
@@ -369,11 +374,15 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 			{
 				C0 += *(aPtr + 0) * *bPtr;
 				C1 += *(aPtr + 1) * *bPtr;
+				C3 += *(aPtr + 2) * *bPtr;
+				C2 += *(aPtr + 3) * *bPtr;
 				aPtr += mr;
 				++bPtr;
 			}
 			dest.evaluateRef(m + 0, n) += C0;
 			dest.evaluateRef(m + 1, n) += C1;
+			dest.evaluateRef(m + 2, n) += C2;
+			dest.evaluateRef(m + 3, n) += C3;
 		}
 	}
 
@@ -386,19 +395,23 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 			BlockPtr aPtr = &blockA[m * mc];
 			BlockPtr bPtr = &blockB[n * kc];
 
-			Type C0{ 0 };
-			Type C1{ 0 };
+			Type C0{ 0 }; Type C1{ 0 };
+			Type C2{ 0 }; Type C3{ 0 };
 
 			for (Index k = 0; k < kc; ++k)
 			{
 				C0 += *aPtr * *(bPtr + 0);
 				C1 += *aPtr * *(bPtr + 1);
+				C2 += *aPtr * *(bPtr + 2);
+				C3 += *aPtr * *(bPtr + 3);
 				++aPtr;
 				bPtr += nr;
 			}
 
 			dest.evaluateRef(m, n + 0) += C0;
 			dest.evaluateRef(m, n + 1) += C1;
+			dest.evaluateRef(m, n + 2) += C2;
+			dest.evaluateRef(m, n + 3) += C3;
 		}
 
 		for (Index n = packedN; n < nc; ++n)
@@ -416,54 +429,6 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 			dest.evaluateRef(m, n) += C0;
 		}
 	}
-
-
-	/*
-
-	//const Index maxPackedN4 = nc - nc % (nr * 4);
-	//const Index maxPackedN2 = nc - nc % (nr * 2);
-	//const Index maxPackedN = nc - nc % nr;
-
-	for (Index m = 0; m < mc; ++m)
-	{
-		BlockPtr bPtr = &blockB[0];
-
-		for (Index n = maxPackedN2; n < maxPackedN; n += Stride)
-		{
-			Packet		tmp;
-			Packet		C{ Type{ 0 } };
-			BlockPtr	aPtr = &blockA[m * kc];
-
-			for (Index k = 0; k < kc; ++k)
-			{
-				Packet A	= impl::pload1<Packet>(aPtr);
-				Packet B	= pload<Packet>(bPtr);
-
-				pmadd(A, B, C, tmp);
-				++aPtr;
-				bPtr += Stride;
-			}
-			dest.accumulate(m, n, C);
-		}
-		
-		// TODO: Pack so as we can vectorize with (probably) unaligned loads
-		// Handle the column/s of RHS we were unable to pack
-		for (Index n = maxPackedN; n < nc; ++n)
-		{
-			// Finish out micro row
-			Type Cval		= 0;
-			BlockPtr aPtr	= &blockA[m * kc]; 
-			for (Index k = 0; k < kc; ++k)
-			{
-				Cval += *aPtr * *bPtr;
-				++aPtr;
-				++bPtr;
-			}
-			dest.evaluateRef(m, n) += Cval;
-		}
-
-	}
-	*/
 }
 
 

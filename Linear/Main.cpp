@@ -49,7 +49,7 @@ int main()
 	};
 	Matrix<int> rhsC = rhs;
 
-	Matrix<double> med = {
+	Matrix<int> med = {
 		{ 1,  2,  3,  4,  5 },	// 1  6 11 16 21
 		{ 6,  7,  8,  9,  10},	// 2  7 12 17 22
 		{ 11, 12, 13, 14, 15},	// 3  8 13 18 23
@@ -69,7 +69,7 @@ int main()
 	//std::cout << res1 << "\n\n";
 	//std::cout << res3 << "\n\n";
 	
-	Matrix<double> resMed = med * med;
+	Matrix<int> resMed = med * med;
 	Matrix<double> resMed1 = medC * med; 
 	Matrix<double> resMed2 = med * medC;
 	std::cout << resMed << "\n\n";
