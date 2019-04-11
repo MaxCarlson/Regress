@@ -163,7 +163,7 @@ struct PackBlock
 			for (Index i = 0; i < rows; ++i)
 			{
 				Packet p = from.template loadUnaligned<Packet>(i, j);
-				pstore(block, p);
+				impl::pstore(block, p);
 				block += Stride;
 			}
 		}
@@ -345,7 +345,7 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 				Packet A1 = impl::pload1<Packet>(aPtr + 1);
 				Packet A2 = impl::pload1<Packet>(aPtr + 2);
 				Packet A3 = impl::pload1<Packet>(aPtr + 3);
-				Packet B0 = pload<Packet>(bPtr);
+				Packet B0 = impl::pload<Packet>(bPtr);
 
 				pmadd(A0, B0, C0, tmp);
 				pmadd(A1, B0, C1, tmp);

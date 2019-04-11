@@ -32,7 +32,7 @@ struct DefaultPacketTraits
 	{
 		Alignment	= findAlignment<PacketType>::value,
 		Size		= sizeof(ValueType),
-		Stride		= 0,
+		Stride		= Alignment / Size,
 		Packetable	= false,
 		HasDivide	= true
 	};
@@ -53,7 +53,7 @@ template<class Packet, class Type>
 inline Packet pset1(const Type& ptr) { static_assert(false); return {}; }
 
 template<class Packet, class Type>
-inline Packet pload1(const Type* ptr) { return pset1<Packet>(*ptr); }
+inline Packet pload1(const Type* ptr) { return pset1<Packet, Type>(*ptr); }
 
 template<class Packet, class Type>
 inline void pstore(Type* to, const Packet& ptr) { static_assert(false); }

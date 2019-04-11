@@ -69,10 +69,11 @@ int main()
 	//std::cout << res1 << "\n\n";
 	//std::cout << res3 << "\n\n";
 	
+	Matrix<double> reslr = lhs * rhs * lhs; // BUG:
 	Matrix<double> resMed = med * med;
 	//Matrix<double> resMed1 = medC * med; 
 	//Matrix<double> resMed2 = med * medC;
-	std::cout << resMed << "\n\n";
+	std::cout << reslr << "\n\n" << resMed << "\n\n";
 	//std::cout << resMed1 << "\n\n";
 	//std::cout << resMed2 << "\n\n";
 

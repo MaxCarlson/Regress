@@ -80,9 +80,9 @@ struct ProductLoop<Dest, LhsE, RhsE, GEMMType::VECTORIZED>
 		// be without transpositon)
 
 		// Blocksize along direction 
-		const size_type mc = std::min(512, lRows); // along m (rows of dest/lhs)
-		const size_type kc = std::min(256, lCols); // along k (columns of lhs, rows of rhs)
-		const size_type nc = std::min(512, rCols); // along n (columns of rhs)
+		const size_type mc = 4;//std::min(512, lRows); // along m (rows of dest/lhs)
+		const size_type kc = 2;//std::min(256, lCols); // along k (columns of lhs, rows of rhs)
+		const size_type nc = 2;//std::min(512, rCols); // along n (columns of rhs)
 
 		SALW blockA{ mc * kc }; // LhsBlock
 		SALW blockB{ kc * nc }; // RhsBlock
@@ -216,10 +216,10 @@ struct ProductEvaluator<ProductOp<Lhs, Rhs>>
 		return matrixEval.evaluate(idx);
 	}
 
-	template<class Packet>
+	template<class Packet, bool isAligned>
 	Packet packet(size_type row, size_type col) const
 	{
-		return matrixEval.template packet<Packet>(row, col);
+		return matrixEval.template packet<Packet, isAligned>(row, col);
 	}
 
 	template<class Packet>

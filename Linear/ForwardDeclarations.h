@@ -110,6 +110,9 @@ template<class Packet, class Type>
 Packet pload(const Type* ptr);
 
 template<class Packet, class Type>
+Packet ploadu(const Type* ptr);
+
+template<class Packet, class Type>
 void pstore(Type* to, const Packet& ptr);
 
 template<class Packet>

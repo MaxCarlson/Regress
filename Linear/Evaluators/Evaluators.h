@@ -66,27 +66,27 @@ struct Evaluator<Matrix<Type, MajorOrder>>
 	Packet packet(size_type row, size_type col) const
 	{
 		if (IsAligned)
-			return pload<Packet, value_type>(&m(row, col));
-		else
-			return impl::ploadu<Packet, value_type>(&m(row, col));
+			return impl::pload<Packet, value_type>(&m(row, col));
+
+		return impl::ploadu<Packet, value_type>(&m(row, col));
 	}
 
 	template<class Packet>
 	Packet packet(size_type idx) const
 	{
-		return pload<Packet>(&m.index(idx));
+		return impl::pload<Packet>(&m.index(idx));
 	}
 
 	template<class Packet>
 	void writePacket(size_type row, size_type col, const Packet& p) 
 	{
-		return pstore(const_cast<value_type*>(&m(row, col)), p);
+		return impl::pstore(const_cast<value_type*>(&m(row, col)), p);
 	}
 
 	template<class Packet>
 	void writePacket(size_type idx, const Packet& p)
 	{
-		return pstore(const_cast<value_type*>(&m.index(idx)), p);
+		return impl::pstore(const_cast<value_type*>(&m.index(idx)), p);
 	}
 
 	void set(MatrixType&& other)
@@ -151,10 +151,11 @@ struct BinaryEvaluator<CwiseBinaryOp<Func, Lhs, Rhs>>
 		return op(lhs.evaluate(idx), rhs.evaluate(idx));
 	}
 
-	template<class Packet>
+	template<class Packet, bool IsAligned>
 	Packet packet(size_type row, size_type col) const
 	{
-		return op.packetOp<Packet>(lhs.template packet<Packet>(row, col), rhs.template packet<Packet>(row, col));
+		return op.packetOp<Packet>(lhs.template packet<Packet, IsAligned>(row, col), 
+			rhs.template packet<Packet, IsAligned>(row, col));
 	}
 
 	template<class Packet>
@@ -229,7 +230,7 @@ struct TransposeEvaluator<TransposeOp<Expr>>
 	}
 
 	// TODO: This definitely does NOT work
-	template<class Packet>
+	template<class Packet, bool IsAligned>
 	Packet packet(size_type row, size_type col) const
 	{
 		static_assert("Cannot Packet TransposeOp");
@@ -277,7 +278,7 @@ struct ConstantEvaluator<Constant<Type, Expr>>
 		return expr.evaluate();
 	}
 
-	template<class Packet>
+	template<class Packet, bool isAligned>
 	Packet packet(size_type, size_type) const
 	{
 		return expr.packet();
