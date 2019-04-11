@@ -306,7 +306,7 @@ inline void pmadd(const Packet& a, const Packet& b, Packet& c, Packet& tmp)
 // { 9, 10, 11, 12} * { 9, 10, 11, 12}
 // {13, 14, 15, 16}   {13, 14, 15, 16}
 //
-template<class Dest, class Type, class Index, int nr = PackingInfo<Type>::nr, int mr = PackingInfo<Type>::mr>
+template<class Dest, class Type, class Index, int mr = PackingInfo<Type>::mr, int nr = PackingInfo<Type>::nr>
 void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, const Index nc, const Index kc)
 {
 	using Traits	= PacketTraits<Type>;
@@ -374,8 +374,8 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 			{
 				C0 += *(aPtr + 0) * *bPtr;
 				C1 += *(aPtr + 1) * *bPtr;
-				C3 += *(aPtr + 2) * *bPtr;
-				C2 += *(aPtr + 3) * *bPtr;
+				C2 += *(aPtr + 2) * *bPtr;
+				C3 += *(aPtr + 3) * *bPtr;
 				aPtr += mr;
 				++bPtr;
 			}
@@ -387,33 +387,36 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 	}
 
 	// TODO: This can be optimized
-	// Finish out the last row/s of lhs that couldn't be packed 
+	// Finish out the last row/s of lhs that couldn't be packed (in optimal scheme)
 	for (Index m = packedM; m < mc; ++m)
 	{
+		// Finish muling the leftover rows of lhs and 
+		// all columns of rhs that are packed normally
 		for (Index n = 0; n < packedN; n += nr)
 		{
-			BlockPtr aPtr = &blockA[m * mc];
-			BlockPtr bPtr = &blockB[n * kc];
-
-			Type C0{ 0 }; Type C1{ 0 };
-			Type C2{ 0 }; Type C3{ 0 };
-
-			for (Index k = 0; k < kc; ++k)
+			static constexpr Index useJ = nr > 2;
+			for (Index j = n; j < n + nr; j += 2) // TODO: Make sure nr % 2 == 0
 			{
-				C0 += *aPtr * *(bPtr + 0);
-				C1 += *aPtr * *(bPtr + 1);
-				C2 += *aPtr * *(bPtr + 2);
-				C3 += *aPtr * *(bPtr + 3);
-				++aPtr;
-				bPtr += nr;
-			}
+				const Index offsetJ = useJ * j;
+				BlockPtr aPtr = &blockA[m * mc];
+				BlockPtr bPtr = &blockB[n * kc + offsetJ];
 
-			dest.evaluateRef(m, n + 0) += C0;
-			dest.evaluateRef(m, n + 1) += C1;
-			dest.evaluateRef(m, n + 2) += C2;
-			dest.evaluateRef(m, n + 3) += C3;
+				Type C0{ 0 }; Type C1{ 0 };
+
+				for (Index k = 0; k < kc; ++k)
+				{
+					C0 += *aPtr * *(bPtr + 0);
+					C1 += *aPtr * *(bPtr + 1);
+					++aPtr;
+					bPtr += nr;
+				}
+
+				dest.evaluateRef(m, n + offsetJ + 0) += C0;
+				dest.evaluateRef(m, n + offsetJ + 1) += C1;
+			}
 		}
 
+		// Finish the last row of lhs * the non-normally packed columns of rhs
 		for (Index n = packedN; n < nc; ++n)
 		{
 			BlockPtr aPtr = &blockA[m * mc];
