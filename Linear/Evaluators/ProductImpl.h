@@ -332,7 +332,7 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 	{
 		for (Index n = 0; n < packedN; n += nr)
 		{
-			BlockPtr aPtr = &blockA[m * mc]; // TODO: BUG: Current bug appears to come from indexing past lhs block here
+			BlockPtr aPtr = &blockA[m * kc]; // TODO: BUG: Current bug appears to come from indexing past lhs block here
 			BlockPtr bPtr = &blockB[n * kc];
 
 			Packet tmp{ Type{ 0 } };
@@ -367,7 +367,7 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 		{
 			Type C0{ 0 }; Type C1{ 0 };
 			Type C2{ 0 }; Type C3{ 0 };
-			BlockPtr aPtr = &blockA[m * mc];
+			BlockPtr aPtr = &blockA[m * kc];
 			BlockPtr bPtr = &blockB[n * kc];
 
 			for (Index k = 0; k < kc; ++k)
@@ -397,7 +397,7 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 			Index offsetJ = 0;
 			for (Index j = n; j < n + nr; j += 2) // TODO: Make sure nr % 2 == 0
 			{
-				BlockPtr aPtr = &blockA[m * mc];
+				BlockPtr aPtr = &blockA[m * kc];
 				BlockPtr bPtr = &blockB[n * kc + offsetJ];
 
 				Type C0{ 0 }; Type C1{ 0 };
@@ -416,16 +416,12 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 			}
 		}
 
-		// If we don't have any normally packed blocks in blockA we need to index into
-		// it differently
-		const Index aIdx = packedM + packedN <= 0 ? m * kc : m * mc;
-
 		// Finish the last rows of lhs * the non-normally packed columns of rhs
 		for (Index n = packedN; n < nc; ++n)
 		{
 			//BlockPtr aPtr = &blockA[m * mc];
 
-			BlockPtr aPtr = &blockA[aIdx];
+			BlockPtr aPtr = &blockA[m * kc];
 			BlockPtr bPtr = &blockB[n * kc];
 			Type C0{ 0 };
 
