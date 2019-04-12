@@ -69,24 +69,14 @@ int main()
 	//std::cout << res1 << "\n\n";
 	//std::cout << res3 << "\n\n";
 	
-	Matrix<double> reslr = lhs * rhs * lhs; // BUG:
+	//Matrix<float> rr(180, 180);
+	//std::iota(std::begin(rr), std::end(rr), 0);
+	//Matrix<float> rrres = rr * rr;
+
+	//Matrix<int> reslr = lhs * rhs; // BUG:
 	Matrix<double> resMed = med * med;
-	//Matrix<double> resMed1 = medC * med; 
-	//Matrix<double> resMed2 = med * medC;
-	std::cout << reslr << "\n\n" << resMed << "\n\n";
-	//std::cout << resMed1 << "\n\n";
-	//std::cout << resMed2 << "\n\n";
-
-	//Matrix<int> res = lhs * rhs * lhs;
-	//std::cout << res << "\n\n";
-
-	s.start();
-	//Matrix<int> vv = lhs * rhs;
-	Matrix<double> vv = med * med;
-	//Matrix<int> vv = medL * medR;
-	s.printCurrent();
-
-	std::cout << vv << "\n\n";
+	//std::cout << reslr << "\n\n";
+	std::cout << resMed << "\n\n";
 
 	return 0;
 }

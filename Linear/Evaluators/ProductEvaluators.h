@@ -70,19 +70,13 @@ struct ProductLoop<Dest, LhsE, RhsE, GEMMType::VECTORIZED>
 		// TODO: Calculate mc/kc/nc from type size/l2 cache size
 		// TODO: Benchmark allocating A/B on heap/thread_local/stack
 
-		///
-		// NOTE: BUG: All tests not passing when mc/kc/nc are not small!
-		// (Only on mixed Major Order expressions)
-		///
-		// NOTE: When lhs is ColumnMajor Order and rhs isn't 
-		// the whole expression (or vice-versa) tries to transpose itself
-		// Even if dest is RowMajor order (like the result of this expr would
-		// be without transpositon)
-
+		// TODO: BUG: Packing with small numbers is fine, large is not in 
+		// release mode. FIX!
+		//
 		// Blocksize along direction 
 		const size_type mc = 4;//std::min(512, lRows); // along m (rows of dest/lhs)
-		const size_type kc = 2;//std::min(256, lCols); // along k (columns of lhs, rows of rhs)
-		const size_type nc = 2;//std::min(512, rCols); // along n (columns of rhs)
+		const size_type kc = 2;//std::min(64, lCols); // along k (columns of lhs, rows of rhs)
+		const size_type nc = 4;//std::min(512, rCols); // along n (columns of rhs)
 
 		SALW blockA{ mc * kc }; // LhsBlock
 		SALW blockB{ kc * nc }; // RhsBlock
