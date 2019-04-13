@@ -75,7 +75,8 @@ struct PackPanel
 		{
 			for (Index j = 0; j < cols; ++j)
 			{
-				for (Index i = i2; i < i2 + mr; ++i)
+				const Index maxI = std::min(maxPRows, i2 + mr);
+				for (Index i = i2; i < maxI; ++i)
 				{
 					Type v = from.evaluate(i, j);
 					*block = v;
@@ -297,6 +298,14 @@ inline void pmadd(const Packet& a, const Packet& b, Packet& c, Packet& tmp)
 }
 
 
+// TODO: ploadN with variadic tuple?
+template<class Packet, class Type>
+inline decltype(auto) pload4(const Type* ptr)
+{
+	return std::tuple{ impl::pload1<Packet>(ptr + 0), impl::pload1<Packet>(ptr + 1),
+		impl::pload1<Packet>(ptr + 2), impl::pload1<Packet>(ptr + 3) };
+}
+
 // GEneral Block Panel 
 // https://www.cs.utexas.edu/users/pingali/CS378/2008sp/papers/gotoPaper.pdf
 // m x n = m x k * k x n
@@ -341,10 +350,8 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 
 			for (Index k = 0; k < kc; ++k)
 			{
-				Packet A0 = impl::pload1<Packet>(aPtr + 0);
-				Packet A1 = impl::pload1<Packet>(aPtr + 1);
-				Packet A2 = impl::pload1<Packet>(aPtr + 2);
-				Packet A3 = impl::pload1<Packet>(aPtr + 3);
+				auto[A0, A1, A2, A3] = pload4<Packet, Type>(aPtr);
+
 				Packet B0 = impl::pload<Packet>(bPtr);
 
 				pmadd(A0, B0, C0, tmp);
@@ -395,7 +402,7 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 		for (Index n = 0; n < packedN; n += nr)
 		{
 			Index offsetJ = 0;
-			for (Index j = n; j < n + nr; j += 2) // TODO: Make sure nr % 2 == 0
+			for (Index j = n; j < n + nr; j += 2, offsetJ += 2) // TODO: Make sure nr % 2 == 0
 			{
 				BlockPtr aPtr = &blockA[m * kc];
 				BlockPtr bPtr = &blockB[n * kc + offsetJ];
@@ -412,15 +419,12 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 
 				dest.evaluateRef(m, n + offsetJ + 0) += C0;
 				dest.evaluateRef(m, n + offsetJ + 1) += C1;
-				offsetJ += 2;
 			}
 		}
 
 		// Finish the last rows of lhs * the non-normally packed columns of rhs
 		for (Index n = packedN; n < nc; ++n)
 		{
-			//BlockPtr aPtr = &blockA[m * mc];
-
 			BlockPtr aPtr = &blockA[m * kc];
 			BlockPtr bPtr = &blockB[n * kc];
 			Type C0{ 0 };

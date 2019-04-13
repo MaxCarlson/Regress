@@ -74,9 +74,9 @@ struct ProductLoop<Dest, LhsE, RhsE, GEMMType::VECTORIZED>
 		// release mode. FIX!
 		//
 		// Blocksize along direction 
-		const size_type mc = 8;//std::min(512, lRows); // along m (rows of dest/lhs)
-		const size_type kc = 4;//std::min(64, lCols); // along k (columns of lhs, rows of rhs)
-		const size_type nc = 8;//std::min(512, rCols); // along n (columns of rhs)
+		const size_type mc = std::min(512, lRows); // along m (rows of dest/lhs)
+		const size_type kc = std::min(256, lCols); // along k (columns of lhs, rows of rhs)
+		const size_type nc = std::min(512, rCols); // along n (columns of rhs)
 
 		SALW blockA{ mc * kc }; // LhsBlock
 		SALW blockB{ kc * nc }; // RhsBlock

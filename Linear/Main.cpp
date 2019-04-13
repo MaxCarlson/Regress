@@ -69,10 +69,12 @@ int main()
 	//std::cout << res1 << "\n\n";
 	//std::cout << res3 << "\n\n";
 	
-	Matrix<float> rr(15, 15);
+	Matrix<double> rr(250, 250);
 	std::iota(std::begin(rr), std::end(rr), 0);
-	std::cout << rr << "\n\n";
-	Matrix<float> rrres = rr * rr;
+	//std::cout << rr << "\n\n";
+
+	// TODO: BUG: Looks to be issue with writing past stack?
+	Matrix<float> rrres = rr * rr; 
 
 	//Matrix<int> reslr = lhs * rhs; // BUG:
 	Matrix<double> resMed = med * med;
