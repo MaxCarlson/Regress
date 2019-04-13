@@ -73,4 +73,7 @@ inline Packet pdiv(const Packet& p1, const Packet& p2) { static_assert(false); r
 template<class Packet, class Type>
 inline Packet pbroadcast(const Type* ptr) { static_assert(false); return {}; }
 
+template<class Packet>
+inline void transpose4x4(Packet& r1, Packet& r2, Packet& r3, Packet& r4) { static_assert(false); }
+
 } // End impl::

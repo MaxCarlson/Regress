@@ -9,6 +9,23 @@
 namespace impl
 {
 
+template<class Packet>
+inline void pmadd(const Packet& a, const Packet& b, Packet& c, Packet& tmp)
+{
+	// TODO: ifdef for FMA instructions
+	tmp = b;
+	tmp = impl::pmul(a, tmp);
+	c = impl::padd(c, tmp);
+}
+
+// TODO: ploadN with variadic tuple?
+template<class Packet, class Type>
+inline decltype(auto) pload4(const Type* ptr)
+{
+	return std::tuple{ impl::pload1<Packet>(ptr + 0), impl::pload1<Packet>(ptr + 1),
+		impl::pload1<Packet>(ptr + 2), impl::pload1<Packet>(ptr + 3) };
+}
+
 // lhs * rhs * lhs
 // {1, 2},					{9,  12, 15}
 // {3, 4}, * {1, 2, 3}, =	{19, 26, 33}
@@ -46,6 +63,8 @@ struct PackingInfo
 template<class Type, class From, class Index, bool MajorOrder, int mr>
 struct PackPanel
 {
+	static_assert(mr == 4, "mr must be 4 for LHS packing to succeed");
+
 	using Traits = PacketTraits<Type>;
 	using Packet = typename Traits::type;
 	enum
@@ -68,10 +87,48 @@ struct PackPanel
 
 	template<> static void run<RowMajor>(Type* block, const From& from, Index rows, Index cols)
 	{
-		const Type* debug = block;
-		const Index maxPRows = rows - rows % Stride;
+		const Type* debug			= block;
+		const Index maxPRows		= rows - rows % 4;
+		const Index startPNTpRows	= Stride == 4 ? maxPRows : 0; // Start packed non-transposed rows
+		const Index maxPCols		= cols - cols % 4;
 
-		for (Index i2 = 0; i2 < maxPRows; i2 += mr)
+
+		// TODO: Make this code Stride oblivious
+
+		if constexpr (Stride == 4)
+		{
+			for (Index i = 0; i < maxPRows; i += mr)
+			{
+				for (Index j = 0; j < maxPCols; j += 4)
+				{
+					Packet P0 = from.loadUnaligned<Packet>(i + 0, j);
+					Packet P1 = from.loadUnaligned<Packet>(i + 1, j);
+					Packet P2 = from.loadUnaligned<Packet>(i + 2, j);
+					Packet P3 = from.loadUnaligned<Packet>(i + 3, j);
+
+					impl::transpose4x4(P0, P1, P2, P3);
+
+					pstore(block, P0); block += 4;
+					pstore(block, P1); block += 4;
+					pstore(block, P2); block += 4;
+					pstore(block, P3); block += 4;
+				}
+
+				// Finish out columns
+				for (Index j = maxPCols; j < cols; ++j)
+				{
+					const Index maxI = std::min(maxPRows, i + mr);
+					for (Index i2 = i; i2 < maxI; ++i2)
+					{
+						Type v = from.evaluate(i2, j);
+						*block = v;
+						++block;
+					}
+				}
+			}
+		}
+
+		for (Index i2 = startPNTpRows; i2 < maxPRows; i2 += mr)
 		{
 			for (Index j = 0; j < cols; ++j)
 			{
@@ -124,11 +181,10 @@ struct PackPanel
 	}
 };
 
-// TODO: Optimize both packing functions for Row/ColMajor Order
-//
+
+// TODO:
 // Format in memory: 
 // BlockSize nr = 4
-// TODO:
 //
 // Note: nr is number of columns from rhs per packed op
 template<class Type, class From, class Index, bool MajorOrder, int nr>
@@ -288,23 +344,6 @@ private:
 	Index r, c;
 };
 
-template<class Packet>
-inline void pmadd(const Packet& a, const Packet& b, Packet& c, Packet& tmp)
-{
-	// TODO: ifdef for FMA instructions
-	tmp = b;
-	tmp = impl::pmul(a, tmp);
-	c	= impl::padd(c, tmp);
-}
-
-
-// TODO: ploadN with variadic tuple?
-template<class Packet, class Type>
-inline decltype(auto) pload4(const Type* ptr)
-{
-	return std::tuple{ impl::pload1<Packet>(ptr + 0), impl::pload1<Packet>(ptr + 1),
-		impl::pload1<Packet>(ptr + 2), impl::pload1<Packet>(ptr + 3) };
-}
 
 // GEneral Block Panel 
 // https://www.cs.utexas.edu/users/pingali/CS378/2008sp/papers/gotoPaper.pdf

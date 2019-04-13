@@ -102,5 +102,25 @@ template<> inline Packet2d pbroadcast(const double* ptr)
 	return _mm_broadcastsd_pd(*reinterpret_cast<const Packet2d*>(ptr));
 }
 
+template<> inline void transpose4x4<Packet4f>(Packet4f& r1, Packet4f& r2, Packet4f& r3, Packet4f& r4)
+{
+	_MM_TRANSPOSE4_PS(r1, r2, r3, r4);
+}
+
+/* https://www.randombit.net/bitbashing/2009/10/08/integer_matrix_transpose_in_sse2.html */
+template<> inline void transpose4x4<Packet4i>(Packet4i& r1, Packet4i& r2, Packet4i& r3, Packet4i& r4)
+{
+	Packet4i T0 = _mm_unpacklo_epi32(r1, r2);
+	Packet4i T1 = _mm_unpacklo_epi32(r3, r4);
+	Packet4i T2 = _mm_unpackhi_epi32(r1, r2);
+	Packet4i T3 = _mm_unpackhi_epi32(r3, r4);
+
+	/* Assigning transposed values back into I[0-3] */
+	r1 = _mm_unpacklo_epi64(T0, T1);
+	r2 = _mm_unpackhi_epi64(T0, T1);
+	r3 = _mm_unpacklo_epi64(T2, T3);
+	r4 = _mm_unpackhi_epi64(T2, T3);
+}
+
 } // End impl::
 
