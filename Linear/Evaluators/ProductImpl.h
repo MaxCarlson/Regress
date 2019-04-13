@@ -94,6 +94,7 @@ struct PackPanel
 
 
 		// TODO: Make this code Stride oblivious
+		// TODO: AVX 8x8 packing ?
 
 		if constexpr (Stride == 4)
 		{
@@ -128,6 +129,7 @@ struct PackPanel
 			}
 		}
 
+		// Finish packing the rest of the rows/cols that can be packed optimally
 		for (Index i2 = startPNTpRows; i2 < maxPRows; i2 += mr)
 		{
 			for (Index j = 0; j < cols; ++j)
@@ -212,12 +214,30 @@ struct PackBlock
 
 	template<> static void run<RowMajor>(Type* block, const From& from, Index rows, Index cols)
 	{
-		const Type* debug = block;
-		const Index maxPCol = cols - cols % nr;
+		const Type* debug		= block;
+		const Index maxPCol		= cols - cols % nr;
+		const bool unrollPack	= (nr == Stride && nr > 2);
+		const Index maxUrlRow	=  unrollPack ? rows - rows % nr : 0;
 
 		for (Index j = 0; j < maxPCol; j += Stride)
 		{
-			for (Index i = 0; i < rows; ++i)
+			if (unrollPack)
+			{
+				for (Index i = 0; i < maxUrlRow; i += nr)
+				{
+					Packet P0 = from.template loadUnaligned<Packet>(i + 0, j);
+					Packet P1 = from.template loadUnaligned<Packet>(i + 1, j);
+					Packet P2 = from.template loadUnaligned<Packet>(i + 2, j);
+					Packet P3 = from.template loadUnaligned<Packet>(i + 3, j);
+
+					impl::pstore(block, P0); block += Stride;
+					impl::pstore(block, P1); block += Stride;
+					impl::pstore(block, P2); block += Stride;
+					impl::pstore(block, P3); block += Stride;
+				}
+			}
+
+			for (Index i = maxUrlRow; i < rows; ++i)
 			{
 				Packet p = from.template loadUnaligned<Packet>(i, j);
 				impl::pstore(block, p);
