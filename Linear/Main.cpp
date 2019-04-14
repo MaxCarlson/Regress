@@ -75,12 +75,11 @@ int main()
 	//std::cout << res1 << "\n\n";
 	//std::cout << res3 << "\n\n";
 	
-	//Matrix<float> rr(1500, 1500);
+	//Matrix<float> rr(550, 550);
+	//Matrix<float, true> rrC(550, 550);
+
 	//std::iota(std::begin(rr), std::end(rr), 0);
 	//std::cout << rr << "\n\n";
-	//for(int i = 0; i < 100; ++i)
-	//Matrix<float> rrres = rr * rr; 
-	medC = medC * medC;
 
 	//Matrix<int> reslr = lhs * rhs; // BUG:
 	Matrix<double> resMed = med * med;
