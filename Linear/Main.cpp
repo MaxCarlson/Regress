@@ -11,7 +11,7 @@ int main()
 	Stopwatch<std::chrono::milliseconds> s;
 
 	/*
-	Eigen::Matrix<int, -1, -1, Eigen::RowMajor> mat1;
+	Eigen::Matrix<float, -1, -1, Eigen::RowMajor> mat1;
 	Eigen::Matrix<int, -1, -1, Eigen::RowMajor> mat2;
 	mat1.resize(2500, 2500);
 	mat2.resize(25, 25);
@@ -34,11 +34,12 @@ int main()
 
 	//Eigen::Matrix<int, -1, -1, Eigen::RowMajor>mm = mat1 * mat2;
 	s.start();
+	//for (int i = 0; i < 1000; ++i)
 	mat1 = mat1 * mat1;
 	s.printCurrent();
-	Matrix<int> rr(2500, 2500);
+	Matrix<float> tt(2500, 2500);
 	s.start();
-	rr = rr * rr;
+	tt= tt* tt;
 	s.printCurrent();
 	//*/
 
@@ -75,8 +76,11 @@ int main()
 	//std::cout << res1 << "\n\n";
 	//std::cout << res3 << "\n\n";
 	
-	//Matrix<float> rr(550, 550);
+	Matrix<float> rr(550, 550);
 	//Matrix<float, true> rrC(550, 550);
+
+	for (int i = 0; i < 1000; ++i)
+		rr = rr * rr;
 
 	//std::iota(std::begin(rr), std::end(rr), 0);
 	//std::cout << rr << "\n\n";
