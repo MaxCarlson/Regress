@@ -80,6 +80,7 @@ int main()
 	//std::cout << rr << "\n\n";
 	//for(int i = 0; i < 100; ++i)
 	//Matrix<float> rrres = rr * rr; 
+	medC = medC * medC;
 
 	//Matrix<int> reslr = lhs * rhs; // BUG:
 	Matrix<double> resMed = med * med;

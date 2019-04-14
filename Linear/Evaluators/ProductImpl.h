@@ -57,9 +57,17 @@ struct PackingInfo
 
 };
 
-// Format in memory: 
-// BlockSize mr = 4
-// TODO:
+// Packing order: 
+// BlockSize mr == 4
+// 
+// 1  5   9 13  17 21 25 29
+// 2  6  10 14  18 22 26 30
+// 3  7  11 15  19 23 27 31
+// 4  8  12 16  20 24 28 32
+// ...
+// (rows - rows % mr are packed in order)
+// ...
+// 33 34 35 36  37 38 39 40 
 template<class Type, class From, class Index, bool MajorOrder, int mr>
 struct PackPanel
 {
@@ -163,10 +171,24 @@ struct PackPanel
 	template<> static void run<ColMajor>(Type* block, const From& from, Index rows, Index cols)
 	{
 		const Type* debug = block;
-		const Index maxPackedCols = cols - cols % Stride;
+		const Index maxPRows = rows - rows % 4;
 
-		//*
-		for (Index i = 0; i < rows; ++i)
+		for (Index i = 0; i < maxPRows; i += mr)
+		{
+			for (Index j = 0; j < cols; ++j)
+			{
+				const Index maxI = std::min(maxPRows, i + mr);
+				for (Index i2 = i; i2 < maxI; ++i2)
+				{
+					Type v = from.evaluate(i2, j);
+					*block = v;
+					++block;
+				}
+			}
+		}
+
+		// Pack last rows inorder
+		for (Index i = maxPRows; i < rows; ++i)
 		{
 			for (Index j = 0; j < cols; ++j)
 			{
@@ -174,8 +196,7 @@ struct PackPanel
 				*block = v;
 				++block;
 			}
-		}
-		//*/
+	}
 
 #ifdef DEBUG_BLOCKS
 		printblock(debug, rows, cols);
@@ -400,7 +421,7 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 	{
 		for (Index n = 0; n < packedN; n += nr)
 		{
-			BlockPtr aPtr = &blockA[m * kc]; // TODO: BUG: Current bug appears to come from indexing past lhs block here
+			BlockPtr aPtr = &blockA[m * kc]; 
 			BlockPtr bPtr = &blockB[n * kc];
 
 			Packet tmp{ Type{ 0 } };
