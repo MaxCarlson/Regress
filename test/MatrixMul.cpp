@@ -45,23 +45,56 @@ namespace test
 			Assert::IsTrue(dest == destCopy);
 		}
 
-		template<class Dest, class Lhs, class Rhs>
-		void generateTestMatrixes(int lrows, int lcols, int rrows, int rcols)
+		template<class Dest, class Lhs, class Rhs, class Vec>
+		void generateTestMatrixes(const Vec& lhsVec, const Vec& rhsVec, int lrows, int lcols, int rrows, int rcols)
 		{
 			Dest dest;
 			Lhs lhs{ lrows, lcols };
 			Rhs rhs{ rrows, rcols };
 
-			std::generate(lhs.begin(), lhs.end(), std::rand);
-			std::generate(rhs.begin(), rhs.end(), std::rand);
+			// TODO: make this faster, we don't really even need to fill the entire matrix
+			std::copy(lhsVec.begin(), lhsVec.end(), lhs.begin());
+			std::copy(rhsVec.begin(), rhsVec.end(), rhs.begin());
 
 			testLargeImpl(dest, lhs, rhs);
 		}
 
+		template<class Type>
+		void matrixMajorOrderPermutations(int lrows, int lcols, int rrows, int rcols)
+		{
+			using MatR = Matrix<Type, RowMajor>;
+			using MatC = Matrix<Type, ColMajor>;
+
+			std::vector<Type> lhsV(lrows * lcols);
+			std::vector<Type> rhsV(lrows * lcols);
+			std::generate(lhsV.begin(), lhsV.end(), std::rand);
+			std::generate(rhsV.begin(), rhsV.end(), std::rand);
+
+			generateTestMatrixes<MatR, MatR, MatR>(lhsV, rhsV, lrows, lcols, rrows, rcols);
+			generateTestMatrixes<MatR, MatR, MatC>(lhsV, rhsV, lrows, lcols, rrows, rcols);
+			generateTestMatrixes<MatR, MatC, MatR>(lhsV, rhsV, lrows, lcols, rrows, rcols);
+			generateTestMatrixes<MatR, MatC, MatC>(lhsV, rhsV, lrows, lcols, rrows, rcols);
+
+			generateTestMatrixes<MatC, MatC, MatC>(lhsV, rhsV, lrows, lcols, rrows, rcols);
+			generateTestMatrixes<MatC, MatC, MatR>(lhsV, rhsV, lrows, lcols, rrows, rcols);
+			generateTestMatrixes<MatC, MatR, MatC>(lhsV, rhsV, lrows, lcols, rrows, rcols);
+			generateTestMatrixes<MatC, MatR, MatR>(lhsV, rhsV, lrows, lcols, rrows, rcols);
+		}
+
+		void generateTestMatrixTypes(int lrows, int lcols, int rrows, int rcols)
+		{
+			matrixMajorOrderPermutations<int>(lrows, lcols, rrows, rcols);
+			matrixMajorOrderPermutations<float>(lrows, lcols, rrows, rcols);
+			matrixMajorOrderPermutations<double>(lrows, lcols, rrows, rcols);
+		}
+
 		TEST_METHOD(TestLarge)
 		{
-			using Mati = Matrix<int>;
-			generateTestMatrixes<Mati, Mati, Mati>(25, 25, 25, 5);
+			generateTestMatrixTypes(10,		10,		10,	10);
+			generateTestMatrixTypes(10,		5,		5,	15);
+			generateTestMatrixTypes(23,		13,		13, 42);
+			generateTestMatrixTypes(3,		1,		1,	13);
+
 		}
 	};
 }
