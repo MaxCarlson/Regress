@@ -415,6 +415,8 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 	const Index packedM = mc - mc % mr;
 	const Index packedN = nc - nc % nr;
 
+#pragma omp parallel for // Note: Testing...
+
 	for (Index m = 0; m < packedM; m += mr)
 	{
 		for (Index n = 0; n < packedN; n += nr)

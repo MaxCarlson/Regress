@@ -31,13 +31,6 @@ public:
 		impl::Assignment<Derived, OtherDerived, value_type, Func>::run(derived(), from, func);
 	}
 
-	//template<class OtherDerived>
-	//Derived& operator+=(const MatrixBase<OtherDerived>& other)
-	//{
-	//	assign(other, impl::PlusEquals<value_type>{});
-	//	return derived();
-	//}
-
 	// Matrix Operators
 	template<class OtherDerived>
 	const CwiseBinaryOp<impl::AddOp<value_type>, Derived, OtherDerived>

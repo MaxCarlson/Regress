@@ -119,6 +119,9 @@ template<class Packet>
 Packet padd(const Packet& p1, const Packet& p2);
 
 template<class Packet>
+Packet psub(const Packet& p1, const Packet& p2);
+
+template<class Packet>
 Packet pdiv(const Packet& p1, const Packet& p2);
 }
 
