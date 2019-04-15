@@ -46,11 +46,11 @@ namespace test
 		}
 
 		template<class Dest, class Lhs, class Rhs, class Vec>
-		void generateTestMatrixes(const Vec& lhsVec, const Vec& rhsVec, int lrows, int lcols, int rrows, int rcols)
+		void generateTestMatrixes(const Vec& lhsVec, const Vec& rhsVec, int m, int k, int n)
 		{
 			Dest dest;
-			Lhs lhs{ lrows, lcols };
-			Rhs rhs{ rrows, rcols };
+			Lhs lhs{ m, k };
+			Rhs rhs{ k, n };
 
 			// TODO: make this faster, we don't really even need to fill the entire matrix
 			std::copy(lhsVec.begin(), lhsVec.end(), lhs.begin());
@@ -60,40 +60,60 @@ namespace test
 		}
 
 		template<class Type>
-		void matrixMajorOrderPermutations(int lrows, int lcols, int rrows, int rcols)
+		void matrixMajorOrderPermutations(int m, int k, int n)
 		{
 			using MatR = Matrix<Type, RowMajor>;
 			using MatC = Matrix<Type, ColMajor>;
 
-			std::vector<Type> lhsV(lrows * lcols);
-			std::vector<Type> rhsV(lrows * lcols);
+			std::vector<Type> lhsV(m * k);
+			std::vector<Type> rhsV(n * k);
 			std::generate(lhsV.begin(), lhsV.end(), std::rand);
 			std::generate(rhsV.begin(), rhsV.end(), std::rand);
 
-			generateTestMatrixes<MatR, MatR, MatR>(lhsV, rhsV, lrows, lcols, rrows, rcols);
-			generateTestMatrixes<MatR, MatR, MatC>(lhsV, rhsV, lrows, lcols, rrows, rcols);
-			generateTestMatrixes<MatR, MatC, MatR>(lhsV, rhsV, lrows, lcols, rrows, rcols);
-			generateTestMatrixes<MatR, MatC, MatC>(lhsV, rhsV, lrows, lcols, rrows, rcols);
+			generateTestMatrixes<MatR, MatR, MatR>(lhsV, rhsV, m, k, n);
+			generateTestMatrixes<MatR, MatR, MatC>(lhsV, rhsV, m, k, n);
+			generateTestMatrixes<MatR, MatC, MatR>(lhsV, rhsV, m, k, n);
+			generateTestMatrixes<MatR, MatC, MatC>(lhsV, rhsV, m, k, n);
 
-			generateTestMatrixes<MatC, MatC, MatC>(lhsV, rhsV, lrows, lcols, rrows, rcols);
-			generateTestMatrixes<MatC, MatC, MatR>(lhsV, rhsV, lrows, lcols, rrows, rcols);
-			generateTestMatrixes<MatC, MatR, MatC>(lhsV, rhsV, lrows, lcols, rrows, rcols);
-			generateTestMatrixes<MatC, MatR, MatR>(lhsV, rhsV, lrows, lcols, rrows, rcols);
+			generateTestMatrixes<MatC, MatC, MatC>(lhsV, rhsV, m, k, n);
+			generateTestMatrixes<MatC, MatC, MatR>(lhsV, rhsV, m, k, n);
+			generateTestMatrixes<MatC, MatR, MatC>(lhsV, rhsV, m, k, n);
+			generateTestMatrixes<MatC, MatR, MatR>(lhsV, rhsV, m, k, n);
 		}
 
-		void generateTestMatrixTypes(int lrows, int lcols, int rrows, int rcols)
+		void generateTestMatrixTypes(int m, int k, int n)
 		{
-			matrixMajorOrderPermutations<int>(lrows, lcols, rrows, rcols);
-			matrixMajorOrderPermutations<float>(lrows, lcols, rrows, rcols);
-			matrixMajorOrderPermutations<double>(lrows, lcols, rrows, rcols);
+			matrixMajorOrderPermutations<int>(m, k, n);
+			matrixMajorOrderPermutations<float>(m, k, n);
+			matrixMajorOrderPermutations<double>(m, k, n);
 		}
 
 		TEST_METHOD(TestLarge)
 		{
-			generateTestMatrixTypes(10,		10,		10,	10);
-			generateTestMatrixTypes(10,		5,		5,	15);
-			generateTestMatrixTypes(23,		13,		13, 42);
-			generateTestMatrixTypes(3,		1,		1,	13);
+			static constexpr auto NUM_TESTS = 100;
+			static constexpr int minDim = 1;
+			static constexpr int maxDim = 45;
+
+			generateTestMatrixTypes(42, 18, 35);
+
+
+			//*
+			for (int i = 0; i < NUM_TESTS; ++i)
+			{
+				int m = std::rand() % maxDim + minDim;
+				int k = std::rand() % maxDim + minDim;
+				int n = std::rand() % maxDim + minDim;
+
+				generateTestMatrixTypes(m, k, n);
+			}
+			//*/
+
+			generateTestMatrixTypes(1024,	257,	512);
+			generateTestMatrixTypes(200,	5,		2048);
+			//generateTestMatrixTypes(230,	1300,	420); // TODO: Why does this crash it? Large k?
+			//generateTestMatrixTypes(3000,	111,	1393);
+
+			
 
 		}
 	};

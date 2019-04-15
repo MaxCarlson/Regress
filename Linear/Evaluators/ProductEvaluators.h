@@ -82,14 +82,17 @@ struct ProductLoop<Dest, LhsE, RhsE, GEMMType::VECTORIZED>
 		SALW blockB{ kc * nc }; // RhsBlock
 
 		const bool packRhsOnce = kc == lCols && nc == rCols;
+		
 
 		// Height (in rows) of lhs's block
+		//#pragma omp parallel for 
 		for (size_type m = 0; m < lRows; m += mc)
 		{
 			const size_type endM = std::min(m + mc, lRows) - m;
 
 			// Width (in cols) of lhs's block
-			// Also height (in rows) of rhs's horizontal panel 
+			// Also height (in rows) of rhs's horizontal panel
+			//#pragma omp parallel for
 			for (size_type k = 0; k < lCols; k += kc)
 			{
 				const size_type endK = std::min(k + kc, lCols) - k;
@@ -98,6 +101,10 @@ struct ProductLoop<Dest, LhsE, RhsE, GEMMType::VECTORIZED>
 				packLhs(blockA.ptr, lhsW, endM, endK);
 
 				// For each kc x nc horizontal panel of rhs
+
+				// TODO: This is fastest for square matrixes, but might not be 
+				// for others
+				#pragma omp parallel for 
 				for (size_type n = 0; n < rCols; n += nc)
 				{
 					const size_type endN = std::min(n + nc, rCols) - n;

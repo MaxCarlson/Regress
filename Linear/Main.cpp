@@ -76,7 +76,7 @@ int main()
 	//std::cout << res1 << "\n\n";
 	//std::cout << res3 << "\n\n";
 	
-	Matrix<float> rr(550, 550);
+	Matrix<float> rr(2500, 2500);
 	//Matrix<float, true> rrC(550, 550);
 
 	for (int i = 0; i < 1000; ++i)
