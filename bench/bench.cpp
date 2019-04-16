@@ -2,6 +2,59 @@
 #include "../Linear/Stopwatch.h"
 #include <iostream>
 #include <string>
+#include <sstream>
+#include <iomanip>
+#include <map>
+
+
+struct TestResults
+{
+	struct TypeResult
+	{
+		std::vector<int> times;
+	};
+
+	std::string testName;
+	std::vector<std::string> names;
+	std::map<std::string, TypeResult> results;
+
+	TestResults(std::string testName) :
+		testName{testName}
+	{}
+
+	template<class... Args>
+	void addSubtestNames(Args&& ...args)
+	{
+		std::vector<std::string> tmp{std::forward<Args>(args)...};
+		names = std::move(tmp);
+	}
+
+	void addResult(const std::string& type, std::string name, int time) 
+	{ 
+		results[type].times.emplace_back(time);
+	}
+
+	void print() const
+	{
+		std::stringstream ss;
+		ss << testName << '\n';
+		static constexpr int spacing = 10;
+
+		ss << std::left << std::setw(15) << "Test Count: ";
+		for (int i = 0; i < names.size(); ++i)
+			ss << std::left << std::setw(spacing) << names[i];
+
+		for (auto[k, v] : results)
+		{
+			ss << '\n' << std::setw(15) << k;
+			for (int i = 0; i < names.size(); ++i)
+				ss << std::left << std::setw(spacing) << v.times[i];
+		}
+
+
+		std::cout << ss.str() << "\n\n";
+	}
+};
 
 struct BaseBench
 {
@@ -10,27 +63,16 @@ struct BaseBench
 	static void printTime(int factor = 1) { s.printCurrent(factor); }
 	inline static Stopwatch<std::chrono::milliseconds> s;
 
-	template<class Func, class... Args>
-	static void runFunc(Func&& func, Args ...args)
+	template<class Func, class Type, class... Args>
+	static void runFunc(Func&& func, Type t, TestResults& results, int count, Args ...args)
 	{
 		s.start();
-		func(std::forward<Args>(args)...);
-		s.printCurrent();
+		for(int i = 0; i < count; ++i)
+			func(std::forward<Args>(args)...);
+
+		results.addResult(typeid(Type).name(), name, s.getTime() / count);
 	}
 };
-
-template<class... Args>
-inline void print(Args&& ...args) 
-{ (std::cout << ... << args);}
-
-
-#define RUN_FUNC(func, subname, tests, ...)  std::cout << subname << ' '; \
-	BaseBench::start(); \
-	for(int i = 0; i < tests; ++i) \
-		func(##__VA_ARGS__); \
-	BaseBench::printTime(tests) \
-
-
 
 template<class Type, bool MajorOrder>
 struct basic : public BaseBench
@@ -38,17 +80,18 @@ struct basic : public BaseBench
 	using Mat = Matrix<Type, MajorOrder>;
 	inline static const std::string order = MajorOrder ? "Column" : "Row";
 
-	static void run()
+	static void run(TestResults& res)
 	{
-		print("mulSquareAlias ", typeid(Type).name(), '\n');
-		print("MajorOrder: ", order, '\n');
-		//RUN_FUNC(mulSquareAlias, "10", 10,  10);
-		//RUN_FUNC(mulSquareAlias, "50", 10, 50);
-		RUN_FUNC(mulSquareAlias, "100", 20, 100);
-		RUN_FUNC(mulSquareAlias, "250", 50, 250);
-		RUN_FUNC(mulSquareAlias, "500", 25, 500);
-		RUN_FUNC(mulSquareAlias, "1000", 25, 1000);
-		RUN_FUNC(mulSquareAlias, "1500", 15, 1500);
+		//print("mulSquareAlias ", typeid(Type).name(), '\n');
+		//print("MajorOrder: ", order, '\n');
+		res.addSubtestNames("50", "100", "250", "500", "1000", "1500");
+
+		runFunc(mulSquareAlias, Type{}, res, 50, 50);
+		runFunc(mulSquareAlias, Type{}, res, 20, 100);
+		runFunc(mulSquareAlias, Type{}, res, 20, 250);
+		runFunc(mulSquareAlias, Type{}, res, 15, 500);
+		runFunc(mulSquareAlias, Type{}, res, 10, 1000);
+		runFunc(mulSquareAlias, Type{}, res, 7, 1500);
 	}
 
 	static void mulSquareAlias(int size)
@@ -61,10 +104,12 @@ struct basic : public BaseBench
 template<template<class, bool> class Bench, bool MajorOrder>
 void runTypeTests()
 {
-	Bench<float,	MajorOrder>::run();
-	Bench<double,	MajorOrder>::run();
-	Bench<int,		MajorOrder>::run();
-	//Bench<int64_t,	MajorOrder>::run();
+	TestResults res{ std::string{"mulSquareAlias "} };
+
+	Bench<float,	MajorOrder>::run(res);
+	Bench<double,	MajorOrder>::run(res);
+	Bench<int,		MajorOrder>::run(res);
+	res.print();
 }
 
 int main()

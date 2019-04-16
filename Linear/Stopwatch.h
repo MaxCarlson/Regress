@@ -5,7 +5,7 @@
 template<class Measure = std::chrono::microseconds>
 class Stopwatch
 {
-	std::chrono::time_point<std::chrono::high_resolution_clock> now()
+	std::chrono::time_point<std::chrono::high_resolution_clock> now() const
 	{
 		return std::chrono::high_resolution_clock::now();
 	}
@@ -23,6 +23,13 @@ public:
 	void stop()
 	{
 		end = now();
+	}
+
+	decltype(auto) getTime() const
+	{
+		auto n = now();
+		auto count = std::chrono::duration_cast<Measure>(n - begin).count();
+		return count;
 	}
 
 	void printCurrent(int factor = 1)

@@ -10,8 +10,8 @@ int main()
 {
 	Stopwatch<std::chrono::milliseconds> s;
 
-	/*
-	Eigen::Matrix<float, -1, -1, Eigen::RowMajor> mat1;
+	//*
+	Eigen::Matrix<int, -1, -1, Eigen::RowMajor> mat1;
 	Eigen::Matrix<int, -1, -1, Eigen::RowMajor> mat2;
 	mat1.resize(2500, 2500);
 	mat2.resize(25, 25);
@@ -37,7 +37,7 @@ int main()
 	//for (int i = 0; i < 1000; ++i)
 	mat1 = mat1 * mat1;
 	s.printCurrent();
-	Matrix<float> tt(2500, 2500);
+	Matrix<int> tt(2500, 2500);
 	s.start();
 	tt= tt* tt;
 	s.printCurrent();
