@@ -10,7 +10,7 @@ int main()
 {
 	Stopwatch<std::chrono::milliseconds> s;
 
-	//*
+	/*
 	Eigen::Matrix<int, -1, -1, Eigen::RowMajor> mat1;
 	Eigen::Matrix<int, -1, -1, Eigen::RowMajor> mat2;
 	mat1.resize(2500, 2500);
@@ -76,11 +76,15 @@ int main()
 	//std::cout << res1 << "\n\n";
 	//std::cout << res3 << "\n\n";
 	
-	Matrix<float> rr(2500, 2500);
-	//Matrix<float, true> rrC(550, 550);
+	Matrix<float> rr1(2, 10);
+	Matrix<float> rr2(10, 2);
+	std::iota(rr1.begin(), rr1.end(), 1);
+	std::iota(rr2.begin(), rr2.end(), 1);
+	std::cout << rr1 << "\n\n" << rr2 << "\n\n";
 
-	for (int i = 0; i < 1000; ++i)
-		rr = rr * rr;
+	Matrix<float> resrr = rr1 * rr2;
+	std::cout << resrr << "\n\n";
+
 
 	//std::iota(std::begin(rr), std::end(rr), 0);
 	//std::cout << rr << "\n\n";

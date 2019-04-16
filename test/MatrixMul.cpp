@@ -42,7 +42,19 @@ namespace test
 			LoopVector::run(destCEval, lhsEval, rhsEval);
 
 			// Test equality of results
-			Assert::IsTrue(dest == destCopy);
+
+			if (std::is_floating_point_v<typename Dest::value_type>)
+			{
+				auto it1 = dest.begin();
+				auto it2 = destCopy.begin();
+				for (; it1 < dest.end(); ++it1, ++it2)
+				{
+					auto tr = *it1 - *it2;
+					Assert::IsTrue((*it1 - *it2) < 1);
+				}
+			}
+			else
+				Assert::IsTrue(dest == destCopy);
 		}
 
 		template<class Dest, class Lhs, class Rhs, class Vec>
@@ -94,10 +106,8 @@ namespace test
 			static constexpr int minDim = 1;
 			static constexpr int maxDim = 45;
 
-			generateTestMatrixTypes(42, 18, 35);
 
-
-			//*
+			/*
 			for (int i = 0; i < NUM_TESTS; ++i)
 			{
 				int m = std::rand() % maxDim + minDim;
@@ -107,7 +117,11 @@ namespace test
 				generateTestMatrixTypes(m, k, n);
 			}
 			//*/
+			generateTestMatrixTypes(2, 15, 3);
+			generateTestMatrixTypes(2, 1300, 3);
 
+
+			generateTestMatrixTypes(42,		18,		35);
 			generateTestMatrixTypes(1024,	257,	512);
 			generateTestMatrixTypes(200,	5,		2048);
 			//generateTestMatrixTypes(230,	1300,	420); // TODO: Why does this crash it? Large k?

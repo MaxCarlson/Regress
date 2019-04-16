@@ -29,7 +29,7 @@ struct TestResults
 		names = std::move(tmp);
 	}
 
-	void addResult(const std::string& type, std::string name, int time) 
+	void addResult(const std::string& type, int time) 
 	{ 
 		results[type].times.emplace_back(time);
 	}
@@ -61,7 +61,7 @@ struct BaseBench
 	static void start() { s.start(); }
 	static void stop() { s.stop(); }
 	static void printTime(int factor = 1) { s.printCurrent(factor); }
-	inline static Stopwatch<std::chrono::milliseconds> s;
+	inline static Stopwatch<std::chrono::microseconds> s;
 
 	template<class Func, class Type, class... Args>
 	static void runFunc(Func&& func, Type t, TestResults& results, int count, Args ...args)
@@ -70,7 +70,7 @@ struct BaseBench
 		for(int i = 0; i < count; ++i)
 			func(std::forward<Args>(args)...);
 
-		results.addResult(typeid(Type).name(), name, s.getTime() / count);
+		results.addResult(typeid(Type).name(), s.getTime() / count);
 	}
 };
 
@@ -79,19 +79,23 @@ struct basic : public BaseBench
 {
 	using Mat = Matrix<Type, MajorOrder>;
 	inline static const std::string order = MajorOrder ? "Column" : "Row";
+	inline static constexpr int relDur = 4; // Relative duration
+
+	static std::string name()
+	{
+		return "mulSquareAlias ";
+	}
 
 	static void run(TestResults& res)
 	{
-		//print("mulSquareAlias ", typeid(Type).name(), '\n');
-		//print("MajorOrder: ", order, '\n');
 		res.addSubtestNames("50", "100", "250", "500", "1000", "1500");
 
-		runFunc(mulSquareAlias, Type{}, res, 50, 50);
-		runFunc(mulSquareAlias, Type{}, res, 20, 100);
-		runFunc(mulSquareAlias, Type{}, res, 20, 250);
-		runFunc(mulSquareAlias, Type{}, res, 15, 500);
-		runFunc(mulSquareAlias, Type{}, res, 10, 1000);
-		runFunc(mulSquareAlias, Type{}, res, 7, 1500);
+		runFunc(mulSquareAlias, Type{}, res, 50 * relDur, 50);
+		runFunc(mulSquareAlias, Type{}, res, 20 * relDur, 100);
+		runFunc(mulSquareAlias, Type{}, res, 20 * relDur, 250);
+		runFunc(mulSquareAlias, Type{}, res, 15 * relDur, 500);
+		runFunc(mulSquareAlias, Type{}, res, 10 * relDur, 1000);
+		runFunc(mulSquareAlias, Type{}, res, 7  * relDur, 1500);
 	}
 
 	static void mulSquareAlias(int size)
@@ -101,10 +105,15 @@ struct basic : public BaseBench
 	}
 };
 
+std::string majorOrderToString(bool MajorOrder)
+{
+	return MajorOrder ? "ColMajor Order" : "RowMajor Order";
+}
+
 template<template<class, bool> class Bench, bool MajorOrder>
 void runTypeTests()
 {
-	TestResults res{ std::string{"mulSquareAlias "} };
+	TestResults res{ Bench<float, MajorOrder>::name() +  majorOrderToString(MajorOrder)};
 
 	Bench<float,	MajorOrder>::run(res);
 	Bench<double,	MajorOrder>::run(res);

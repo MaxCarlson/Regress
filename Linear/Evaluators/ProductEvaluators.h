@@ -75,7 +75,7 @@ struct ProductLoop<Dest, LhsE, RhsE, GEMMType::VECTORIZED>
 		//
 		// Blocksize along direction 
 		const size_type mc = std::min(512, lRows); // along m (rows of dest/lhs)
-		const size_type kc = std::min(512, lCols); // along k (columns of lhs, rows of rhs)
+		const size_type kc = std::min(3, lCols); // along k (columns of lhs, rows of rhs)
 		const size_type nc = std::min(128, rCols); // along n (columns of rhs)
 
 		SALW blockA{ mc * kc }; // LhsBlock
@@ -104,7 +104,7 @@ struct ProductLoop<Dest, LhsE, RhsE, GEMMType::VECTORIZED>
 
 				// TODO: This is fastest for square matrixes, but might not be 
 				// for others
-				#pragma omp parallel for 
+				#pragma omp parallel for //num_threads(3)
 				for (size_type n = 0; n < rCols; n += nc)
 				{
 					const size_type endN = std::min(n + nc, rCols) - n;
