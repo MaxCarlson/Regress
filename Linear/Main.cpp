@@ -91,6 +91,20 @@ int main()
 	std::cout << resrr << "\n\n";
 	*/
 
+	std::vector<float> test(90);
+	std::iota(test.begin(), test.end(), 9999);
+
+	float res1 = 0.0;
+	float res2 = 0.0;
+
+	for (int i = 0; i < test.size() - 1; ++i)
+	{
+		res1 += test[i] * test[i + 1];
+		res2 += test[test.size() - 1 - i] * test[test.size() - 2 - i];
+	}
+
+	int res3 = res1 - res2;
+
 	//std::iota(std::begin(rr), std::end(rr), 0);
 	//std::cout << rr << "\n\n";
 

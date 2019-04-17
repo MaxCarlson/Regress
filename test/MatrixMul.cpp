@@ -43,7 +43,7 @@ namespace test
 
 			// Test equality of results
 
-			// TODO: Need to calculate the total amount of acceptable error
+			// TODO: Need to calculate the total amount of acceptable error (based on matrix sizes)
 			// and use that as epsilon
 			if (std::is_floating_point_v<typename Dest::value_type>)
 			{
@@ -80,10 +80,22 @@ namespace test
 			using MatR = Matrix<Type, RowMajor>;
 			using MatC = Matrix<Type, ColMajor>;
 
+			static constexpr int MAX_VAL = 200;
+
+
 			std::vector<Type> lhsV(m * k);
 			std::vector<Type> rhsV(n * k);
-			std::iota(lhsV.begin(), lhsV.end(), std::rand() % 1000);
-			std::iota(rhsV.begin(), rhsV.end(), std::rand() % 1000);
+
+			// We need small numbers so the float values don't get too wildly off
+			int startLhsV = rand() % MAX_VAL;
+			int startRhsV = rand() % MAX_VAL;
+			auto tformLhs = [&](auto v) {return startLhsV > MAX_VAL ? startLhsV = 0 : startLhsV % MAX_VAL; };
+			auto tformRhs = [&](auto v) {return startRhsV > MAX_VAL ? startRhsV = 0 : startRhsV % MAX_VAL; };
+
+			std::transform(lhsV.begin(), lhsV.end(), lhsV.begin(), tformLhs);
+			std::transform(rhsV.begin(), rhsV.end(), rhsV.begin(), tformRhs);
+			//std::iota(lhsV.begin(), lhsV.end(), std::rand() % 1000);
+			//std::iota(rhsV.begin(), rhsV.end(), std::rand() % 1000);
 
 			generateTestMatrixes<MatR, MatR, MatR>(lhsV, rhsV, m, k, n);
 			generateTestMatrixes<MatR, MatR, MatC>(lhsV, rhsV, m, k, n);
@@ -109,8 +121,7 @@ namespace test
 			static constexpr int minDim = 1;
 			static constexpr int maxDim = 45;
 
-
-			/*
+			//*
 			for (int i = 0; i < NUM_TESTS; ++i)
 			{
 				int m = std::rand() % maxDim + minDim;
@@ -120,15 +131,13 @@ namespace test
 				generateTestMatrixTypes(m, k, n);
 			}
 			//*/
-			generateTestMatrixTypes(2, 10, 2);
-			generateTestMatrixTypes(2, 1300, 3);
-
-
+			generateTestMatrixTypes(2,		69,		2);
+			generateTestMatrixTypes(55,		1300,	1);
 			generateTestMatrixTypes(42,		18,		35);
 			generateTestMatrixTypes(1024,	257,	512);
 			generateTestMatrixTypes(200,	5,		2048);
 			generateTestMatrixTypes(230,	999,	420); // TODO: Why does this crash it? Large k?
-			generateTestMatrixTypes(3000,	111,	1393);
+			generateTestMatrixTypes(1500,	111,	1393);
 
 			
 

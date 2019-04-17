@@ -75,15 +75,15 @@ struct BaseBench
 };
 
 template<class Type, bool MajorOrder>
-struct basic : public BaseBench
+struct MulSquareAlias : public BaseBench
 {
 	using Mat = Matrix<Type, MajorOrder>;
 	inline static const std::string order = MajorOrder ? "Column" : "Row";
-	inline static constexpr int relDur = 4; // Relative duration
+	inline static constexpr int relDur = 1; // Relative duration
 
 	static std::string name()
 	{
-		return "mulSquareAlias ";
+		return "Mul Square Alias ";
 	}
 
 	static void run(TestResults& res)
@@ -123,8 +123,8 @@ void runTypeTests()
 
 int main()
 {
-	runTypeTests<basic, RowMajor>();
-	//runTypeTests<basic, ColMajor>();
+	runTypeTests<MulSquareAlias, RowMajor>();
+	runTypeTests<MulSquareAlias, ColMajor>();
 
 	return 0;
 }
