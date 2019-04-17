@@ -237,7 +237,7 @@ struct PackBlock
 	{
 		const Type* debug		= block;
 		const Index maxPCol		= cols - cols % nr;
-		const bool unrollPack	= (nr == Stride && nr > 2);
+		const bool unrollPack	= (nr == Stride && nr >= 4);
 		const Index maxUrlRow	=  unrollPack ? rows - rows % nr : 0;
 
 		for (Index j = 0; j < maxPCol; j += Stride)
@@ -380,6 +380,11 @@ struct IndexWrapper
 		writePacket<Packet>(row, col, impl::padd(r, p));
 	}
 
+	inline void prefetch(Index row, Index col)
+	{
+		impl::prefetch(&dest.evaluateRef(getRow(row, col), getCol(row, col)));
+	}
+
 private:
 	Dest& RGR_RESTRICT dest;
 	Index r, c;
@@ -411,7 +416,7 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 	// Fits in l2 Cache
 	// blockB size is kc * nc
 	// Fits in l1 Cache
-
+	
 	const Index packedM = mc - mc % mr;
 	const Index packedN = nc - nc % nr;
 
@@ -424,14 +429,24 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 			BlockPtr aPtr = &blockA[m * kc]; 
 			BlockPtr bPtr = &blockB[n * kc];
 
+			impl::prefetch(aPtr);
+			impl::prefetch(bPtr);
+
 			Packet tmp{ Type{ 0 } };
 			Packet C0 { Type{ 0 } }; Packet C1{ Type{ 0 } };
 			Packet C2 { Type{ 0 } }; Packet C3{ Type{ 0 } };
+
+			dest.prefetch(m + 0, n);
+			dest.prefetch(m + 1, n);
+			dest.prefetch(m + 2, n);
+			dest.prefetch(m + 3, n);
 
 			for (Index k = 0; k < kc; ++k)
 			{
 				auto[A0, A1, A2, A3] = pload4<Packet, Type>(aPtr);
 
+				impl::prefetch(aPtr + mr);
+				impl::prefetch(bPtr + nr);
 				Packet B0 = impl::pload<Packet>(bPtr);
 
 				pmadd(A0, B0, C0, tmp);

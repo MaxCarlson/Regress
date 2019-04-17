@@ -65,48 +65,17 @@ int main()
 	};
 	Matrix<double, true> medC = med;
 
-	//Matrix<int> large(10, 10);
+	Matrix<int> large(3500, 3500);
+	Matrix<int> largeRes = large * large;
+	return 0;
 	//std::iota(large.begin(), large.end(), 1);
 	//std::cout << large;
-	//Matrix<int> largeRes = large * large;
 	//Matrix<int> res2 = lhs * rhs;
 	//Matrix<int> res1 = lhsC * rhs;
 	//Matrix<int> res3 = lhs * rhsC;
 	//std::cout << res2 << "\n\n";
 	//std::cout << res1 << "\n\n";
 	//std::cout << res3 << "\n\n";
-	
-	/* // Almost positive the error is coming from float value discrepencies
-	// but i'll leave this here incase I find out that's not acutally the case
-	Matrix<float> rr1(2, 10);
-	Matrix<float> rr2(10, 2);
-	std::iota(rr1.begin(), rr1.end(), 1);
-	std::iota(rr2.begin(), rr2.end(), 1);
-	for (auto& v : rr1)
-		v *= 100000;
-	for (auto& v : rr2)
-		v *= 100000;
-	std::cout << rr1 << "\n\n" << rr2 << "\n\n";
-	Matrix<float> resrr = rr1 * rr2;
-	std::cout << resrr << "\n\n";
-	*/
-
-	std::vector<float> test(90);
-	std::iota(test.begin(), test.end(), 9999);
-
-	float res1 = 0.0;
-	float res2 = 0.0;
-
-	for (int i = 0; i < test.size() - 1; ++i)
-	{
-		res1 += test[i] * test[i + 1];
-		res2 += test[test.size() - 1 - i] * test[test.size() - 2 - i];
-	}
-
-	int res3 = res1 - res2;
-
-	//std::iota(std::begin(rr), std::end(rr), 0);
-	//std::cout << rr << "\n\n";
 
 	//Matrix<int> reslr = lhs * rhs; // BUG:
 	Matrix<double> resMed = med * med;

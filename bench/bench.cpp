@@ -79,7 +79,7 @@ struct MulSquareAlias : public BaseBench
 {
 	using Mat = Matrix<Type, MajorOrder>;
 	inline static const std::string order = MajorOrder ? "Column" : "Row";
-	inline static constexpr int relDur = 1; // Relative duration
+	inline static constexpr int relDur = 2; // Relative duration
 
 	static std::string name()
 	{

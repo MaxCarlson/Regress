@@ -76,4 +76,7 @@ inline Packet pbroadcast(const Type* ptr) { static_assert(false); return {}; }
 template<class Packet>
 inline void transpose4x4(Packet& r1, Packet& r2, Packet& r3, Packet& r4) { static_assert(false); }
 
+template<class T>
+inline void prefetch(const T* ptr) { _mm_prefetch(reinterpret_cast<const char*>(ptr), _MM_HINT_T0); }
+
 } // End impl::
