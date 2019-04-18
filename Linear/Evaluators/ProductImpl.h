@@ -3,7 +3,7 @@
 #include "System\Cache.h"
 
 #ifndef NDEBUG
-//#define DEBUG_BLOCKS
+#define DEBUG_BLOCKS
 #endif // DEBUG
 
 namespace impl
@@ -326,7 +326,8 @@ void packRhs(Type* blockB, const Rhs& rhs,  Index rows, Index cols)
 	packer::run<Rhs::MajorOrder>(blockB, rhs, rows, cols);
 }
 
-// Simple wrapper class to make indexing inside gebp easier
+// An even simpler wrapper class just for result values, 
+// so we can prefetch now and accumulate later while only indexing in once
 template<class Type, class Index>
 struct IndexedValue
 {
@@ -337,14 +338,15 @@ struct IndexedValue
 	inline void prefetch(Index idx) const noexcept { impl::prefetch(ptr + idx); }
 
 	template<class Packet>
-	inline void accumulate(const Packet& p)
+	inline void accumulate(const Packet& p, Index idx = 0)
 	{
-		impl::pstore(ptr, impl::padd(impl::ploadu<Packet>(ptr), p));
+		impl::pstore(ptr + idx, impl::padd(impl::ploadu<Packet>(ptr + idx), p));
 	}
 
 	Type* RGR_RESTRICT ptr;
 };
 
+// Simple wrapper class to make indexing inside gebp easier
 template<class Dest, class Index, bool Transpose>
 struct IndexWrapper
 {
@@ -449,56 +451,62 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 	//#pragma omp parallel for 
 	for (Index m = 0; m < packedM; m += mr)
 	{
-		/*
+		//*
 		for (Index n = 0; n < packedN2; n += nr * 2)
 		{
 			BlockPtr aPtr = &blockA[m * kc];
 			BlockPtr bPtr = &blockB[n * kc];
 			impl::prefetch(aPtr);
 			impl::prefetch(bPtr);
+			impl::prefetch(bPtr + kc * nr);
 			Packet tmp{ Type{ 0 } };
 			Packet C0{ Type{ 0 } }; Packet C1{ Type{ 0 } };
 			Packet C2{ Type{ 0 } }; Packet C3{ Type{ 0 } };
 			Packet C4{ Type{ 0 } }; Packet C5{ Type{ 0 } };
 			Packet C6{ Type{ 0 } }; Packet C7{ Type{ 0 } };
 
-			dest.prefetch(m + 0, n); dest.prefetch(m + 1, n);
-			dest.prefetch(m + 2, n); dest.prefetch(m + 3, n);
-			dest.prefetch(m + 4, n); dest.prefetch(m + 5, n);
-			dest.prefetch(m + 6, n); dest.prefetch(m + 6, n);
+			Indexer R0 = dest.get(m + 0, n);
+			Indexer R1 = dest.get(m + 1, n);
+			Indexer R2 = dest.get(m + 2, n);
+			Indexer R3 = dest.get(m + 3, n);
+			R0.prefetch(0);
+			R1.prefetch(0);
+			R2.prefetch(0);
+			R3.prefetch(0);
+
 
 			for (Index k = 0; k < kc; ++k)
 			{
 				auto[A0, A1, A2, A3] = pload4<Packet, Type>(aPtr);
 
-				impl::prefetch(aPtr + mr);
-				impl::prefetch(bPtr + nr * 2);
 				Packet B0 = impl::pload<Packet>(bPtr);
+				Packet B1 = impl::pload<Packet>(bPtr + kc * nr);
 
 				pmadd(A0, B0, C0, tmp);
 				pmadd(A1, B0, C1, tmp);
 				pmadd(A2, B0, C2, tmp);
 				pmadd(A3, B0, C3, tmp);
-				pmadd(A4, B0, C4, tmp);
-				pmadd(A5, B0, C5, tmp);
-				pmadd(A6, B0, C6, tmp);
-				pmadd(A7, B0, C7, tmp);
+
+				pmadd(A0, B1, C4, tmp);
+				pmadd(A1, B1, C5, tmp);
+				pmadd(A2, B1, C6, tmp);
+				pmadd(A3, B1, C7, tmp);
 
 				aPtr += mr;
-				bPtr += nr * 2;
+				bPtr += nr;
 			}
-			dest.accumulate(m + 0, n, C0);
-			dest.accumulate(m + 1, n, C1);
-			dest.accumulate(m + 2, n, C2);
-			dest.accumulate(m + 3, n, C3);
-			dest.accumulate(m + 4, n, C4);
-			dest.accumulate(m + 5, n, C5);
-			dest.accumulate(m + 6, n, C6);
-			dest.accumulate(m + 7, n, C7);
+			R0.accumulate(C0);
+			R0.accumulate(C4, Stride);
+			R1.accumulate(C1);
+			R1.accumulate(C5, Stride);
+			R2.accumulate(C2);
+			R2.accumulate(C6, Stride);
+			R3.accumulate(C3);
+			R3.accumulate(C7, Stride);
 		}
-		*/
+		//*/
 
-		for (Index n = 0; n < packedN; n += nr)
+		for (Index n = packedN2; n < packedN; n += nr)
 		{
 			BlockPtr aPtr = &blockA[m * kc]; 
 			BlockPtr bPtr = &blockB[n * kc];
@@ -522,8 +530,6 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 			{
 				auto[A0, A1, A2, A3] = pload4<Packet, Type>(aPtr);
 
-				impl::prefetch(aPtr + mr);
-				impl::prefetch(bPtr + nr);
 				Packet B0 = impl::pload<Packet>(bPtr);
 
 				pmadd(A0, B0, C0, tmp);
@@ -538,10 +544,6 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 			R1.accumulate(C1);
 			R2.accumulate(C2);
 			R3.accumulate(C3);
-			//dest.accumulate(m + 0, n, C0);
-			//dest.accumulate(m + 1, n, C1);
-			//dest.accumulate(m + 2, n, C2);
-			//dest.accumulate(m + 3, n, C3);
 		}
 
 		// TODO: This is just simple element by element but can be made

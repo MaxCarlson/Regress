@@ -65,9 +65,8 @@ int main()
 	};
 	Matrix<double, true> medC = med;
 
-	Matrix<int> large(3500, 3500);
-	Matrix<int> largeRes = large * large;
-	return 0;
+	//Matrix<int> large(3500, 3500);
+	//Matrix<int> largeRes = large * large;
 	//std::iota(large.begin(), large.end(), 1);
 	//std::cout << large;
 	//Matrix<int> res2 = lhs * rhs;
