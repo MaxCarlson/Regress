@@ -445,8 +445,8 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 	
 	const Index packedM		= mc - mc % mr;
 	const Index packedN3	= nc - nc % (nr * 3);
-	const Index packedN2	= std::max(packedN3, nc - nc % (nr * 2));
-	const Index packedN		= std::max(packedN2, nc - nc % nr);
+	const Index packedN2	= nc - (nc - packedN3) % (nr * 2);
+	const Index packedN		= nc - (nc - packedN2) % nr;
 
 	// TODO: Test this with other higher level pragmas
 	//#pragma omp parallel for 

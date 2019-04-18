@@ -21,6 +21,7 @@ namespace test
 		template<class Dest, class Lhs, class Rhs, class Vec>
 		void testLargeImpl(const Vec& lhsVec, const Vec& rhsVec, int m, int k, int n)
 		{
+			enum { MajorOrder = Dest::MajorOrder };
 			using value_type = typename Dest::value_type;
 			using EvaluatorD = impl::Evaluator<Dest>;
 			using EvaluatorL = impl::Evaluator<Lhs>;
@@ -50,6 +51,7 @@ namespace test
 
 			std::stringstream ss;
 			ss << typeid(value_type).name() << ' ';
+			ss << (MajorOrder ? "ColMajor" : "RowMajor") << ' ';
 			ss << m << 'x' << k << ", " << k << 'x' << n;
 			std::string str = ss.str();
 			std::wstring failStr{ str.begin(), str.end() };

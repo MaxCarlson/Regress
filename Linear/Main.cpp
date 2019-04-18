@@ -66,22 +66,19 @@ int main()
 		{ 21, 22, 23, 24, 25}	// 5 10 15 20 25
 	};
 	Matrix<double, true> medC = med;
-	Matrix<double> test(7, 7);
-	std::iota(test.begin(), test.end(), 1);
-	std::cout << test << "\n\n";
-	Matrix<double> testRes = test * test;
+	Matrix<int> test1(42, 32);
+	Matrix<int> test2(32, 43);
+	std::iota(test1.begin(), test1.end(), 1);
+	std::iota(test2.begin(), test2.end(), 1);
+	std::cout << test1 << "\n\n" << test2 << "\n\n";
+	Matrix<int> testRes = test1 * test2;
 	std::cout << testRes << "\n\n";
 
-	//Matrix<int> large(3500, 3500);
-	//Matrix<int> largeRes = large * large;
-	//std::iota(large.begin(), large.end(), 1);
-	//std::cout << large;
-	//Matrix<int> res2 = lhs * rhs;
-	//Matrix<int> res1 = lhsC * rhs;
-	//Matrix<int> res3 = lhs * rhsC;
-	//std::cout << res2 << "\n\n";
-	//std::cout << res1 << "\n\n";
-	//std::cout << res3 << "\n\n";
+	constexpr int m = 42, k = 32, n = 32;
+	constexpr int packedN3 = n - n % (4 * 3);
+	constexpr int packedN2 = n - (n - packedN3) % (4 * 2);
+	constexpr int packedN  = n - (n - packedN2) % 4;
+
 
 	//Matrix<int> reslr = lhs * rhs; // BUG:
 	Matrix<double> resMed = med * med;

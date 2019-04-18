@@ -125,8 +125,9 @@ template<class Packet>
 Packet pdiv(const Packet& p1, const Packet& p2);
 }
 
-enum
+enum Ordering
 {
 	RowMajor = 0,
 	ColMajor
 };
+

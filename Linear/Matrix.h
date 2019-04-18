@@ -34,7 +34,6 @@ public:
 	using Base			= MatrixBase<Matrix<Type, MajorOrder>>;
 	using ThisType		= Matrix<Type, MajorOrder>;
 	using Storage		= std::vector<Type, impl::AlignedAllocator<Type>>;
-	//using Storage		= std::vector<Type>;
 	using size_type		= int;
 	using value_type	= Type;
 
