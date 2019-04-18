@@ -67,9 +67,10 @@ int main()
 	};
 	Matrix<double, true> medC = med;
 	Matrix<double> test(7, 7);
-	std::iota(test.begin(), test.end(), 0);
+	std::iota(test.begin(), test.end(), 1);
 	std::cout << test << "\n\n";
 	Matrix<double> testRes = test * test;
+	std::cout << testRes << "\n\n";
 
 	//Matrix<int> large(3500, 3500);
 	//Matrix<int> largeRes = large * large;

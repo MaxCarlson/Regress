@@ -3,7 +3,7 @@
 #include "System\Cache.h"
 
 #ifndef NDEBUG
-//#define DEBUG_BLOCKS
+#define DEBUG_BLOCKS
 #endif // DEBUG
 
 namespace impl
@@ -452,7 +452,7 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 	//#pragma omp parallel for 
 	for (Index m = 0; m < packedM; m += mr)
 	{
-		for (Index n = 0; n < packedN3; n += nr * 3) // 20% Speedup over just having loop below
+		for (Index n = 0; n < packedN3; n += nr * 3)
 		{
 			BlockPtr aPtr = &blockA[m * kc];
 			BlockPtr bPtr = &blockB[n * kc];

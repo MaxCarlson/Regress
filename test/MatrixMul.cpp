@@ -2,6 +2,7 @@
 #include "CppUnitTest.h"
 #include "Matrix.h"
 #include <numeric>
+#include <sstream>
 /*
 
 This file containts white-box tests for matrix multiplication
@@ -17,21 +18,27 @@ namespace test
 	{
 	public:
 
-		template<class Dest, class Lhs, class Rhs>
-		void testLargeImpl(Dest& dest, const Lhs& lhs, const Rhs& rhs)
+		template<class Dest, class Lhs, class Rhs, class Vec>
+		void testLargeImpl(const Vec& lhsVec, const Vec& rhsVec, int m, int k, int n)
 		{
+			using value_type = typename Dest::value_type;
 			using EvaluatorD = impl::Evaluator<Dest>;
 			using EvaluatorL = impl::Evaluator<Lhs>;
 			using EvaluatorR = impl::Evaluator<Rhs>;
 			using LoopCoeff	 = impl::ProductLoop<EvaluatorD, EvaluatorL, EvaluatorR, impl::GEMMType::COEFF>;
 			using LoopVector = impl::ProductLoop<EvaluatorD, EvaluatorL, EvaluatorR, impl::GEMMType::VECTORIZED>;
 
+			Lhs lhs{ m, k };
+			Rhs rhs{ k, n };
+			Dest dest(lhs.rows(), rhs.cols());
+			Dest destCopy = dest;
+
+			// TODO: make this faster, we don't really even need to fill the entire matrix
+			std::copy(lhsVec.begin(), lhsVec.end(), lhs.begin());
+			std::copy(rhsVec.begin(), rhsVec.end(), rhs.begin());
+
 			EvaluatorL lhsEval{ lhs };
 			EvaluatorR rhsEval{ rhs };
-
-			dest.resize(lhs.rows(), rhs.cols());
-			Dest destCopy = dest;
-			
 			EvaluatorD destEval{ dest };
 			EvaluatorD destCEval{ destCopy };
 
@@ -41,10 +48,15 @@ namespace test
 			// Multiply matrix with vectorization enabled
 			LoopVector::run(destCEval, lhsEval, rhsEval);
 
-			// Test equality of results
+			std::stringstream ss;
+			ss << typeid(value_type).name() << ' ';
+			ss << m << 'x' << k << ", " << k << 'x' << n;
+			std::string str = ss.str();
+			std::wstring failStr{ str.begin(), str.end() };
 
 			// TODO: Need to calculate the total amount of acceptable error (based on matrix sizes)
 			// and use that as epsilon
+			// Test equality of results
 			if (std::is_floating_point_v<typename Dest::value_type>)
 			{
 				static constexpr double epsilon = 5.0;
@@ -53,27 +65,17 @@ namespace test
 				for (; it1 < dest.end(); ++it1, ++it2)
 				{
 					auto diff = *it1 - *it2;
-					Assert::IsTrue(diff < epsilon);
+					Assert::IsTrue(diff < epsilon, failStr.c_str());
 				}
 			}
 			else
-				Assert::IsTrue(dest == destCopy);
+				Assert::IsTrue(dest == destCopy, failStr.c_str());
 		}
 
-		template<class Dest, class Lhs, class Rhs, class Vec>
-		void generateTestMatrixes(const Vec& lhsVec, const Vec& rhsVec, int m, int k, int n)
-		{
-			Dest dest;
-			Lhs lhs{ m, k };
-			Rhs rhs{ k, n };
-
-			// TODO: make this faster, we don't really even need to fill the entire matrix
-			std::copy(lhsVec.begin(), lhsVec.end(), lhs.begin());
-			std::copy(rhsVec.begin(), rhsVec.end(), rhs.begin());
-
-			testLargeImpl(dest, lhs, rhs);
-		}
-
+		// Test matrix multiplications between matrixes of all 
+		// storage order combinations. 
+		// E.g. RowMajor = RowMajor * RowMajor, 
+		// ColMajor = RowMajor * ColMajor, etc.
 		template<class Type>
 		void matrixMajorOrderPermutations(int m, int k, int n)
 		{
@@ -81,12 +83,10 @@ namespace test
 			using MatC = Matrix<Type, ColMajor>;
 
 			static constexpr int MAX_VAL = 200;
-
-
 			std::vector<Type> lhsV(m * k);
 			std::vector<Type> rhsV(n * k);
 
-			// We need small numbers so the float values don't get too wildly off
+			// We need small numbers so the float values don't become wildly off
 			int startLhsV = rand() % MAX_VAL;
 			int startRhsV = rand() % MAX_VAL;
 			auto tformLhs = [&](auto v) {return startLhsV > MAX_VAL ? startLhsV = 0 : startLhsV % MAX_VAL; };
@@ -94,18 +94,16 @@ namespace test
 
 			std::transform(lhsV.begin(), lhsV.end(), lhsV.begin(), tformLhs);
 			std::transform(rhsV.begin(), rhsV.end(), rhsV.begin(), tformRhs);
-			//std::iota(lhsV.begin(), lhsV.end(), std::rand() % 1000);
-			//std::iota(rhsV.begin(), rhsV.end(), std::rand() % 1000);
 
-			generateTestMatrixes<MatR, MatR, MatR>(lhsV, rhsV, m, k, n);
-			generateTestMatrixes<MatR, MatR, MatC>(lhsV, rhsV, m, k, n);
-			generateTestMatrixes<MatR, MatC, MatR>(lhsV, rhsV, m, k, n);
-			generateTestMatrixes<MatR, MatC, MatC>(lhsV, rhsV, m, k, n);
+			testLargeImpl<MatR, MatR, MatR>(lhsV, rhsV, m, k, n);
+			testLargeImpl<MatR, MatR, MatC>(lhsV, rhsV, m, k, n);
+			testLargeImpl<MatR, MatC, MatR>(lhsV, rhsV, m, k, n);
+			testLargeImpl<MatR, MatC, MatC>(lhsV, rhsV, m, k, n);
 
-			generateTestMatrixes<MatC, MatC, MatC>(lhsV, rhsV, m, k, n);
-			generateTestMatrixes<MatC, MatC, MatR>(lhsV, rhsV, m, k, n);
-			generateTestMatrixes<MatC, MatR, MatC>(lhsV, rhsV, m, k, n);
-			generateTestMatrixes<MatC, MatR, MatR>(lhsV, rhsV, m, k, n);
+			testLargeImpl<MatC, MatC, MatC>(lhsV, rhsV, m, k, n);
+			testLargeImpl<MatC, MatC, MatR>(lhsV, rhsV, m, k, n);
+			testLargeImpl<MatC, MatR, MatC>(lhsV, rhsV, m, k, n);
+			testLargeImpl<MatC, MatR, MatR>(lhsV, rhsV, m, k, n);
 		}
 
 		void generateTestMatrixTypes(int m, int k, int n)
@@ -115,6 +113,8 @@ namespace test
 			matrixMajorOrderPermutations<double>(m, k, n);
 		}
 
+		// Test a matrix multiplication between many
+		// different MxK * KxN matrixes
 		TEST_METHOD(TestLarge)
 		{
 			static constexpr auto NUM_TESTS = 33;
@@ -124,9 +124,9 @@ namespace test
 			//*
 			for (int i = 0; i < NUM_TESTS; ++i)
 			{
-				int m = std::rand() % maxDim + minDim;
-				int k = std::rand() % maxDim + minDim;
-				int n = std::rand() % maxDim + minDim;
+				int m = std::rand() % (maxDim - minDim) + minDim;
+				int k = std::rand() % (maxDim - minDim) + minDim;
+				int n = std::rand() % (maxDim - minDim) + minDim;
 
 				generateTestMatrixTypes(m, k, n);
 			}
