@@ -3,7 +3,7 @@
 #include "System\Cache.h"
 
 #ifndef NDEBUG
-#define DEBUG_BLOCKS
+//#define DEBUG_BLOCKS
 #endif // DEBUG
 
 namespace impl
@@ -444,15 +444,80 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 	// Fits in l1 Cache
 	
 	const Index packedM		= mc - mc % mr;
-	const Index packedN		= nc - nc % nr;
-	const Index packedN2	= nc - nc % (nr * 2);
+	const Index packedN3	= nc - nc % (nr * 3);
+	const Index packedN2	= std::max(packedN3, nc - nc % (nr * 2));
+	const Index packedN		= std::max(packedN2, nc - nc % nr);
 
 	// TODO: Test this with other higher level pragmas
 	//#pragma omp parallel for 
 	for (Index m = 0; m < packedM; m += mr)
 	{
-		//*
-		for (Index n = 0; n < packedN2; n += nr * 2)
+		for (Index n = 0; n < packedN3; n += nr * 3) // 20% Speedup over just having loop below
+		{
+			BlockPtr aPtr = &blockA[m * kc];
+			BlockPtr bPtr = &blockB[n * kc];
+			impl::prefetch(aPtr);
+			impl::prefetch(bPtr);
+			impl::prefetch(bPtr + kc * nr);
+			impl::prefetch(bPtr + kc * nr * 2);
+			Packet tmp{ Type{ 0 } };
+			Packet C0{ Type{ 0 } }; Packet C1{ Type{ 0 } };
+			Packet C2{ Type{ 0 } }; Packet C3{ Type{ 0 } };
+			Packet C4{ Type{ 0 } }; Packet C5{ Type{ 0 } };
+			Packet C6{ Type{ 0 } }; Packet C7{ Type{ 0 } };
+			Packet C8{ Type{ 0 } }; Packet C9{ Type{ 0 } };
+			Packet C10{ Type{ 0 } }; Packet C11{ Type{ 0 } };
+
+			Indexer R0 = dest.get(m + 0, n);
+			Indexer R1 = dest.get(m + 1, n);
+			Indexer R2 = dest.get(m + 2, n);
+			Indexer R3 = dest.get(m + 3, n);
+			R0.prefetch(0);
+			R1.prefetch(0);
+			R2.prefetch(0);
+			R3.prefetch(0);
+
+			for (Index k = 0; k < kc; ++k)
+			{
+				auto[A0, A1, A2, A3] = pload4<Packet, Type>(aPtr);
+
+				Packet B0 = impl::pload<Packet>(bPtr);
+				Packet B1 = impl::pload<Packet>(bPtr + kc * nr);
+				Packet B2 = impl::pload<Packet>(bPtr + kc * nr * 2);
+
+				pmadd(A0, B0, C0, tmp);
+				pmadd(A1, B0, C1, tmp);
+				pmadd(A2, B0, C2, tmp);
+				pmadd(A3, B0, C3, tmp);
+
+				pmadd(A0, B1, C4, tmp);
+				pmadd(A1, B1, C5, tmp);
+				pmadd(A2, B1, C6, tmp);
+				pmadd(A3, B1, C7, tmp);
+
+				pmadd(A0, B2, C8, tmp);
+				pmadd(A1, B2, C9, tmp);
+				pmadd(A2, B2, C10, tmp);
+				pmadd(A3, B2, C11, tmp);
+
+				aPtr += mr;
+				bPtr += nr;
+			}
+			R0.accumulate(C0);
+			R0.accumulate(C4, Stride * 1);
+			R0.accumulate(C8, Stride * 2);
+			R1.accumulate(C1);
+			R1.accumulate(C5, Stride * 1);
+			R1.accumulate(C9, Stride * 2);
+			R2.accumulate(C2);
+			R2.accumulate(C6,  Stride * 1);
+			R2.accumulate(C10, Stride * 2);
+			R3.accumulate(C3);
+			R3.accumulate(C7,  Stride * 1);
+			R3.accumulate(C11, Stride * 2);
+		}
+
+		for (Index n = packedN3; n < packedN2; n += nr * 2) // 20% Speedup over just having loop below
 		{
 			BlockPtr aPtr = &blockA[m * kc];
 			BlockPtr bPtr = &blockB[n * kc];
@@ -473,7 +538,6 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 			R1.prefetch(0);
 			R2.prefetch(0);
 			R3.prefetch(0);
-
 
 			for (Index k = 0; k < kc; ++k)
 			{
@@ -504,7 +568,6 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 			R3.accumulate(C3);
 			R3.accumulate(C7, Stride);
 		}
-		//*/
 
 		for (Index n = packedN2; n < packedN; n += nr)
 		{
@@ -557,11 +620,10 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 
 			for (Index k = 0; k < kc; ++k)
 			{
-				C0 += *(aPtr + 0) * *bPtr;
-				C1 += *(aPtr + 1) * *bPtr;
-				C2 += *(aPtr + 2) * *bPtr;
-				C3 += *(aPtr + 3) * *bPtr;
-				aPtr += mr;
+				C0 += *aPtr++ * *bPtr;
+				C1 += *aPtr++ * *bPtr;
+				C2 += *aPtr++ * *bPtr;
+				C3 += *aPtr++ * *bPtr;
 				++bPtr;
 			}
 			dest.evaluateRef(m + 0, n) += C0;

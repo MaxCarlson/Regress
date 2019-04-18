@@ -11,7 +11,7 @@ int main()
 	Stopwatch<std::chrono::milliseconds> s;
 
 	/*
-	Eigen::Matrix<int, -1, -1, Eigen::RowMajor> mat1;
+	Eigen::Matrix<float, -1, -1, Eigen::RowMajor> mat1;
 	Eigen::Matrix<int, -1, -1, Eigen::RowMajor> mat2;
 	mat1.resize(2500, 2500);
 	mat2.resize(25, 25);
@@ -33,14 +33,16 @@ int main()
 	//fillMat(mat2);
 
 	//Eigen::Matrix<int, -1, -1, Eigen::RowMajor>mm = mat1 * mat2;
+	static constexpr int numTests = 20;
 	s.start();
-	//for (int i = 0; i < 1000; ++i)
-	mat1 = mat1 * mat1;
-	s.printCurrent();
-	Matrix<int> tt(2500, 2500);
+	for (int i = 0; i < numTests; ++i)
+		mat1 = mat1 * mat1;
+	s.printCurrent(numTests);
+	Matrix<float> tt(2500, 2500);
 	s.start();
-	tt= tt* tt;
-	s.printCurrent();
+	for (int i = 0; i < numTests; ++i)
+		tt = tt* tt;
+	s.printCurrent(numTests);
 	//*/
 
 	Matrix<int> lhs = {
@@ -64,6 +66,10 @@ int main()
 		{ 21, 22, 23, 24, 25}	// 5 10 15 20 25
 	};
 	Matrix<double, true> medC = med;
+	Matrix<double> test(7, 7);
+	std::iota(test.begin(), test.end(), 0);
+	std::cout << test << "\n\n";
+	Matrix<double> testRes = test * test;
 
 	//Matrix<int> large(3500, 3500);
 	//Matrix<int> largeRes = large * large;

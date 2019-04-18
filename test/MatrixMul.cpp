@@ -117,7 +117,7 @@ namespace test
 
 		TEST_METHOD(TestLarge)
 		{
-			static constexpr auto NUM_TESTS = 100;
+			static constexpr auto NUM_TESTS = 33;
 			static constexpr int minDim = 1;
 			static constexpr int maxDim = 45;
 
