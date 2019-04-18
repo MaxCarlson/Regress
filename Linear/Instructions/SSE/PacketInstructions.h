@@ -67,7 +67,7 @@ template<> inline Packet4i pset1<Packet4i, int		>(const int&		from) { return _mm
 template<> inline Packet2d pset1<Packet2d, double	>(const double&		from) { return _mm_set1_pd(from); }
 
 template<> inline void pstore<Packet4f, float	>(float*	to, const Packet4f& from) { return _mm_store_ps(to, from); }
-template<> inline void pstore<Packet4i, int	>(int*		to, const Packet4i& from) { return _mm_store_si128(reinterpret_cast<__m128i*>(to), from); }
+template<> inline void pstore<Packet4i, int		>(int*		to, const Packet4i& from) { return _mm_store_si128(reinterpret_cast<__m128i*>(to), from); }
 template<> inline void pstore<Packet2d, double	>(double*	to, const Packet2d& from) { return _mm_store_pd(to, from); }
 
 template<> inline Packet4f padd<Packet4f>(const Packet4f& p1, const Packet4f& p2) { return _mm_add_ps(p1, p2); }

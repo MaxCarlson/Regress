@@ -327,6 +327,24 @@ void packRhs(Type* blockB, const Rhs& rhs,  Index rows, Index cols)
 }
 
 // Simple wrapper class to make indexing inside gebp easier
+template<class Type, class Index>
+struct IndexedValue
+{
+	IndexedValue(Type* ptr) noexcept :
+		ptr{ ptr }
+	{}
+
+	inline void prefetch(Index idx) const noexcept { impl::prefetch(ptr + idx); }
+
+	template<class Packet>
+	inline void accumulate(const Packet& p)
+	{
+		impl::pstore(ptr, impl::padd(impl::ploadu<Packet>(ptr), p));
+	}
+
+	Type* RGR_RESTRICT ptr;
+};
+
 template<class Dest, class Index, bool Transpose>
 struct IndexWrapper
 {
@@ -344,6 +362,11 @@ struct IndexWrapper
 
 	inline Index getRow(Index row, Index col) const { return Transpose ? col + c : row + r; }
 	inline Index getCol(Index row, Index col) const { return Transpose ? row + r : col + c; }
+
+	inline IndexedValue<Type, Index> get(Index row, Index col) noexcept 
+	{ 
+		return IndexedValue<Type, Index>{ &evaluateRef(row, col) };
+	}
 
 	inline Type evaluate(Index row, Index col) const
 	{
@@ -406,6 +429,7 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 	using Traits	= PacketTraits<Type>;
 	using Packet	= typename Traits::type;
 	using BlockPtr	= const Type*;
+	using Indexer	= IndexedValue<Type, Index>;
 	enum { Stride = Traits::Stride };
 
 	// TODO: Loop unrolling
@@ -417,18 +441,67 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 	// blockB size is kc * nc
 	// Fits in l1 Cache
 	
-	const Index packedM = mc - mc % mr;
-	const Index packedN = nc - nc % nr;
+	const Index packedM		= mc - mc % mr;
+	const Index packedN		= nc - nc % nr;
+	const Index packedN2	= nc - nc % (nr * 2);
 
 	// TODO: Test this with other higher level pragmas
 	//#pragma omp parallel for 
 	for (Index m = 0; m < packedM; m += mr)
 	{
+		/*
+		for (Index n = 0; n < packedN2; n += nr * 2)
+		{
+			BlockPtr aPtr = &blockA[m * kc];
+			BlockPtr bPtr = &blockB[n * kc];
+			impl::prefetch(aPtr);
+			impl::prefetch(bPtr);
+			Packet tmp{ Type{ 0 } };
+			Packet C0{ Type{ 0 } }; Packet C1{ Type{ 0 } };
+			Packet C2{ Type{ 0 } }; Packet C3{ Type{ 0 } };
+			Packet C4{ Type{ 0 } }; Packet C5{ Type{ 0 } };
+			Packet C6{ Type{ 0 } }; Packet C7{ Type{ 0 } };
+
+			dest.prefetch(m + 0, n); dest.prefetch(m + 1, n);
+			dest.prefetch(m + 2, n); dest.prefetch(m + 3, n);
+			dest.prefetch(m + 4, n); dest.prefetch(m + 5, n);
+			dest.prefetch(m + 6, n); dest.prefetch(m + 6, n);
+
+			for (Index k = 0; k < kc; ++k)
+			{
+				auto[A0, A1, A2, A3] = pload4<Packet, Type>(aPtr);
+
+				impl::prefetch(aPtr + mr);
+				impl::prefetch(bPtr + nr * 2);
+				Packet B0 = impl::pload<Packet>(bPtr);
+
+				pmadd(A0, B0, C0, tmp);
+				pmadd(A1, B0, C1, tmp);
+				pmadd(A2, B0, C2, tmp);
+				pmadd(A3, B0, C3, tmp);
+				pmadd(A4, B0, C4, tmp);
+				pmadd(A5, B0, C5, tmp);
+				pmadd(A6, B0, C6, tmp);
+				pmadd(A7, B0, C7, tmp);
+
+				aPtr += mr;
+				bPtr += nr * 2;
+			}
+			dest.accumulate(m + 0, n, C0);
+			dest.accumulate(m + 1, n, C1);
+			dest.accumulate(m + 2, n, C2);
+			dest.accumulate(m + 3, n, C3);
+			dest.accumulate(m + 4, n, C4);
+			dest.accumulate(m + 5, n, C5);
+			dest.accumulate(m + 6, n, C6);
+			dest.accumulate(m + 7, n, C7);
+		}
+		*/
+
 		for (Index n = 0; n < packedN; n += nr)
 		{
 			BlockPtr aPtr = &blockA[m * kc]; 
 			BlockPtr bPtr = &blockB[n * kc];
-
 			impl::prefetch(aPtr);
 			impl::prefetch(bPtr);
 
@@ -436,10 +509,14 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 			Packet C0 { Type{ 0 } }; Packet C1{ Type{ 0 } };
 			Packet C2 { Type{ 0 } }; Packet C3{ Type{ 0 } };
 
-			dest.prefetch(m + 0, n);
-			dest.prefetch(m + 1, n);
-			dest.prefetch(m + 2, n);
-			dest.prefetch(m + 3, n);
+			Indexer R0 = dest.get(m + 0, n);
+			Indexer R1 = dest.get(m + 1, n);
+			Indexer R2 = dest.get(m + 2, n);
+			Indexer R3 = dest.get(m + 3, n);
+			R0.prefetch(0);
+			R1.prefetch(0);
+			R2.prefetch(0);
+			R3.prefetch(0);
 
 			for (Index k = 0; k < kc; ++k)
 			{
@@ -457,10 +534,14 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 				aPtr += mr;
 				bPtr += nr;
 			}
-			dest.accumulate(m + 0, n, C0);
-			dest.accumulate(m + 1, n, C1);
-			dest.accumulate(m + 2, n, C2);
-			dest.accumulate(m + 3, n, C3);
+			R0.accumulate(C0);
+			R1.accumulate(C1);
+			R2.accumulate(C2);
+			R3.accumulate(C3);
+			//dest.accumulate(m + 0, n, C0);
+			//dest.accumulate(m + 1, n, C1);
+			//dest.accumulate(m + 2, n, C2);
+			//dest.accumulate(m + 3, n, C3);
 		}
 
 		// TODO: This is just simple element by element but can be made

@@ -56,7 +56,7 @@ template<class Packet, class Type>
 inline Packet pload1(const Type* ptr) { return pset1<Packet, Type>(*ptr); }
 
 template<class Packet, class Type>
-inline void pstore(Type* to, const Packet& ptr) { static_assert(false); }
+inline void pstore(Type* to, const Packet& from) { static_assert(false); }
 
 template<class Packet>
 inline Packet padd(const Packet& p1, const Packet& p2) { static_assert(false); return {}; }
