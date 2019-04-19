@@ -439,7 +439,7 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 {
 	using Traits	= PacketTraits<Type>;
 	using Packet	= typename Traits::type;
-	using BlockPtr	= const Type*;
+	using BlockPtr	= const Type* RGR_RESTRICT;
 	using Indexer	= IndexedValue<Type, Index>;
 	enum { Stride = Traits::Stride };
 
@@ -534,11 +534,12 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 
 		for (Index n = 0; n < packedN2; n += nr * 2) // 20% Speedup over just having loop below
 		{
-			BlockPtr aPtr = &blockA[m * kc];
-			BlockPtr bPtr = &blockB[n * kc];
+			BlockPtr aPtr	= &blockA[m * kc];
+			BlockPtr bPtr	= &blockB[n * kc];
+			BlockPtr bPtr2	= &blockB[n * kc + kc * nr];
 			impl::prefetch(aPtr);
 			impl::prefetch(bPtr);
-			impl::prefetch(bPtr + kc * nr);
+			impl::prefetch(bPtr2);
 			Packet tmp{};
 			Packet C0{ Type{ 0 } }; Packet C1{ Type{ 0 } };
 			Packet C2{ Type{ 0 } }; Packet C3{ Type{ 0 } };
@@ -565,7 +566,7 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 					Packet A0, A1, A2, A3;\
 					pload4r(aPtr + K * mr, A0, A1, A2, A3);\
 					B0 = impl::pload<Packet>(bPtr + K * nr); \
-					B1 = impl::pload<Packet>((bPtr + K * nr) + kc * nr); \
+					B1 = impl::pload<Packet>((bPtr2 + K * nr)); \
 					pmadd(A0, B0, C0, tmp); \
 					pmadd(A1, B0, C1, tmp); \
 					pmadd(A2, B0, C2, tmp); \
@@ -589,6 +590,7 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 
 				aPtr += mr * kStep;
 				bPtr += nr * kStep;
+				bPtr2 += nr * kStep;
 			}
 			//*/
 
