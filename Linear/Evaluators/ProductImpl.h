@@ -26,6 +26,15 @@ inline decltype(auto) pload4(const Type* ptr)
 		impl::pload1<Packet>(ptr + 2), impl::pload1<Packet>(ptr + 3) };
 }
 
+template<class Packet, class Type>
+inline void pload4r(const Type* ptr, Packet& p0, Packet& p1, Packet& p2, Packet& p3)
+{
+	p0 = impl::pload1<Packet>(ptr + 0);
+	p1 = impl::pload1<Packet>(ptr + 1);
+	p2 = impl::pload1<Packet>(ptr + 2);
+	p3 = impl::pload1<Packet>(ptr + 3);
+}
+
 // lhs * rhs * lhs
 // {1, 2},					{9,  12, 15}
 // {3, 4}, * {1, 2, 3}, =	{19, 26, 33}
@@ -443,6 +452,9 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 	// blockB size is kc * nc
 	// Fits in l1 Cache
 	
+	static constexpr Index kStep = 8;
+
+	const Index kUnroll		= kc - kc % kStep;
 	const Index packedM		= mc - mc % mr;
 	const Index packedN3	= 0;// nc - nc % (nr * 3);
 	const Index packedN2	= nc - (nc - packedN3) % (nr * 2);
@@ -527,7 +539,7 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 			impl::prefetch(aPtr);
 			impl::prefetch(bPtr);
 			impl::prefetch(bPtr + kc * nr);
-			Packet tmp{ Type{ 0 } };
+			Packet tmp{};
 			Packet C0{ Type{ 0 } }; Packet C1{ Type{ 0 } };
 			Packet C2{ Type{ 0 } }; Packet C3{ Type{ 0 } };
 			Packet C4{ Type{ 0 } }; Packet C5{ Type{ 0 } };
@@ -544,17 +556,14 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 
 			Packet B0, B1;
 			//*
-			constexpr Index kStep = 8;
-			const Index kUnroll = kc - kc % kStep;
 			//auto[A0, A1, A2, A3] = pload4<Packet, Type>(aPtr + K * mr);
 
 			for (Index k = 0; k < kUnroll; k += kStep)
 			{
-			//Packet A0, A1, A2, A3;
-
 #define PROCESS_STEP(K) \
 				{ \
-					auto[A0, A1, A2, A3] = pload4<Packet, Type>(aPtr); \
+					Packet A0, A1, A2, A3;\
+					pload4r(aPtr + K * mr, A0, A1, A2, A3);\
 					B0 = impl::pload<Packet>(bPtr + K * nr); \
 					B1 = impl::pload<Packet>((bPtr + K * nr) + kc * nr); \
 					pmadd(A0, B0, C0, tmp); \
@@ -567,16 +576,16 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 					pmadd(A3, B1, C7, tmp); \
 				} \
 
+				impl::prefetch(aPtr + (32 + 0));
 				PROCESS_STEP(0);
 				PROCESS_STEP(1);
 				PROCESS_STEP(2);
 				PROCESS_STEP(3);
+				impl::prefetch(aPtr + (32 + 16));
 				PROCESS_STEP(4);
 				PROCESS_STEP(5);
 				PROCESS_STEP(6);
 				PROCESS_STEP(7);
-
-#undef PROCESS_STEP
 
 				aPtr += mr * kStep;
 				bPtr += nr * kStep;
@@ -585,25 +594,8 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 
 			for (Index k = kUnroll; k < kc; ++k)
 			{
-				//Packet A0, A1, A2, A3;
-				auto[A0, A1, A2, A3] = pload4<Packet, Type>(aPtr);
-				//A0 = impl::pload1<Packet>(aPtr);  
-				//A1 = impl::pload1<Packet>(aPtr + 1);
-				//A2 = impl::pload1<Packet>(aPtr + 2);
-				//A3 = impl::pload1<Packet>(aPtr + 3);
-				B0 = impl::pload<Packet>(bPtr);
-				B1 = impl::pload<Packet>(bPtr + kc * nr);
-
-				pmadd(A0, B0, C0, tmp);
-				pmadd(A1, B0, C1, tmp);
-				pmadd(A2, B0, C2, tmp);
-				pmadd(A3, B0, C3, tmp);
-
-				pmadd(A0, B1, C4, tmp);
-				pmadd(A1, B1, C5, tmp);
-				pmadd(A2, B1, C6, tmp);
-				pmadd(A3, B1, C7, tmp);
-
+				PROCESS_STEP(0);
+#undef PROCESS_STEP
 				aPtr += mr;
 				bPtr += nr;
 			}

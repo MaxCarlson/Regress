@@ -104,7 +104,7 @@ struct ProductLoop<Dest, LhsE, RhsE, GEMMType::VECTORIZED>
 
 				// TODO: This is fastest for square matrixes, but might not be 
 				// for others
-				#pragma omp parallel for 
+				#pragma omp parallel for num_threads(3)
 				for (size_type n = 0; n < rCols; n += nc)
 				{
 					const size_type endN = std::min(n + nc, rCols) - n;

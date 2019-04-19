@@ -65,6 +65,7 @@ int main()
 		{ 16, 17, 18, 19, 20},	// 4  9 14 19 24
 		{ 21, 22, 23, 24, 25}	// 5 10 15 20 25
 	};
+	/*
 	Matrix<double, true> medC = med;
 	Matrix<int> test1(42, 32);
 	Matrix<int> test2(32, 43);
@@ -73,6 +74,7 @@ int main()
 	std::cout << test1 << "\n\n" << test2 << "\n\n";
 	Matrix<int> testRes = test1 * test2;
 	std::cout << testRes << "\n\n";
+	*/
 
 	constexpr int m = 42, k = 32, n = 32;
 	constexpr int packedN3 = n - n % (4 * 3);
