@@ -542,16 +542,21 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 			R2.prefetch(0);
 			R3.prefetch(0);
 
+			Packet B0, B1;
 			//*
-			constexpr Index kStep = 4;
+			constexpr Index kStep = 8;
 			const Index kUnroll = kc - kc % kStep;
+			//auto[A0, A1, A2, A3] = pload4<Packet, Type>(aPtr + K * mr);
+
 			for (Index k = 0; k < kUnroll; k += kStep)
 			{
+			//Packet A0, A1, A2, A3;
+
 #define PROCESS_STEP(K) \
 				{ \
-				auto[A0, A1, A2, A3] = pload4<Packet, Type>(aPtr + K * mr); \
-					Packet B0 = impl::pload<Packet>(bPtr + K * nr); \
-					Packet B1 = impl::pload<Packet>((bPtr + K * nr) + kc * nr); \
+					auto[A0, A1, A2, A3] = pload4<Packet, Type>(aPtr); \
+					B0 = impl::pload<Packet>(bPtr + K * nr); \
+					B1 = impl::pload<Packet>((bPtr + K * nr) + kc * nr); \
 					pmadd(A0, B0, C0, tmp); \
 					pmadd(A1, B0, C1, tmp); \
 					pmadd(A2, B0, C2, tmp); \
@@ -567,6 +572,9 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 				PROCESS_STEP(2);
 				PROCESS_STEP(3);
 				PROCESS_STEP(4);
+				PROCESS_STEP(5);
+				PROCESS_STEP(6);
+				PROCESS_STEP(7);
 
 #undef PROCESS_STEP
 
@@ -577,10 +585,14 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 
 			for (Index k = kUnroll; k < kc; ++k)
 			{
+				//Packet A0, A1, A2, A3;
 				auto[A0, A1, A2, A3] = pload4<Packet, Type>(aPtr);
-
-				Packet B0 = impl::pload<Packet>(bPtr);
-				Packet B1 = impl::pload<Packet>(bPtr + kc * nr);
+				//A0 = impl::pload1<Packet>(aPtr);  
+				//A1 = impl::pload1<Packet>(aPtr + 1);
+				//A2 = impl::pload1<Packet>(aPtr + 2);
+				//A3 = impl::pload1<Packet>(aPtr + 3);
+				B0 = impl::pload<Packet>(bPtr);
+				B1 = impl::pload<Packet>(bPtr + kc * nr);
 
 				pmadd(A0, B0, C0, tmp);
 				pmadd(A1, B0, C1, tmp);
