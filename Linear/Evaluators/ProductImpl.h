@@ -444,7 +444,7 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 	// Fits in l1 Cache
 	
 	const Index packedM		= mc - mc % mr;
-	const Index packedN3	= nc - nc % (nr * 3);
+	const Index packedN3	= 0;// nc - nc % (nr * 3);
 	const Index packedN2	= nc - (nc - packedN3) % (nr * 2);
 	const Index packedN		= nc - (nc - packedN2) % nr;
 
@@ -452,6 +452,8 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 	//#pragma omp parallel for 
 	for (Index m = 0; m < packedM; m += mr)
 	{
+		// Overall this is about a 5-20% slowdown... Why?
+		/*
 		for (Index n = 0; n < packedN3; n += nr * 3)
 		{
 			BlockPtr aPtr = &blockA[m * kc];
@@ -516,8 +518,9 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 			R3.accumulate(C7,  Stride * 1);
 			R3.accumulate(C11, Stride * 2);
 		}
+		//*/
 
-		for (Index n = packedN3; n < packedN2; n += nr * 2) // 20% Speedup over just having loop below
+		for (Index n = 0; n < packedN2; n += nr * 2) // 20% Speedup over just having loop below
 		{
 			BlockPtr aPtr = &blockA[m * kc];
 			BlockPtr bPtr = &blockB[n * kc];
@@ -539,7 +542,40 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 			R2.prefetch(0);
 			R3.prefetch(0);
 
-			for (Index k = 0; k < kc; ++k)
+			//*
+			constexpr Index kStep = 4;
+			const Index kUnroll = kc - kc % kStep;
+			for (Index k = 0; k < kUnroll; k += kStep)
+			{
+#define PROCESS_STEP(K) \
+				{ \
+				auto[A0, A1, A2, A3] = pload4<Packet, Type>(aPtr + K * mr); \
+					Packet B0 = impl::pload<Packet>(bPtr + K * nr); \
+					Packet B1 = impl::pload<Packet>((bPtr + K * nr) + kc * nr); \
+					pmadd(A0, B0, C0, tmp); \
+					pmadd(A1, B0, C1, tmp); \
+					pmadd(A2, B0, C2, tmp); \
+					pmadd(A3, B0, C3, tmp); \
+					pmadd(A0, B1, C4, tmp); \
+					pmadd(A1, B1, C5, tmp); \
+					pmadd(A2, B1, C6, tmp); \
+					pmadd(A3, B1, C7, tmp); \
+				} \
+
+				PROCESS_STEP(0);
+				PROCESS_STEP(1);
+				PROCESS_STEP(2);
+				PROCESS_STEP(3);
+				PROCESS_STEP(4);
+
+#undef PROCESS_STEP
+
+				aPtr += mr * kStep;
+				bPtr += nr * kStep;
+			}
+			//*/
+
+			for (Index k = kUnroll; k < kc; ++k)
 			{
 				auto[A0, A1, A2, A3] = pload4<Packet, Type>(aPtr);
 
