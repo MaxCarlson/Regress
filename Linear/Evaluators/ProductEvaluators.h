@@ -70,19 +70,21 @@ struct ProductLoop<Dest, LhsE, RhsE, GEMMType::VECTORIZED>
 		// TODO: Calculate mc/kc/nc from type size/l2 cache size
 		// TODO: Benchmark allocating A/B on heap/thread_local/stack
 
-		// TODO: BUG: Packing with small numbers is fine, large is not in 
-		// release mode. FIX!
-		//
+		//BlockSizer<typename Dest::value_type, size_type> sizer;
+
 		// Blocksize along direction 
 		const size_type mc = std::min(512, lRows); // along m (rows of dest/lhs)
 		const size_type kc = std::min(512, lCols); // along k (columns of lhs, rows of rhs)
-		const size_type nc = std::min(128, rCols); // along n (columns of rhs)
+		const size_type nc = std::min(256, rCols); // along n (columns of rhs)
+		
+		//const size_type mc = std::min(testBs.mc, lRows); // Just for testing
+		//const size_type kc = std::min(testBs.kc, lCols); // best values for gemm
+		//const size_type nc = std::min(testBs.nc, rCols); 
 
 		SALW blockA{ mc * kc }; // LhsBlock
 		SALW blockB{ kc * nc }; // RhsBlock
 
 		const bool packRhsOnce = kc == lCols && nc == rCols;
-		
 
 		// Height (in rows) of lhs's block
 		//#pragma omp parallel for 

@@ -131,3 +131,10 @@ enum Ordering
 	ColMajor
 };
 
+// Just for testing best mc/kc/nc values for gemm
+// TODO: Move some place more appropraite
+struct TestBlocksize
+{
+	int mc, kc, nc;
+};
+inline static TestBlocksize testBs;

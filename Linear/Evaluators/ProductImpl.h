@@ -66,6 +66,54 @@ struct PackingInfo
 
 };
 
+template<class Type, class Index>
+struct BlockSizer
+{
+	inline static bool init = false;
+	inline static Index mc, kc, nc;
+
+	BlockSizer()
+	{
+		if (init)
+			return;
+		init = true;
+
+		auto l1 = cacheInfo.l1;
+		auto l2 = cacheInfo.l2;
+		calculateBlockA(l2);
+		calculateBlockB(l1);
+
+		int l1Rel = l1 * 0.7 / sizeof(Type);
+		int l2Rel = (l2 * 0.5 - l1) / sizeof(Type);
+
+		int m = 8;
+		int k = 8;
+		int n = 8;
+
+		int stepSize = 8;
+
+		while (true)
+		{
+			int mk = m * k;
+			int nk = n * k;
+			if (mk < l1Rel * 0.9)
+			{
+				//if()
+			}
+		}
+	}
+
+	inline void calculateBlockA(int l2)
+	{
+
+	}
+
+	inline void calculateBlockB(int l1)
+	{
+
+	}
+};
+
 // Packing order: 
 // BlockSize mr == 4
 // 
@@ -443,14 +491,12 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 	using Indexer	= IndexedValue<Type, Index>;
 	enum { Stride = Traits::Stride };
 
-	// TODO: Loop unrolling
-	// TODO: Prefetching
 	// TODO: NOTE: mr/nr/kr are block sizes to make block fit in registers?
 
 	// blockA size is mc * kc 
-	// Fits in l2 Cache
+	// TODO: Fits in l2 Cache
 	// blockB size is kc * nc
-	// Fits in l1 Cache
+	// TODO: Fits in l1 Cache
 	
 	// Unroll step size for k
 	static constexpr Index kStep = 8;
