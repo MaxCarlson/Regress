@@ -452,6 +452,7 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 	// blockB size is kc * nc
 	// Fits in l1 Cache
 	
+	// Unroll step size for k
 	static constexpr Index kStep = 8;
 
 	const Index kUnroll		= kc - kc % kStep;
@@ -465,16 +466,20 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 	for (Index m = 0; m < packedM; m += mr)
 	{
 		// Overall this is about a 5-20% slowdown... Why?
+		// Note: While being slower for Doubles and Floats, this is acutally faster for ints ... ?
 		/*
 		for (Index n = 0; n < packedN3; n += nr * 3)
 		{
-			BlockPtr aPtr = &blockA[m * kc];
-			BlockPtr bPtr = &blockB[n * kc];
+			BlockPtr aPtr  = &blockA[m * kc];
+			BlockPtr bPtr0 = &blockB[n * kc];
+			BlockPtr bPtr1 = &blockB[n * kc + kc * nr];
+			BlockPtr bPtr2 = &blockB[n * kc + kc * nr * 2];
 			impl::prefetch(aPtr);
-			impl::prefetch(bPtr);
-			impl::prefetch(bPtr + kc * nr);
-			impl::prefetch(bPtr + kc * nr * 2);
+			impl::prefetch(bPtr0);
+			impl::prefetch(bPtr1);
+			impl::prefetch(bPtr2);
 			Packet tmp{ Type{ 0 } };
+			Packet B0, B1, B2;
 			Packet C0{ Type{ 0 } }; Packet C1{ Type{ 0 } };
 			Packet C2{ Type{ 0 } }; Packet C3{ Type{ 0 } };
 			Packet C4{ Type{ 0 } }; Packet C5{ Type{ 0 } };
@@ -491,32 +496,56 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 			R2.prefetch(0);
 			R3.prefetch(0);
 
-			for (Index k = 0; k < kc; ++k)
+			for (Index k = 0; k < kUnroll; k += kStep)
 			{
-				auto[A0, A1, A2, A3] = pload4<Packet, Type>(aPtr);
+#define PROCESS_STEP(K) \
+				{ \
+					Packet A0, A1, A2, A3; \
+					pload4r(aPtr, A0, A1, A2, A3); \
+					B0 = impl::pload<Packet>(bPtr0); \
+					B1 = impl::pload<Packet>(bPtr1); \
+					B2 = impl::pload<Packet>(bPtr2); \
+					pmadd(A0, B0, C0, tmp); \
+					pmadd(A1, B0, C1, tmp); \
+					pmadd(A2, B0, C2, tmp); \
+					pmadd(A3, B0, C3, tmp); \
+					pmadd(A0, B1, C4, tmp); \
+					pmadd(A1, B1, C5, tmp); \
+					pmadd(A2, B1, C6, tmp); \
+					pmadd(A3, B1, C7, tmp); \
+					pmadd(A0, B2, C8, tmp); \
+					pmadd(A1, B2, C9, tmp); \
+					pmadd(A2, B2, C10, tmp); \
+					pmadd(A3, B2, C11, tmp); \
+				} \
 
-				Packet B0 = impl::pload<Packet>(bPtr);
-				Packet B1 = impl::pload<Packet>(bPtr + kc * nr);
-				Packet B2 = impl::pload<Packet>(bPtr + kc * nr * 2);
+				impl::prefetch(aPtr + (32 + 0));
+				PROCESS_STEP(0);
+				PROCESS_STEP(1);
+				PROCESS_STEP(2);
+				PROCESS_STEP(3);
+				impl::prefetch(aPtr + (32 + 16));
+				PROCESS_STEP(4);
+				PROCESS_STEP(5);
+				PROCESS_STEP(6);
+				PROCESS_STEP(7);
 
-				pmadd(A0, B0, C0, tmp);
-				pmadd(A1, B0, C1, tmp);
-				pmadd(A2, B0, C2, tmp);
-				pmadd(A3, B0, C3, tmp);
-
-				pmadd(A0, B1, C4, tmp);
-				pmadd(A1, B1, C5, tmp);
-				pmadd(A2, B1, C6, tmp);
-				pmadd(A3, B1, C7, tmp);
-
-				pmadd(A0, B2, C8, tmp);
-				pmadd(A1, B2, C9, tmp);
-				pmadd(A2, B2, C10, tmp);
-				pmadd(A3, B2, C11, tmp);
-
-				aPtr += mr;
-				bPtr += nr;
+				aPtr  += mr * kStep;
+				bPtr0 += nr * kStep;
+				bPtr1 += nr * kStep;
+				bPtr2 += nr * kStep;
 			}
+
+			for (Index k = kUnroll; k < kc; ++k)
+			{
+				PROCESS_STEP(0);
+				aPtr  += mr;
+				bPtr0 += nr;
+				bPtr1 += nr;
+				bPtr2 += nr;
+#undef PROCESS_STEP
+			}
+
 			R0.accumulate(C0);
 			R0.accumulate(C4, Stride * 1);
 			R0.accumulate(C8, Stride * 2);
@@ -532,7 +561,7 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 		}
 		//*/
 
-		for (Index n = 0; n < packedN2; n += nr * 2) // 20% Speedup over just having loop below
+		for (Index n = packedN3; n < packedN2; n += nr * 2) 
 		{
 			BlockPtr aPtr	= &blockA[m * kc];
 			BlockPtr bPtr	= &blockB[n * kc];
@@ -541,6 +570,7 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 			impl::prefetch(bPtr);
 			impl::prefetch(bPtr2);
 			Packet tmp{};
+			Packet B0, B1;
 			Packet C0{ Type{ 0 } }; Packet C1{ Type{ 0 } };
 			Packet C2{ Type{ 0 } }; Packet C3{ Type{ 0 } };
 			Packet C4{ Type{ 0 } }; Packet C5{ Type{ 0 } };
@@ -555,18 +585,14 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 			R2.prefetch(0);
 			R3.prefetch(0);
 
-			Packet B0, B1;
-			//*
-			//auto[A0, A1, A2, A3] = pload4<Packet, Type>(aPtr + K * mr);
-
 			for (Index k = 0; k < kUnroll; k += kStep)
 			{
 #define PROCESS_STEP(K) \
 				{ \
 					Packet A0, A1, A2, A3;\
 					pload4r(aPtr + K * mr, A0, A1, A2, A3);\
-					B0 = impl::pload<Packet>(bPtr + K * nr); \
-					B1 = impl::pload<Packet>((bPtr2 + K * nr)); \
+					B0 = impl::pload<Packet>(bPtr  + K * nr); \
+					B1 = impl::pload<Packet>(bPtr2 + K * nr); \
 					pmadd(A0, B0, C0, tmp); \
 					pmadd(A1, B0, C1, tmp); \
 					pmadd(A2, B0, C2, tmp); \
@@ -588,18 +614,18 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 				PROCESS_STEP(6);
 				PROCESS_STEP(7);
 
-				aPtr += mr * kStep;
-				bPtr += nr * kStep;
-				bPtr2 += nr * kStep;
+				aPtr	+= mr * kStep;
+				bPtr	+= nr * kStep;
+				bPtr2	+= nr * kStep;
 			}
-			//*/
 
 			for (Index k = kUnroll; k < kc; ++k)
 			{
 				PROCESS_STEP(0);
 #undef PROCESS_STEP
-				aPtr += mr;
-				bPtr += nr;
+				aPtr	+= mr;
+				bPtr	+= nr;
+				bPtr2	+= nr;
 			}
 			R0.accumulate(C0);
 			R0.accumulate(C4, Stride);
