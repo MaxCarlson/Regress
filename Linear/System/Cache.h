@@ -77,44 +77,32 @@ private:
 
 static const CacheInfo cacheInfo;
 
-// TODO: Use allocStackAligned once working
+static constexpr int STACK_ALLOCATION_MAX = 128 * 1024;
+
+// Note, this should only be called to hand memory to StackAlignedWrapper!
+// TODO: Look into using malloca
+#define StackAlignedAlloc(Type, size, Alignment) \
+(size * sizeof(Type) + Alignment < STACK_ALLOCATION_MAX) \
+	? reinterpret_cast<Type*>((reinterpret_cast<size_t>(alloca(sizeof(Type) * (size + Alignment - 1))) + Alignment - 1) & ~(Alignment - 1)) \
+	: AlignedAllocator<Type>::allocate<Alignment>(size) \
+
 template<class T>
 struct StackAlignedWrapper
 {
 	using Traits = PacketTraits<T>;
-	static constexpr int STACK_ALLOCATION_MAX = 128 * 1024;
 	enum { Alignment = Traits::Alignment };
 
 	template<class Size>
-	StackAlignedWrapper(Size size) :
+	StackAlignedWrapper(Size size, T* ptr) :
 		onHeap{ size * sizeof(T) + Alignment >= STACK_ALLOCATION_MAX },
-		ptr{ allocStackAligned(size) },
+		ptr{ ptr },
 		size{ static_cast<size_t>(size) }
 	{}
-
-	RGR_FORCE_INLINE T* allocStackAligned(size_t size)
-	{
-		// BUG: Why is alloca allocating the same space twice in a row?
-		// Is it because this is inside a function? That would make sense
-		// Note: Not Working!
-		//if(false)
-		if (!onHeap)
-		{
-			size_t space = sizeof(T) * size + Alignment;
-			void* ptr = alloca(space);
-			auto* rr = reinterpret_cast<T*>(std::align(Alignment, sizeof(T) * size, ptr, space));
-			return rr;
-		}
-
-		return AlignedAllocator<T>::allocate<Alignment>(size);
-	}
 
 	~StackAlignedWrapper()
 	{
 		if (onHeap)
 			AlignedAllocator<T>::deallocate(ptr, size);
-		//else
-		//	_freea(ptr);
 	}
 
 	bool onHeap;

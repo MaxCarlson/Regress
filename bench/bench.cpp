@@ -78,7 +78,7 @@ template<class Type, bool MajorOrder>
 struct MulSquareAlias : public BaseBench
 {
 	using Mat = Matrix<Type, MajorOrder>;
-	inline static constexpr int relDur = 1; // Relative duration
+	inline static constexpr int relDur = 3; // Relative duration
 
 	static std::string name()
 	{

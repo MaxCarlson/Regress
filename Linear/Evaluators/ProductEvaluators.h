@@ -46,15 +46,9 @@ struct ProductLoop<Dest, LhsE, RhsE, GEMMType::VECTORIZED>
 
 	enum
 	{
+		Alignment		= Traits::Alignment,
 		DestTranspose	= Dest::MajorOrder,
 	};
-
-	static constexpr int STACK_ALLOCATION_MAX = 128 * 1024;
-
-#define StackAlignedAlloc(Type, size, Alignment) \
-(size * sizeof(Type) + Alignment >= STACK_ALLOCATION_MAX) \
-	? reinterpret_cast<Type*>((reinterpret_cast<size_t>(alloca(sizeof(Type) * (size + Alignment - 1))) + Alignment - 1) & ~(Alignment - 1)) \
-	: AlignedAllocator<Type>::allocate<Alignment>(size) \
 
 	// Paper:
 	// https://www.cs.utexas.edu/users/pingali/CS378/2008sp/papers/gotoPaper.pdf
@@ -88,12 +82,9 @@ struct ProductLoop<Dest, LhsE, RhsE, GEMMType::VECTORIZED>
 		//const size_type kc = std::min(testBs.kc, lCols); // best values for gemm
 		//const size_type nc = std::min(testBs.nc, rCols); // TODO: Integrate better!
 
-		auto ptr1 = StackAlignedAlloc(value_type, mc * kc, 16);
-		auto ptr2 = StackAlignedAlloc(value_type, kc * nc, 16);
-
-		SALW blockA{ mc * kc }; // LhsBlock
-		SALW blockB{ kc * nc }; // RhsBlock
-
+		SALW blockA{ mc * kc, StackAlignedAlloc(value_type, mc * kc, Alignment) }; // LhsBlock
+		SALW blockB{ kc * nc, StackAlignedAlloc(value_type, kc * nc, Alignment) }; // RhsBlock
+		
 		const bool packRhsOnce = kc == lCols && nc == rCols;
 		
 		// Height (in rows) of lhs's block
