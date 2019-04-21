@@ -49,6 +49,13 @@ struct ProductLoop<Dest, LhsE, RhsE, GEMMType::VECTORIZED>
 		DestTranspose	= Dest::MajorOrder,
 	};
 
+	static constexpr int STACK_ALLOCATION_MAX = 128 * 1024;
+
+#define StackAlignedAlloc(Type, size, Alignment) \
+(size * sizeof(Type) + Alignment >= STACK_ALLOCATION_MAX) \
+	? reinterpret_cast<Type*>((reinterpret_cast<size_t>(alloca(sizeof(Type) * (size + Alignment - 1))) + Alignment - 1) & ~(Alignment - 1)) \
+	: AlignedAllocator<Type>::allocate<Alignment>(size) \
+
 	// Paper:
 	// https://www.cs.utexas.edu/users/pingali/CS378/2008sp/papers/gotoPaper.pdf
 	//
@@ -79,15 +86,18 @@ struct ProductLoop<Dest, LhsE, RhsE, GEMMType::VECTORIZED>
 		
 		//const size_type mc = std::min(testBs.mc, lRows); // Just for testing
 		//const size_type kc = std::min(testBs.kc, lCols); // best values for gemm
-		//const size_type nc = std::min(testBs.nc, rCols); 
+		//const size_type nc = std::min(testBs.nc, rCols); // TODO: Integrate better!
+
+		auto ptr1 = StackAlignedAlloc(value_type, mc * kc, 16);
+		auto ptr2 = StackAlignedAlloc(value_type, kc * nc, 16);
 
 		SALW blockA{ mc * kc }; // LhsBlock
 		SALW blockB{ kc * nc }; // RhsBlock
 
 		const bool packRhsOnce = kc == lCols && nc == rCols;
-
+		
 		// Height (in rows) of lhs's block
-		//#pragma omp parallel for 
+		#pragma omp parallel for num_threads(3)
 		for (size_type m = 0; m < lRows; m += mc)
 		{
 			const size_type endM = std::min(m + mc, lRows) - m;
@@ -103,10 +113,7 @@ struct ProductLoop<Dest, LhsE, RhsE, GEMMType::VECTORIZED>
 				packLhs(blockA.ptr, lhsW, endM, endK);
 
 				// For each kc x nc horizontal panel of rhs
-
-				// TODO: This is fastest for square matrixes, but might not be 
-				// for others
-				#pragma omp parallel for num_threads(3)
+				//#pragma omp parallel for num_threads(3)
 				for (size_type n = 0; n < rCols; n += nc)
 				{
 					const size_type endN = std::min(n + nc, rCols) - n;

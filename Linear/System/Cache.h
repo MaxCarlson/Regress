@@ -77,47 +77,48 @@ private:
 
 static const CacheInfo cacheInfo;
 
-static constexpr int STACK_ALLOCATION_MAX = 128 * 1024;
-
-template<class T, int Alignment>
-inline T* allocStackAligned(size_t size)
-{
-	// BUG: Why is alloca allocating the same space twice in a row?
-	//
-	//
-	if (size + Alignment < STACK_ALLOCATION_MAX)
-	{
-		// TODO: Actually align 
-		// TODO: Don't waste memory every time 
-		size_t space = sizeof(T) * size + Alignment;
-		void* ptr = _alloca(space);
-		auto* rr = reinterpret_cast<T*>(std::align(Alignment, space, ptr, space));
-		return rr;
-	}
-
-	// TODO: If alloced on heap need a wrapper to dealloc / incase exception happens
-	throw std::runtime_error("Attempted to allocate variable larger than stack size. Not Implemented Yet.");
-	return nullptr;
-}
-
 // TODO: Use allocStackAligned once working
 template<class T>
 struct StackAlignedWrapper
 {
 	using Traits = PacketTraits<T>;
+	static constexpr int STACK_ALLOCATION_MAX = 128 * 1024;
+	enum { Alignment = Traits::Alignment };
 
 	template<class Size>
 	StackAlignedWrapper(Size size) :
-		ptr{ AlignedAllocator<T>::allocate<Traits::Alignment>(size) },
-		size{ (size_t)size }
+		onHeap{ size * sizeof(T) + Alignment >= STACK_ALLOCATION_MAX },
+		ptr{ allocStackAligned(size) },
+		size{ static_cast<size_t>(size) }
 	{}
+
+	RGR_FORCE_INLINE T* allocStackAligned(size_t size)
+	{
+		// BUG: Why is alloca allocating the same space twice in a row?
+		// Is it because this is inside a function? That would make sense
+		// Note: Not Working!
+		//if(false)
+		if (!onHeap)
+		{
+			size_t space = sizeof(T) * size + Alignment;
+			void* ptr = alloca(space);
+			auto* rr = reinterpret_cast<T*>(std::align(Alignment, sizeof(T) * size, ptr, space));
+			return rr;
+		}
+
+		return AlignedAllocator<T>::allocate<Alignment>(size);
+	}
 
 	~StackAlignedWrapper()
 	{
-		AlignedAllocator<T>::deallocate(ptr, size);
+		if (onHeap)
+			AlignedAllocator<T>::deallocate(ptr, size);
+		//else
+		//	_freea(ptr);
 	}
 
-	T* ptr;
+	bool onHeap;
+	T* RGR_RESTRICT ptr;
 	size_t size;
 };
 
