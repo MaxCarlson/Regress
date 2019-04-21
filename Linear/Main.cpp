@@ -83,7 +83,7 @@ int main()
 
 
 	//Matrix<int> reslr = lhs * rhs; // BUG:
-	Matrix<double> resMed = med * med;
+	Matrix<double> resMed = med * med * med;
 	//std::cout << reslr << "\n\n";
 	std::cout << resMed << "\n\n";
 

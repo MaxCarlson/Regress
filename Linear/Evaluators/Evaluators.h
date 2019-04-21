@@ -7,7 +7,8 @@ namespace impl
 
 template<class Expr>
 struct EvaluatorBase 
-{};
+{
+};
 
 template<class Expr>
 struct Evaluator : public EvaluatorBase<Expr>
@@ -116,7 +117,6 @@ struct BinaryEvaluator<CwiseBinaryOp<Func, Lhs, Rhs>>
 	using value_type	= typename Lhs::value_type;
 	using LhsE			= Evaluator<Lhs>;
 	using RhsE			= Evaluator<Rhs>;
-
 
 	enum
 	{

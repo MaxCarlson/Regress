@@ -71,8 +71,6 @@ struct ProductLoop<Dest, LhsE, RhsE, GEMMType::VECTORIZED>
 		// TODO: Calculate mc/kc/nc from type size/l2 cache size
 		// TODO: Benchmark allocating A/B on heap/thread_local/stack
 
-		//BlockSizer<typename Dest::value_type, size_type> sizer;
-
 		// Blocksize along direction 
 		const size_type mc = std::min(512, lRows); // along m (rows of dest/lhs)
 		const size_type kc = std::min(512, lCols); // along k (columns of lhs, rows of rhs)
@@ -88,14 +86,13 @@ struct ProductLoop<Dest, LhsE, RhsE, GEMMType::VECTORIZED>
 		const bool packRhsOnce = kc == lCols && nc == rCols;
 		
 		// Height (in rows) of lhs's block
-		#pragma omp parallel for num_threads(3)
+		#pragma omp parallel for num_threads(3) 
 		for (size_type m = 0; m < lRows; m += mc)
 		{
 			const size_type endM = std::min(m + mc, lRows) - m;
 
 			// Width (in cols) of lhs's block
 			// Also height (in rows) of rhs's horizontal panel
-			//#pragma omp parallel for
 			for (size_type k = 0; k < lCols; k += kc)
 			{
 				const size_type endK = std::min(k + kc, lCols) - k;
@@ -104,7 +101,6 @@ struct ProductLoop<Dest, LhsE, RhsE, GEMMType::VECTORIZED>
 				packLhs(blockA.ptr, lhsW, endM, endK);
 
 				// For each kc x nc horizontal panel of rhs
-				//#pragma omp parallel for num_threads(3)
 				for (size_type n = 0; n < rCols; n += nc)
 				{
 					const size_type endN = std::min(n + nc, rCols) - n;
@@ -150,7 +146,6 @@ struct ProductEvaluator<ProductOp<Lhs, Rhs>>
 	using LhsE			= Evaluator<Lhs>;
 	using RhsE			= Evaluator<Rhs>;
 	using value_type	= typename Op::value_type;
-	//using PackingInfoT	= PackingInfo<value_type>;
 
 	enum 
 	{
@@ -168,6 +163,7 @@ struct ProductEvaluator<ProductOp<Lhs, Rhs>>
 			&& LhsE::Indexable && RhsE::Indexable
 	};
 
+	// TODO: Look into packing non-identical types into identical types for blocks
 	static constexpr auto GemmType = Packetable 
 		? GEMMType::VECTORIZED : GEMMType::COEFF;
 
@@ -183,6 +179,11 @@ struct ProductEvaluator<ProductOp<Lhs, Rhs>>
 		LoopType::run(matrixEval, lhsE, rhsE);
 	}
 
+	//constexpr bool productChain()
+	//{
+	//	return std::is_same_v<ThisType, LhsE> && std::is_same_v<ThisType, RhsE>;
+	//}
+
 	MatrixType&& moveMatrix() { return std::move(matrix); }
 
 	size_type size() const noexcept { return matrix.size(); } // Sizes do match here
@@ -190,7 +191,6 @@ struct ProductEvaluator<ProductOp<Lhs, Rhs>>
 	size_type cols() const noexcept { return rhsE.cols(); }
 	size_type outer() const noexcept { return matrixEval.outer(); }
 	size_type inner() const noexcept { return matrixEval.inner(); }
-
 
 	//
 	// TODO: In matrix mul chains look into reordering for max effeciency

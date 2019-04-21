@@ -95,7 +95,6 @@ struct AssignmentKernel
 	using size_type		= typename DestImpl::size_type;
 	using value_type	= typename DestImpl::value_type;
 
-	// TODO: Investigate optimizing MajorOrder to Opposite MajorOrder ops
 	enum
 	{
 		MajorOrder	= DestImpl::MajorOrder,
@@ -160,7 +159,7 @@ struct AssignmentKernel
 	}
 
 private:
-	const Func&		func;
+	const Func&		func;		// =, +=, -=, etc
 	DestImpl&		destImpl;
 	ExprImpl&		exprImpl;
 };
@@ -232,12 +231,12 @@ struct Assignment<Dest, ProductOp<Lhs, Rhs>, Type, Func>
 	{
 		using ExprEval = Evaluator<ExprType>;
 		
-		// Note:  No need to resize when we're just moving the temporary in below
+		// Note: No need to resize when we're just moving the temporary in below
 		//dest.resize(expr.resultRows(), expr.resultCols());
 
 		ExprEval					exprE{ expr };
 		ActualDest<Dest, ExprEval>	actDest{ dest };
-		
+
 		actDest.set(exprE.moveMatrix());
 	}
 };
