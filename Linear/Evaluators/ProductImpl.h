@@ -3,7 +3,7 @@
 #include "System\Cache.h"
 
 #ifndef NDEBUG
-//#define DEBUG_BLOCKS
+#define DEBUG_BLOCKS
 #endif // DEBUG
 
 namespace impl
@@ -15,7 +15,7 @@ inline void pmadd(const Packet& a, const Packet& b, Packet& c, Packet& tmp)
 	// TODO: ifdef for FMA instructions
 	tmp = b;
 	tmp = impl::pmul(a, tmp);
-	c = impl::padd(c, tmp);
+	c	= impl::padd(c, tmp);
 }
 
 // TODO: ploadN with variadic tuple?
@@ -154,14 +154,14 @@ struct PackPanel
 	{
 		const Type* debug			= block;
 		const Index maxPRows		= rows - rows % 4;
-		const Index startPNTpRows	= Stride == 4 ? maxPRows : 0; // Start packed non-transposed rows
+		const Index startPNTpRows	= Stride == 4 && !std::is_same_v<Type, double> ? maxPRows : 0; // Start packed non-transposed rows
 		const Index maxPCols		= cols - cols % 4;
 
 
 		// TODO: Make this code Stride oblivious
 		// TODO: AVX 8x8 packing ?
 
-		if constexpr (Stride == 4)
+		if constexpr (Stride == 4 && !std::is_same_v<Type, double>) // TODO: Remove this double restriction for avx
 		{
 			for (Index i = 0; i < maxPRows; i += mr)
 			{
@@ -171,7 +171,7 @@ struct PackPanel
 					Packet P1 = from.loadUnaligned<Packet>(i + 1, j);
 					Packet P2 = from.loadUnaligned<Packet>(i + 2, j);
 					Packet P3 = from.loadUnaligned<Packet>(i + 3, j);
-
+					
 					impl::transpose4x4(P0, P1, P2, P3);
 
 					pstore(block, P0); block += 4;

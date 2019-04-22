@@ -54,6 +54,17 @@ template<> inline Packet8f pload<Packet8f, float>(const float*		from) { return _
 template<> inline Packet8i pload<Packet8i, int>(const int*			from) { return _mm256_load_si256(reinterpret_cast<const __m256i*>(from)); }
 template<> inline Packet4d pload<Packet4d, double>(const double*	from) { return _mm256_load_pd(from); }
 
+template<> inline Packet8f ploadu<Packet8f, float>(const float*		from) { return _mm256_loadu_ps(from); }
+template<> inline Packet8i ploadu<Packet8i, int>(const int*			from) { return _mm256_loadu_si256(reinterpret_cast<const __m256i*>(from)); }
+template<> inline Packet4d ploadu<Packet4d, double>(const double*	from) { return _mm256_loadu_pd(from); }
+
+template<> inline Packet8f pload1<Packet8f, float>(const float*		from) { return _mm256_broadcast_ss(from); }
+template<> inline Packet4d pload1<Packet4d, double>(const double*	from) { return _mm256_broadcast_sd(from); }
+
+template<> inline Packet8f pset1<Packet8f, float>(const float&		from) { return _mm256_set1_ps(from); }
+template<> inline Packet8i pset1<Packet8i, int>(const int&			from) { return _mm256_set1_epi32(from); }
+template<> inline Packet4d pset1<Packet4d, double>(const double&	from) { return _mm256_set1_pd(from); }
+
 template<> inline void pstore<Packet8f, float>(float*	to, const Packet8f& from) { return _mm256_store_ps(to, from); }
 template<> inline void pstore<Packet8i,	int>(int*		to, const Packet8i& from) { return _mm256_store_si256(reinterpret_cast<__m256i*>(to), from); }
 template<> inline void pstore<Packet4d, double>(double*	to, const Packet4d& from) { return _mm256_store_pd(to, from); }

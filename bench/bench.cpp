@@ -78,7 +78,7 @@ template<class Type, bool MajorOrder>
 struct MulSquareAlias : public BaseBench
 {
 	using Mat = Matrix<Type, MajorOrder>;
-	inline static constexpr int relDur = 2; // Relative duration
+	inline static constexpr int relDur = 3; // Relative duration
 
 	static std::string name()
 	{
@@ -87,12 +87,12 @@ struct MulSquareAlias : public BaseBench
 
 	static void run(TestResults& res)
 	{
-		runFunc(mulSquareAlias, Type{}, res, 50,	50 * relDur);
-		runFunc(mulSquareAlias, Type{}, res, 100,	20 * relDur);
-		runFunc(mulSquareAlias, Type{}, res, 250,	20 * relDur);
-		runFunc(mulSquareAlias, Type{}, res, 500,	15 * relDur);
-		runFunc(mulSquareAlias, Type{}, res, 1000,	10 * relDur);
-		runFunc(mulSquareAlias, Type{}, res, 1500,	7  * relDur);
+		//runFunc(mulSquareAlias, Type{}, res, 50,	50 * relDur);
+		//runFunc(mulSquareAlias, Type{}, res, 100,	20 * relDur);
+		//runFunc(mulSquareAlias, Type{}, res, 250,	20 * relDur);
+		//runFunc(mulSquareAlias, Type{}, res, 500,	15 * relDur);
+		//runFunc(mulSquareAlias, Type{}, res, 1000,	10 * relDur);
+		runFunc(mulSquareAlias, Type{}, res, 1500,	8  * relDur);
 	}
 
 	static void mulSquareAlias(int size)
