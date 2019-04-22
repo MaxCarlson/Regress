@@ -87,11 +87,11 @@ struct MulSquareAlias : public BaseBench
 
 	static void run(TestResults& res)
 	{
-		//runFunc(mulSquareAlias, Type{}, res, 50,	50 * relDur);
-		//runFunc(mulSquareAlias, Type{}, res, 100,	20 * relDur);
-		//runFunc(mulSquareAlias, Type{}, res, 250,	20 * relDur);
-		//runFunc(mulSquareAlias, Type{}, res, 500,	15 * relDur);
-		//runFunc(mulSquareAlias, Type{}, res, 1000,	10 * relDur);
+		runFunc(mulSquareAlias, Type{}, res, 50,	50 * relDur);
+		runFunc(mulSquareAlias, Type{}, res, 100,	20 * relDur);
+		runFunc(mulSquareAlias, Type{}, res, 250,	20 * relDur);
+		runFunc(mulSquareAlias, Type{}, res, 500,	15 * relDur);
+		runFunc(mulSquareAlias, Type{}, res, 1000,	10 * relDur);
 		runFunc(mulSquareAlias, Type{}, res, 1500,	8  * relDur);
 	}
 
@@ -171,8 +171,8 @@ void runTypeTests()
 	TestResults res{ Bench<float, MajorOrder>::name() +  majorOrderToString(MajorOrder)};
 
 	Bench<float,	MajorOrder>::run(res);
-	//Bench<double,	MajorOrder>::run(res);
-	//Bench<int,		MajorOrder>::run(res);
+	Bench<double,	MajorOrder>::run(res);
+	Bench<int,		MajorOrder>::run(res);
 	res.print();
 }
 

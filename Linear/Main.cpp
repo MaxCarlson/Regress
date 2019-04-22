@@ -67,22 +67,23 @@ int main()
 	};
 	Matrix<double, true> medC = med;
 
-	/*
-	Matrix<float> test1(420, 320);
-	Matrix<float> test2(320, 430);
-	//std::iota(test1.begin(), test1.end(), 1);
-	//std::iota(test2.begin(), test2.end(), 1);
-	//std::cout << test1 << "\n\n" << test2 << "\n\n";
+	//*
+	Matrix<float> test1(12, 12);
+	Matrix<float> test2(12, 12);
+	std::iota(test1.begin(), test1.end(), 0);
+	std::iota(test2.begin(), test2.end(), 12*12);
+	std::cout << test1 << "\n\n" << test2 << "\n\n";
 	Matrix<float> testRes = test1 * test2;
-	//std::cout << testRes << "\n\n";
-	return 0;
+	std::cout << testRes << "\n\n";
 	//*/
 
-	constexpr int m = 42, k = 32, n = 32;
-	constexpr int packedN3 = n - n % (4 * 3);
-	constexpr int packedN2 = n - (n - packedN3) % (4 * 2);
-	constexpr int packedN  = n - (n - packedN2) % 4;
-
+	constexpr int nr			= 8;
+	constexpr int cols			= 12;
+	constexpr int rows			= 12;
+	constexpr int Stride		= 8;
+	constexpr int maxPCol		= cols - cols % nr;
+	constexpr bool unrollPack	= (nr == Stride && nr >= 4);
+	constexpr int maxUrlRow		= unrollPack ? rows - rows % nr : 0;
 
 	//Matrix<int> reslr = lhs * rhs; // BUG:
 	Matrix<double> resMed = med * med;

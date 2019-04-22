@@ -301,7 +301,7 @@ struct PackBlock
 		{
 			if (unrollPack)
 			{
-				for (Index i = 0; i < maxUrlRow; i += nr)
+				for (Index i = 0; i < maxUrlRow; i += 4)
 				{
 					Packet P0 = from.template loadUnaligned<Packet>(i + 0, j);
 					Packet P1 = from.template loadUnaligned<Packet>(i + 1, j);
