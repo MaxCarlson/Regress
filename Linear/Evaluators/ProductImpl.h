@@ -616,8 +616,8 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 			impl::prefetch(aPtr);
 			impl::prefetch(bPtr);
 			impl::prefetch(bPtr2);
-			Packet tmp{};
-			Packet B0, B1;
+
+			Packet B0, B1, tmp;
 			Packet C0{ Type{ 0 } }; Packet C1{ Type{ 0 } };
 			Packet C2{ Type{ 0 } }; Packet C3{ Type{ 0 } };
 			Packet C4{ Type{ 0 } }; Packet C5{ Type{ 0 } };
@@ -635,6 +635,7 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 			for (Index k = 0; k < kUnroll; k += kStep)
 			{
 				Packet A0, A1, A2, A3; 
+				// TODO: Try removing B1
 #define PROCESS_STEP(K) \
 				{ \
 					pload4r(aPtr + K * mr, A0, A1, A2, A3);		\
@@ -643,18 +644,18 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 					pmadd(A0, B0, C0, tmp); \
 					pmadd(A1, B0, C1, tmp); \
 					pmadd(A2, B0, C2, tmp); \
-					pmadd(A3, B0, C3, tmp); \
-					pmadd(A0, B1, C4, tmp); \
-					pmadd(A1, B1, C5, tmp); \
-					pmadd(A2, B1, C6, tmp); \
-					pmadd(A3, B1, C7, tmp); \
+					pmadd(A3, B0, C3,  B0); \
+					pmadd(A0, B1, C4,  B0); \
+					pmadd(A1, B1, C5,  B0); \
+					pmadd(A2, B1, C6,  B0); \
+					pmadd(A3, B1, C7,  B1); \
 				} \
 
 				impl::prefetch(aPtr + (32 + 0));
-				PROCESS_STEP(0);
+				PROCESS_STEP(0); 
 				PROCESS_STEP(1);
-				PROCESS_STEP(2);
-				PROCESS_STEP(3);
+				PROCESS_STEP(2); // Exactly one cache line traversed of blockA
+				PROCESS_STEP(3); 
 				impl::prefetch(aPtr + (32 + 16));
 				PROCESS_STEP(4);
 				PROCESS_STEP(5);
@@ -709,6 +710,7 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 
 			for (Index k = 0; k < kc; ++k)
 			{
+				Packet A0, A1, A2, A3;
 				pload4r<Packet, Type>(aPtr, A0, A1, A2, A3);
 				B0 = impl::pload<Packet>(bPtr);
 
