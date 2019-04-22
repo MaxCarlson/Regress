@@ -86,7 +86,7 @@ struct ProductLoop<Dest, LhsE, RhsE, GEMMType::VECTORIZED>
 		const bool packRhsOnce = kc == lCols && nc == rCols;
 		
 		// Height (in rows) of lhs's block
-		#pragma omp parallel for num_threads(3) 
+		#pragma omp parallel for num_threads(2) 
 		for (size_type m = 0; m < lRows; m += mc)
 		{
 			const size_type endM = std::min(m + mc, lRows) - m;

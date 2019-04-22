@@ -511,9 +511,10 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 	//#pragma omp parallel for 
 	for (Index m = 0; m < packedM; m += mr)
 	{
+		/*
 		// Overall this is about a 5-20% slowdown... Why?
 		// Note: While being slower for Doubles and Floats, this is acutally faster for ints ... ?
-		/*
+		// Register spilling probably?
 		for (Index n = 0; n < packedN3; n += nr * 3)
 		{
 			BlockPtr aPtr  = &blockA[m * kc];
@@ -633,12 +634,12 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 
 			for (Index k = 0; k < kUnroll; k += kStep)
 			{
+				Packet A0, A1, A2, A3; 
 #define PROCESS_STEP(K) \
 				{ \
-					Packet A0, A1, A2, A3;\
-					pload4r(aPtr + K * mr, A0, A1, A2, A3);\
-					B0 = impl::pload<Packet>(bPtr  + K * nr); \
-					B1 = impl::pload<Packet>(bPtr2 + K * nr); \
+					pload4r(aPtr + K * mr, A0, A1, A2, A3);		\
+					B0 = impl::pload<Packet>(bPtr  + K * nr);	\
+					B1 = impl::pload<Packet>(bPtr2 + K * nr);	\
 					pmadd(A0, B0, C0, tmp); \
 					pmadd(A1, B0, C1, tmp); \
 					pmadd(A2, B0, C2, tmp); \
@@ -659,6 +660,7 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 				PROCESS_STEP(5);
 				PROCESS_STEP(6);
 				PROCESS_STEP(7);
+				static_assert(kStep == 8);
 
 				aPtr	+= mr * kStep;
 				bPtr	+= nr * kStep;
@@ -667,6 +669,7 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 
 			for (Index k = kUnroll; k < kc; ++k)
 			{
+				Packet A0, A1, A2, A3; 
 				PROCESS_STEP(0);
 #undef PROCESS_STEP
 				aPtr	+= mr;
@@ -690,6 +693,7 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 			impl::prefetch(aPtr);
 			impl::prefetch(bPtr);
 
+			Packet B0;
 			Packet tmp{ Type{ 0 } };
 			Packet C0 { Type{ 0 } }; Packet C1{ Type{ 0 } };
 			Packet C2 { Type{ 0 } }; Packet C3{ Type{ 0 } };
@@ -705,9 +709,8 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 
 			for (Index k = 0; k < kc; ++k)
 			{
-				auto[A0, A1, A2, A3] = pload4<Packet, Type>(aPtr);
-
-				Packet B0 = impl::pload<Packet>(bPtr);
+				pload4r<Packet, Type>(aPtr, A0, A1, A2, A3);
+				B0 = impl::pload<Packet>(bPtr);
 
 				pmadd(A0, B0, C0, tmp);
 				pmadd(A1, B0, C1, tmp);
