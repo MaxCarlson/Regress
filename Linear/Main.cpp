@@ -65,16 +65,18 @@ int main()
 		{ 16, 17, 18, 19, 20},	// 4  9 14 19 24
 		{ 21, 22, 23, 24, 25}	// 5 10 15 20 25
 	};
-	/*
 	Matrix<double, true> medC = med;
-	Matrix<int> test1(42, 32);
-	Matrix<int> test2(32, 43);
-	std::iota(test1.begin(), test1.end(), 1);
-	std::iota(test2.begin(), test2.end(), 1);
-	std::cout << test1 << "\n\n" << test2 << "\n\n";
-	Matrix<int> testRes = test1 * test2;
-	std::cout << testRes << "\n\n";
-	*/
+
+	/*
+	Matrix<float> test1(420, 320);
+	Matrix<float> test2(320, 430);
+	//std::iota(test1.begin(), test1.end(), 1);
+	//std::iota(test2.begin(), test2.end(), 1);
+	//std::cout << test1 << "\n\n" << test2 << "\n\n";
+	Matrix<float> testRes = test1 * test2;
+	//std::cout << testRes << "\n\n";
+	return 0;
+	//*/
 
 	constexpr int m = 42, k = 32, n = 32;
 	constexpr int packedN3 = n - n % (4 * 3);
