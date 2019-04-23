@@ -554,6 +554,8 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 					pmadd(A3, B1, C7,  B1); \
 				} \
 
+				// TODO: Run a test with differing values of prefetch distance
+				// TODO: Integrate that testing with similar tests in bench
 				impl::prefetch(aPtr + (32 + 0));
 				PROCESS_STEP(0); 
 				PROCESS_STEP(1);
