@@ -1,5 +1,6 @@
 #include "../Linear/Matrix.h"
 #include "../Linear/Stopwatch.h"
+#include "GemmDimensionSearch.h"
 #include <iostream>
 #include <string>
 #include <sstream>
@@ -93,64 +94,6 @@ struct MulSquareAlias : public BaseBench
 		runFunc(mulSquareAlias, Type{}, res, 500,	15 * relDur);
 		runFunc(mulSquareAlias, Type{}, res, 1000,	10 * relDur);
 		runFunc(mulSquareAlias, Type{}, res, 1500,	8  * relDur);
-	}
-
-	static void mulSquareAlias(int size)
-	{
-		Mat m(size, size);
-		m = m * m;
-	}
-};
-
-template<class Type, bool MajorOrder>
-struct FindBestDims
-{
-	using Mat = Matrix<Type, MajorOrder>;
-	static std::string name()
-	{
-		return "Find Best Dimensions ";
-	}
-
-	static void run()
-	{
-		Stopwatch sw;
-		int count = 0;
-		int bestT = std::numeric_limits<int>::max();
-		int bestM = 0, bestK = 0, bestN = 0;
-
-		auto printBest = [&]()
-		{
-			std::cout << "Best m, k, n: " << bestM << ", " << bestK << ", " << bestN << '\n';
-		};
-
-		for(int m = 8; m < 1000; m += 64)
-			for(int k = 8; k < 1000; k += 64)
-				for (int n = 8; n < 1000; n += 64)
-				{
-					testBs.mc = m; testBs.kc = k; testBs.nc = n;
-
-					auto runTest = [&]()
-					{
-						sw.start();
-						mulSquareAlias(1200);
-						return sw.getTime();
-					};
-
-					int time = runTest();
-					
-					if (time < bestT && runTest() < bestT)
-					{
-						bestT = time;
-						bestM = m;
-						bestK = k;
-						bestN = n;
-					}
-
-					if (++count % 15 == 0)
-						printBest();
-				}
-		std::cout << "Best Overall for " << typeid(Type).name() << '\n';
-		printBest();
 	}
 
 	static void mulSquareAlias(int size)

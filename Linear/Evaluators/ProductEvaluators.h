@@ -67,14 +67,13 @@ struct ProductLoop<Dest, LhsE, RhsE, GEMMType::VECTORIZED>
 		using IndexWrapperRhs	= IndexWrapper<const Rhs, size_type, DestTranspose>;
 		using IndexWrapperDest	= IndexWrapper<Dest, size_type, DestTranspose>;
 
-		// TODO: Revisit main loop order below
-		// TODO: Calculate mc/kc/nc from type size/l2 cache size
+		// TODO: Calculate mc/kc/nc from type size & l1/l2 cache size
 		// TODO: Benchmark allocating A/B on heap/thread_local/stack
 
 		// Blocksize along direction 
-		const size_type mc = std::min(512, lRows); // along m (rows of dest/lhs)
-		const size_type kc = std::min(512, lCols); // along k (columns of lhs, rows of rhs)
-		const size_type nc = std::min(256, rCols); // along n (columns of rhs)
+		const size_type mc = std::min(200, lRows); // along m (rows of dest/lhs)
+		const size_type kc = std::min(200, lCols); // along k (columns of lhs, rows of rhs)
+		const size_type nc = std::min(648, rCols); // along n (columns of rhs)
 		
 		//const size_type mc = std::min(testBs.mc, lRows); // Just for testing
 		//const size_type kc = std::min(testBs.kc, lCols); // best values for gemm
@@ -86,7 +85,7 @@ struct ProductLoop<Dest, LhsE, RhsE, GEMMType::VECTORIZED>
 		const bool packRhsOnce = kc == lCols && nc == rCols;
 		
 		// Height (in rows) of lhs's block
-		#pragma omp parallel for num_threads(2) 
+		#pragma omp parallel for num_threads(4) 
 		for (size_type m = 0; m < lRows; m += mc)
 		{
 			const size_type endM = std::min(m + mc, lRows) - m;
