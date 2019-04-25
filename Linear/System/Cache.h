@@ -75,7 +75,41 @@ private:
 	}
 };
 
-static const CacheInfo cacheInfo;
+
+struct BlockSizesBase
+{
+	inline static const CacheInfo cacheInfo;
+};
+
+template<class Type, class Index>
+struct BlockSizes : public BlockSizesBase
+{
+	inline static bool init = false;
+	inline static Index mc, kc, nc;
+
+	BlockSizes()
+	{
+		if (init)
+			return;
+		init = true;
+
+		auto l1 = cacheInfo.l1;
+		auto l2 = cacheInfo.l2;
+
+		int l1Rel = l1 / sizeof(Type);
+		int l2Rel = (l2 - l1) / sizeof(Type);
+
+		static constexpr int roundTo = 8; // TODO: make this PacketTraits::Stride
+		auto round = [](int val)
+		{
+			return ((val + roundTo - 1) / roundTo) * roundTo;
+		};
+
+		mc = round(l1Rel / 40);
+		kc = mc;
+		nc = round(l2Rel / 88);
+	}
+};
 
 static constexpr int STACK_ALLOCATION_MAX = 128 * 1024;
 

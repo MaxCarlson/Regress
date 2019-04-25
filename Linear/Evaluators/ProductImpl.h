@@ -66,54 +66,6 @@ struct PackingInfo
 
 };
 
-template<class Type, class Index>
-struct BlockSizer
-{
-	inline static bool init = false;
-	inline static Index mc, kc, nc;
-
-	BlockSizer()
-	{
-		if (init)
-			return;
-		init = true;
-
-		auto l1 = cacheInfo.l1;
-		auto l2 = cacheInfo.l2;
-		calculateBlockA(l2);
-		calculateBlockB(l1);
-
-		int l1Rel = l1 * 0.7 / sizeof(Type);
-		int l2Rel = (l2 * 0.5 - l1) / sizeof(Type);
-
-		int m = 8;
-		int k = 8;
-		int n = 8;
-
-		int stepSize = 8;
-
-		while (true)
-		{
-			int mk = m * k;
-			int nk = n * k;
-			if (mk < l1Rel * 0.9)
-			{
-				//if()
-			}
-		}
-	}
-
-	inline void calculateBlockA(int l2)
-	{
-
-	}
-
-	inline void calculateBlockB(int l1)
-	{
-
-	}
-};
-
 // Packing order: 
 // BlockSize mr == 4
 // 
@@ -494,24 +446,24 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 	// TODO: NOTE: mr/nr/kr are block sizes to make block fit in registers?
 
 	// blockA size is mc * kc 
-	// TODO: Fits in l2 Cache
-	// blockB size is kc * nc
 	// TODO: Fits in l1 Cache
+	// blockB size is kc * nc
+	// TODO: Fits in l2 Cache
 	
 	// Unroll step size for k
 	static constexpr Index kStep = 8;
 
 	const Index kUnroll		= kc - kc % kStep;
 	const Index packedM		= mc - mc % mr;
-	const Index packedN3	= 0;// nc - nc % (nr * 3);
-	const Index packedN2	= nc - (nc - packedN3) % (nr * 2);
+	//const Index packedN3	= 0;// nc - nc % (nr * 3);
+	const Index packedN2	= nc - (nc -		0) % (nr * 2);
 	const Index packedN		= nc - (nc - packedN2) % nr;
 
 	// TODO: Test this with other higher level pragmas
 	//#pragma omp parallel for 
 	for (Index m = 0; m < packedM; m += mr)
 	{
-		for (Index n = packedN3; n < packedN2; n += nr * 2) 
+		for (Index n = 0; n < packedN2; n += nr * 2) 
 		{
 			BlockPtr aPtr	= &blockA[m * kc];
 			BlockPtr bPtr	= &blockB[n * kc];

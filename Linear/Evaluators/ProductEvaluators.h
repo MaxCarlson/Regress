@@ -70,6 +70,8 @@ struct ProductLoop<Dest, LhsE, RhsE, GEMMType::VECTORIZED>
 		// TODO: Calculate mc/kc/nc from type size & l1/l2 cache size
 		// TODO: Benchmark allocating A/B on heap/thread_local/stack
 
+		static const BlockSizes<value_type, size_type> sizing;
+
 		// Blocksize along direction 
 		const size_type mc = std::min(200, lRows); // along m (rows of dest/lhs)
 		const size_type kc = std::min(200, lCols); // along k (columns of lhs, rows of rhs)
