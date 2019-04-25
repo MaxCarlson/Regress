@@ -42,6 +42,7 @@ struct ProductLoop<Dest, LhsE, RhsE, GEMMType::VECTORIZED>
 	using value_type	= typename Dest::value_type;
 	using Traits		= PacketTraits<value_type>;
 	using PacketType	= typename Traits::type;
+
 	using SALW			= StackAlignedWrapper<value_type>;
 
 	enum
@@ -66,16 +67,14 @@ struct ProductLoop<Dest, LhsE, RhsE, GEMMType::VECTORIZED>
 		using IndexWrapperLhs	= IndexWrapper<const Lhs, size_type, DestTranspose>;
 		using IndexWrapperRhs	= IndexWrapper<const Rhs, size_type, DestTranspose>;
 		using IndexWrapperDest	= IndexWrapper<Dest, size_type, DestTranspose>;
-
 		// TODO: Calculate mc/kc/nc from type size & l1/l2 cache size
 		// TODO: Benchmark allocating A/B on heap/thread_local/stack
-
 		static const BlockSizes<value_type, size_type> sizing;
 
 		// Blocksize along direction 
-		const size_type mc = std::min(200, lRows); // along m (rows of dest/lhs)
-		const size_type kc = std::min(200, lCols); // along k (columns of lhs, rows of rhs)
-		const size_type nc = std::min(648, rCols); // along n (columns of rhs)
+		const size_type mc = std::min(sizing.mc, lRows); // along m (rows of dest/lhs)
+		const size_type kc = std::min(sizing.kc, lCols); // along k (columns of lhs, rows of rhs)
+		const size_type nc = std::min(sizing.nc, rCols); // along n (columns of rhs)
 		
 		//const size_type mc = std::min(testBs.mc, lRows); // Just for testing
 		//const size_type kc = std::min(testBs.kc, lCols); // best values for gemm

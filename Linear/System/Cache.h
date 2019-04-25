@@ -81,9 +81,21 @@ struct BlockSizesBase
 	inline static const CacheInfo cacheInfo;
 };
 
+// Calculate the best size for mc/kc/nc
+// Ideally we want BlockA's (mc * kc)  micro panel (mr * kc) to fit in l1 Cache
+// and BlockB's (kc * nc) micro panel (kc * nr) to fit in l2 Cache
 template<class Type, class Index>
 struct BlockSizes : public BlockSizesBase
 {
+	enum
+	{
+		mr		= PackingInfo<Type>::mr,
+		nr		= PackingInfo<Type>::nr,
+		roundTo = PacketTraits<Type>::Stride,
+	};
+
+	inline static constexpr double l1Percentage = 0.4;
+
 	inline static bool init = false;
 	inline static Index mc, kc, nc;
 
@@ -99,13 +111,16 @@ struct BlockSizes : public BlockSizesBase
 		int l1Rel = l1 / sizeof(Type);
 		int l2Rel = (l2 - l1) / sizeof(Type);
 
-		static constexpr int roundTo = 8; // TODO: make this PacketTraits::Stride
 		auto round = [](int val)
 		{
 			return ((val + roundTo - 1) / roundTo) * roundTo;
 		};
 
-		mc = round(l1Rel / 40);
+		// TODO: Look into mc/kc/nc values as it relates to cache sizes more
+		int m = l1Rel * l1Percentage;
+		m /= mr;
+
+		mc = round(m / 4);
 		kc = mc;
 		nc = round(l2Rel / 88);
 	}

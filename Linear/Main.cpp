@@ -10,7 +10,7 @@ int main()
 {
 	Stopwatch<std::chrono::milliseconds> s;
 
-	//*
+	/*
 	Eigen::Matrix<float, -1, -1, Eigen::RowMajor> mat1;
 	Eigen::Matrix<int, -1, -1, Eigen::RowMajor> mat2;
 	mat1.resize(2500, 2500);
@@ -33,7 +33,7 @@ int main()
 	//fillMat(mat2);
 
 	//Eigen::Matrix<int, -1, -1, Eigen::RowMajor>mm = mat1 * mat2;
-	static constexpr int numTests = 20;
+	static constexpr int numTests = 10;
 	Matrix<float> tt(2500, 2500);
 	s.start();
 	for (int i = 0; i < numTests; ++i)
@@ -72,7 +72,7 @@ int main()
 	Matrix<float> test1(12, 12);
 	Matrix<float> test2(12, 12);
 	std::iota(test1.begin(), test1.end(), 0);
-	std::iota(test2.begin(), test2.end(), 12*12);
+	std::iota(test2.begin(), test2.end(), 12 * 12);
 	std::cout << test1 << "\n\n" << test2 << "\n\n";
 	Matrix<float> testRes = test1 * test2;
 	std::cout << testRes << "\n\n";
