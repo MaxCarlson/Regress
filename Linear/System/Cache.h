@@ -120,6 +120,8 @@ struct BlockSizes : public BlockSizesBase
 		int m = l1Rel * l1Percentage;
 		m /= mr;
 
+		// TODO: Should kc depend on size of nr?
+
 		mc = round(m / 4);
 		kc = mc;
 		nc = round(l2Rel / 88);

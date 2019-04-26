@@ -1,8 +1,8 @@
 #pragma once
 
-#define RGR_NOINLINE __declspec(noinline)
-#define RGR_FORCE_INLINE __forceinline
-#define RGR_RESTRICT __restrict
+#define RGR_NOINLINE		__declspec(noinline)
+#define RGR_FORCE_INLINE	__forceinline
+#define RGR_RESTRICT		__restrict
 
 namespace impl
 {

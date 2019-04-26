@@ -1,19 +1,15 @@
 #pragma once
-/*
-#ifdef _MSC_VER
-#include <intrin.h>
-#elif
-#include <x86intrin.h>
-#endif 
-*/
 #include <immintrin.h>
 
 #ifdef __AVX2__
 #define REGRESS_AVX2
 #elif __AVX__
 #define REGRESS_AVX
-#else
+#elif __SSE__ || __SSE2__
 #define REGRESS_SSE
+#else
+static_assert(false, "Need at least SSE instruction set currently. "
+	"If using MCVS set appropriate option in preprocessor");
 #endif
 
 namespace impl
