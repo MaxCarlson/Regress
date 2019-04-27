@@ -10,7 +10,7 @@ int main()
 {
 	Stopwatch<std::chrono::milliseconds> s;
 
-	//*
+	/*
 	Eigen::Matrix<float, -1, -1, Eigen::RowMajor> mat1;
 	Eigen::Matrix<int, -1, -1, Eigen::RowMajor> mat2;
 	mat1.resize(2500, 2500);
@@ -69,12 +69,14 @@ int main()
 	Matrix<double, true> medC = med;
 
 	//*
-	Matrix<float> test1(12, 12);
-	Matrix<float> test2(12, 12);
+	const int sz = 9;
+	Matrix<float> test1(sz, sz);
+	Matrix<float> test2(sz, sz);
 	std::iota(test1.begin(), test1.end(), 0);
-	std::iota(test2.begin(), test2.end(), 12 * 12);
+	std::iota(test2.begin(), test2.end(), sz*sz);
 	std::cout << test1 << "\n\n" << test2 << "\n\n";
-	Matrix<float> testRes = test1 * test2;
+	//for(int i = 0; i < 5; ++i)
+		Matrix<float> testRes = test1 * test2;
 	std::cout << testRes << "\n\n";
 	//*/
 

@@ -249,7 +249,7 @@ struct PackBlock
 		const bool unrollPack	= (nr == Stride && nr >= 4);
 		const Index maxUrlRow	=  unrollPack ? rows - rows % nr : 0;
 
-		for (Index j = 0; j < maxPCol; j += Stride)
+		for (Index j = 0; j < maxPCol; j += nr)
 		{
 			if (unrollPack)
 			{
@@ -271,7 +271,7 @@ struct PackBlock
 			{
 				Packet p = from.template loadUnaligned<Packet>(i, j);
 				impl::pstore(block, p);
-				block += Stride;
+				block += nr;
 			}
 		}
 
@@ -456,13 +456,14 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 	const Index kUnroll		= kc - kc % kStep;
 	const Index packedM		= mc - mc % mr;
 	//const Index packedN3	= 0;// nc - nc % (nr * 3);
-	const Index packedN2	= nc - (nc -		0) % (nr * 2);
+	const Index packedN2 = 0;// nc - (nc - 0) % (nr * 2);
 	const Index packedN		= nc - (nc - packedN2) % nr;
 
 	// TODO: Test this with other higher level pragmas
 	//#pragma omp parallel for 
 	for (Index m = 0; m < packedM; m += mr)
 	{
+		/*
 		for (Index n = 0; n < packedN2; n += nr * 2) 
 		{
 			BlockPtr aPtr	= &blockA[m * kc];
@@ -543,7 +544,7 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 			R3.accumulate(C3);
 			R3.accumulate(C7, Stride);
 		}
-
+		*/
 		for (Index n = packedN2; n < packedN; n += nr)
 		{
 			BlockPtr aPtr = &blockA[m * kc]; 
