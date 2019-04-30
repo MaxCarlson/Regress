@@ -72,6 +72,7 @@ struct ProductLoop<Dest, LhsE, RhsE, GEMMType::VECTORIZED>
 		static const BlockSizes<value_type, size_type> sizing;
 
 		// Blocksize along direction 
+		// (roughly set to 200x200x650 atm)
 		const size_type mc = std::min(sizing.mc, lRows); // along m (rows of dest/lhs)
 		const size_type kc = std::min(sizing.kc, lCols); // along k (columns of lhs, rows of rhs)
 		const size_type nc = std::min(sizing.nc, rCols); // along n (columns of rhs)
@@ -86,7 +87,7 @@ struct ProductLoop<Dest, LhsE, RhsE, GEMMType::VECTORIZED>
 		const bool packRhsOnce = kc == lCols && nc == rCols;
 		
 		// Height (in rows) of lhs's block
-		#pragma omp parallel for num_threads(4) 
+		#pragma omp parallel for num_threads(3) 
 		for (size_type m = 0; m < lRows; m += mc)
 		{
 			const size_type endM = std::min(m + mc, lRows) - m;

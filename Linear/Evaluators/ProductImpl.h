@@ -35,23 +35,6 @@ inline void pload4r(const Type* ptr, Packet& p0, Packet& p1, Packet& p2, Packet&
 	p3 = impl::pload1<Packet>(ptr + 3);
 }
 
-// lhs * rhs * lhs
-// {1, 2},					{9,  12, 15}
-// {3, 4}, * {1, 2, 3}, =	{19, 26, 33}
-// {5, 6},   {4, 5, 6}		{29, 40, 51}
-// 
-// {9,  12, 15}		{1, 2},		{120, 156}
-// {19, 26, 33} *	{3, 4}, =	{262, 340}
-// {29, 40, 51}		{5, 6},		{404, 524}
-//
-//
-//
-//	1,  2,  3,  4,  5 		1,  2,  3,  4,  5 	
-//	6,  7,  8,  9,  10		6,  7,  8,  9,  10
-//	11, 12, 13, 14, 15	*	11, 12, 13, 14, 15
-//	16, 17, 18, 19, 20		16, 17, 18, 19, 20
-//	21, 22, 23, 24, 25		21, 22, 23, 24, 25
-
 template<class Type>
 struct PackingInfo
 {
@@ -177,6 +160,7 @@ struct PackPanel
 #endif // DEBUG_BLOCKS
 	}
 
+	// TODO: Optimize
 	template<> static void run<ColMajor>(Type* block, const From& from, Index rows, Index cols)
 	{
 		const Type* debug = block;
@@ -288,6 +272,7 @@ struct PackBlock
 #endif // DEBUG_BLOCKS
 	}
 
+	// TODO: Optimize
 	template<> static void run<ColMajor>(Type* block, const From& from, Index rows, Index cols)
 	{
 		const Type* debug = block;
@@ -445,9 +430,9 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 
 	// TODO: NOTE: mr/nr/kr are block sizes to make block fit in registers?
 
-	// blockA size is mc * kc 
+	// blockA micro panel (mr * kc)
 	// TODO: Fits in l1 Cache
-	// blockB size is kc * nc
+	// blockB micro panel (kc * nr)
 	// TODO: Fits in l2 Cache
 	
 	// Unroll step size for k
@@ -456,14 +441,12 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 	const Index kUnroll		= kc - kc % kStep;
 	const Index packedM		= mc - mc % mr;
 	//const Index packedN3	= 0;// nc - nc % (nr * 3);
-	const Index packedN2 = 0;// nc - (nc - 0) % (nr * 2);
+	const Index packedN2	= nc - (nc - 0) % (nr * 2);
 	const Index packedN		= nc - (nc - packedN2) % nr;
 
-	// TODO: Test this with other higher level pragmas
-	//#pragma omp parallel for 
 	for (Index m = 0; m < packedM; m += mr)
 	{
-		/*
+		///*
 		for (Index n = 0; n < packedN2; n += nr * 2) 
 		{
 			BlockPtr aPtr	= &blockA[m * kc];
@@ -544,7 +527,7 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 			R3.accumulate(C3);
 			R3.accumulate(C7, Stride);
 		}
-		*/
+		//*/
 		for (Index n = packedN2; n < packedN; n += nr)
 		{
 			BlockPtr aPtr = &blockA[m * kc]; 
@@ -566,6 +549,7 @@ void gebp(Dest& dest, const Type* blockA, const Type* blockB, const Index mc, co
 			R2.prefetch(0);
 			R3.prefetch(0);
 
+			// TODO: Unroll with macro
 			for (Index k = 0; k < kc; ++k)
 			{
 				Packet A0, A1, A2, A3;
